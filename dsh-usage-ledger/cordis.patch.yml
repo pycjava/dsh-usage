@@ -1,0 +1,18 @@
+# dsh-usage-ledger bundle patch: cross-session token usage accounting and
+# cost statistics. Applied after the surface bundle's patch (dsh-web-app),
+# before the profile's own cordis.patch.yml and any --patch overlays.
+#
+# Two host-plane rows:
+#   - usage-ledger         the ledger service: records every llm/stream call
+#                          into its own SQLite file under $DSH_HOME/storages,
+#                          and serves the /usage command
+#   - usage-ledger-tool    the model-facing `usage_stats` tool (delete this
+#                          row to hide the tool from agents)
+
+- insert:
+    - id: usage-ledger
+      name: 'dsh-usage-ledger'
+
+    - id: usage-ledger-tool
+      name: 'dsh-usage-ledger/tool'
+      inject: [usageLedger]

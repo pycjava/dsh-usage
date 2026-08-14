@@ -1,0 +1,22 @@
+{
+  "name": "dsh-usage-ledger",
+  "version": "0.1.0",
+  "description": "Cross-session LLM usage ledger for DeepSeek Harness: token accounting and cost statistics per model/provider, a /usage command, and a usage_stats agent tool",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./tool": "./lib/tool.js"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
