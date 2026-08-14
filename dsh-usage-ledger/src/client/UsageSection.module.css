@@ -1,0 +1,337 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 780px;
+  color: var(--dsw-alias-label-primary);
+}
+
+/* ---- header: range label + segmented control ---- */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rangeLabel {
+  font-size: 13px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.seg {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  gap: 2px;
+}
+
+.segButton {
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.segButton[aria-pressed='true'] {
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+/* ---- status surfaces ---- */
+
+.status,
+.meta {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.failure {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.failure button {
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ---- summary cards ---- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  min-width: 0;
+}
+
+.cardLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.cardValue {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 30px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardValueSmall {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 26px;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardSub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* ---- blocks (heatmap / trend) ---- */
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.blockTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* ---- heatmap ---- */
+
+.heatLegend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.heatLegend > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: none;
+}
+
+/* The months strip and the cell grid share one column system so labels line
+ * up with weeks; both stretch to the full block width. */
+.heatMonths {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 3px;
+  height: 14px;
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.heatMonths > span {
+  white-space: nowrap;
+  overflow: visible;
+  min-width: 0;
+}
+
+.heat {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  width: 100%;
+}
+
+.heatCellL0,
+.heatCellL1,
+.heatCellL2,
+.heatCellL3,
+.heatCellL4,
+.heatCellOff {
+  border-radius: 2px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.heatCellOff { background: transparent; }
+.heatCellL0 { background: var(--dsw-alias-border-l3); }
+.heatCellL1 { background: var(--dsw-static-deepseek-100); }
+.heatCellL2 { background: var(--dsw-static-deepseek-200); }
+.heatCellL3 { background: var(--dsw-static-deepseek-300); }
+.heatCellL4 { background: var(--dsw-static-deepseek-450); }
+
+/* ---- stacked daily trend ---- */
+
+.trend {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 160px;
+}
+
+.trendColumn {
+  flex: 1;
+  min-width: 4px;
+  max-width: 30px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: 2px;
+}
+
+.trendColumn:hover {
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent);
+}
+
+/* Floating hover card: date header, total row, per-model rows. Anchored to
+ * the hovered column's center (JS flips the shift near the edges). */
+.tooltip {
+  position: absolute;
+  top: 4px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 200px;
+  padding: 8px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-3);
+  box-shadow: var(--dsw-shadow-lv1, 0 4px 16px rgb(0 0 0 / 16%));
+  pointer-events: none;
+}
+
+.tooltipDate {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.tooltipTotal,
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.tooltipTotal .tooltipValue {
+  font-weight: 600;
+}
+
+.tooltipName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.tooltipValue {
+  font-variant-numeric: tabular-nums;
+  color: var(--dsw-alias-label-primary);
+}
+
+.trendBar {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: 2px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.trendSegment {
+  display: block;
+  width: 100%;
+  flex: none;
+}
+
+.ticks {
+  position: relative;
+  height: 16px;
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.ticks > span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}

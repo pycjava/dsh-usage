@@ -1,0 +1,66 @@
+/**
+ * Dictionaries for the 数据与统计 settings section (zh is the source of
+ * truth; en mirrors it key for key).
+ */
+
+export const zh = {
+  nav: '数据与统计',
+  loading: '加载中…',
+  error: '读取用量数据失败。',
+  retry: '重试',
+  empty: '还没有任何用量记录——开始对话后,这里会出现统计。',
+  range: '时间范围',
+  'period.7d': '最近 7 天',
+  'period.30d': '最近 30 天',
+  'stat.tokens': 'tokens 用量',
+  'stat.sessions': '会话数量',
+  'stat.calls': '调用次数',
+  'stat.activeDays': '活跃天数',
+  'stat.streak': '当前连续天数',
+  'stat.topModel': '最常用模型',
+  'stat.share': '占比 {p}',
+  heatmap: '活跃热力图',
+  less: '较少',
+  more: '较多',
+  trend: '按天 Token 趋势',
+  'tooltip.total': '总 tokens',
+  input: '输入',
+  cacheRead: '缓存读取',
+  cacheWrite: '缓存写入',
+  output: '输出',
+  reported: '实报',
+  estimated: '估算',
+  estimatedHint: '估算为启发式(char/4),并非提供方实报数字。',
+} satisfies Record<string, string>
+
+export type Key = keyof typeof zh
+
+export const en: Record<Key, string> = {
+  nav: 'Data & Usage',
+  loading: 'Loading…',
+  error: 'Failed to read usage data.',
+  retry: 'Retry',
+  empty: 'No usage recorded yet — chat with a model and the stats appear here.',
+  range: 'Time range',
+  'period.7d': 'Last 7 days',
+  'period.30d': 'Last 30 days',
+  'stat.tokens': 'Tokens used',
+  'stat.sessions': 'Sessions',
+  'stat.calls': 'Calls',
+  'stat.activeDays': 'Active days',
+  'stat.streak': 'Current streak',
+  'stat.topModel': 'Top model',
+  'stat.share': '{p} of total',
+  heatmap: 'Activity heatmap',
+  less: 'Less',
+  more: 'More',
+  trend: 'Daily token trend',
+  'tooltip.total': 'Total tokens',
+  input: 'Input',
+  cacheRead: 'Cache read',
+  cacheWrite: 'Cache write',
+  output: 'Output',
+  reported: 'reported',
+  estimated: 'estimated',
+  estimatedHint: 'Estimates use the chars/4 heuristic, not provider-reported numbers.',
+}

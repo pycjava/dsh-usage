@@ -1,9 +1,13 @@
 # dsh-usage-ledger
 
-Cross-session LLM **token-usage accounting** for DeepSeek Harness. It fills
-the gap the base harness deliberately leaves open: **how many tokens did I
-use — across every session, model, and provider?** No pricing, no currency —
-just an honest token ledger.
+Cross-session LLM **token-usage accounting** for DeepSeek Harness, as a
+**dual-face plugin package**: a host half (Node) that keeps the ledger, and
+a browser half that adds a 数据与统计 (Data & Usage) section to the web
+client's Settings panel. It fills the gap the base harness deliberately
+leaves open: **how many tokens did I use — across every session, model, and
+provider?** No pricing, no currency — just an honest token ledger.
+
+## What it does
 
 - **Records every model call in the process** through the `llm/stream`
   waterfall — agent turns, subagents, session titles, compaction summaries.
@@ -11,49 +15,111 @@ just an honest token ledger.
   (`inputTokens`, `cacheReadTokens`, `cacheWriteTokens`, `outputTokens`,
   `reasoningTokens`), stamped with provider, model, session id, and purpose.
 - **Reported first, estimates flagged**: provider-reported usage is recorded
-  as-is. With `estimateFallback` enabled, usage-less calls are priced with
-  the token-meter's fixed heuristic and stamped `estimated` — reported and
-  estimated figures are always shown separately.
+  as-is. With `estimateFallback` enabled (off by default), usage-less calls
+  are priced with the token-meter's fixed heuristic and stamped `estimated`
+  — reported and estimated figures are always shown separately.
 - **Durable across restarts and sessions**: entries persist in the plugin's
   own SQLite file (`node:sqlite`, WAL mode) at
   `$DSH_HOME/storages/usage-ledger.sqlite`. No storage-hub dependency, so the
   ledger works identically in web, headless, and TUI profiles. If the store
   cannot open, the ledger degrades to an in-process record.
-- **`/usage` command** — a one-line summary plus a monospace report: totals,
-  reported/estimated split, by-model / by-provider / by-day / by-session
-  breakdowns, and JSON/CSV export.
 - **`usage_stats` agent tool** — the model can answer "how many tokens did we
-  use this month?" from the same durable ledger.
+  use this month?" from the same durable ledger (monospace text report).
+- **数据与统计 settings panel** — a dashboard section in the web client's
+  Settings (App GUI): a time-range toggle (last 7d / last 30d), six summary
+  cards (tokens used, sessions, calls, active days, current streak, top model
+  with its share), a GitHub-style activity heatmap (last 16 weeks, cells
+  shaded by daily tokens), and a daily token trend chart with stacked
+  per-model bars. Zero harness changes: the panel registers into the open
+  `settings.section` slot and pulls aggregates over the plugin's own loopback
+  RPC channel.
+
+## Package layout
+
+```
+cordis.patch.yml      bundle patch: two rows (usage-ledger, usage-ledger-tool)
+lib/                  host half (plain ESM, no build) + the prebuilt client bundle
+  index.js            UsageLedgerService: capture, store, RPC channel
+  rpc.js              pure payload handling for the /usage-ledger channel
+  tool.js             the usage_stats agent tool (host)
+  client.js(.map)     browser half, built from src/client (see Build)
+src/client/           browser-half sources (TS/TSX + CSS Modules)
+tsdown.config.ts      client-bundle build (mirrors the harness preset)
+test/smoke.mjs        standalone smoke test for the pure modules
+```
+
+## How the two halves load
+
+- The bundle patch inserts two rows. `usage-ledger` (bare package name)
+  carries the host half — and is exactly the loader entry the harness
+  client-module system scans: because `package.json` declares
+  `dsh.client: { platform: 'web', inject: [...] }` and exports
+  `"./client" → ./lib/client.js`, the prebuilt browser bundle joins
+  `window.__DSH_BOOT__` automatically and is served at
+  `/plugins/dsh-usage-ledger/client.js`.
+- `usage-ledger-tool` (subpath row) mounts the `usage_stats` tool; delete
+  that row to hide the tool from agents — ledger, command, and panel are
+  unaffected.
+- The browser half's `apply(ctx)` registers its `zh`/`en` dictionaries and
+  one entry in the `settings.section` list slot (id `usage`, label
+  数据与统计). The settings shell projects its nav from that slot's ledger,
+  so no shell edits are needed.
+- Data path: the host half (when a `connection` service exists — web
+  profiles) registers a private RPC channel with
+  `ctx.connection.rpc.handle('/usage-ledger', …, { authority: 'loopback' })`;
+  the panel calls it with `ctx.connection.rpc.call`. The sole endpoint
+  `query` takes `{ period, by, includeReplayed }` and returns aggregates
+  only (the raw entry list never leaves the host). Headless/TUI profiles
+  never register the channel and are otherwise unaffected.
+
+## Build
+
+The host half ships as plain source (no build step). The browser half must
+be **prebuilt** before packing:
+
+```sh
+npm install       # dev deps: tsdown, lightningcss, react (types/external)
+npm run build     # tsdown → lib/client.js + lib/client.js.map
+npm test          # standalone smoke test (pure modules, no harness needed)
+npm pack          # → dsh-usage-ledger-<version>.tgz
+```
+
+The tsdown config mirrors the harness preset
+(`packages/client/tsdown.client.ts`): a closure-factory CJS artifact that
+hands itself to `window.__ModuleLoader__.load({ id, factory })`, externals
+limited to the frozen platform-module table (react and friends), and CSS
+Modules compiled by lightningcss into injected `<style data-plugin>` tags.
 
 ## Install
 
 ```sh
-dsh plugin --profile web add ./dsh-usage-ledger-0.1.0.tgz
+dsh plugin --profile web add ./dsh-usage-ledger-<version>.tgz
 # optional: also for one-shot runs
-dsh plugin --profile headless add ./dsh-usage-ledger-0.1.0.tgz
+dsh plugin --profile headless add ./dsh-usage-ledger-<version>.tgz
 ```
 
 The bundle declares `dsh.bundle.patch`, so `dsh` appends it to the profile's
 bundle list automatically. Verify with `dsh --profile web --dump-config`,
-then restart the running app (host plugins load at boot).
+then restart the running app — host plugins and client modules load at
+boot.
 
 ## Usage
 
+In the App client: **Settings → 数据与统计** — a usage dashboard with a
+time-range toggle (last 7d / last 30d), summary cards (tokens, sessions,
+calls, active days, current streak, top model), an activity heatmap, and a
+daily token trend stacked by model.
+
+From a conversation, the `usage_stats` agent tool answers questions directly:
+
 ```
-/usage                          this month: totals + by-model table
-/usage 7d                       last 7 days
-/usage 2026-07                  one calendar month
-/usage 2026-06..2026-08         a month range (inclusive)
-/usage all --by day             everything, daily rows
-/usage --by provider            by provider instead of model
-/usage --by session             which sessions used the most tokens
-/usage --json usage.json        export raw entries (JSON)
-/usage --csv usage.csv          export the breakdown (CSV)
-/usage --include-replayed       also count replayed (cached) calls
+"这个月用了多少 token?"          → this-month totals + by-model report
+"最近 7 天按天看看用量"           → last 7 days, daily rows
+"按提供方统计一下"                → by-provider breakdown
 ```
 
-Exports are written into the current session's workspace directory (or the
-process cwd outside a session).
+Tool parameters: `period` (this-month | today | 7d | 30d | Nd | YYYY-MM |
+YYYY-MM..YYYY-MM | all) and `by` (model | provider | day | session).
 
 ## Configuration
 
@@ -63,10 +129,11 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
 ```yaml
 - id: usage-ledger
   config:
-    estimateFallback: true   # heuristic tokens for calls without provider usage
+    estimateFallback: false  # heuristic tokens for calls without provider usage
     retentionDays: 0         # 0 = keep forever; N = drop entries older than N days
     flushIntervalMs: 5000    # durability latency for buffered entries
     flushEveryEntries: 32    # flush early once this many entries are buffered
+    maxMemoryEntries: 200000 # in-memory cap when the store cannot open
 ```
 
 ## How it works
@@ -74,16 +141,19 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
 1. The `usage-ledger` row loads a `Service` (`ctx.usageLedger`) that
    registers on the `llm/stream` waterfall. Every model call in the process
    crosses it; the wrapper passes chunks through untouched and records an
-   entry when the stream reports a `usage` chunk. Failed calls (no usage
-   chunk) never inflate the ledger; `finish.replayState` marks replayed
-   responses, excluded from totals unless `--include-replayed`.
+   entry when the stream reports a `usage` chunk with at least one nonzero
+   token count. Failed calls (no usage chunk, or an all-zero usage from the
+   error path) never inflate the ledger. The finish chunk's `replayState` is
+   deliberately ignored: it is provenance metadata present on every pi-ai
+   completion, not a replay signal.
 2. At load the service opens (or creates) its SQLite database at
    `$DSH_HOME/storages/usage-ledger.sqlite` and loads stored entries.
    Entries buffer in memory and flush on a timer, on a batch threshold, and
    on shutdown. A failed flush keeps the batch buffered and retries — no
    silent loss.
-3. The `/usage` command and the `usage_stats` tool aggregate the durable +
-   pending entries for the requested period.
+3. The `usage_stats` tool aggregates the durable + pending entries for the
+   requested period. The settings panel does the same over the
+   `/usage-ledger` RPC channel.
 
 ## Requirements
 
@@ -91,6 +161,8 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
   carries an `node:sqlite` consumer, so the runtime is guaranteed).
 - A harness whose base layer exposes the `llm/stream` waterfall and the
   `tokenMeter` service (0.1.0-rc.5-era releases).
+- The settings panel needs a web profile (the App client); other profiles
+  simply skip the browser half and the RPC channel.
 - The harness packages the plugin imports (`@deepseek-ai/cordis`,
   `@deepseek-ai/schemastery`, `@deepseek-ai/dsh-tools`) resolve through the
   profile's node_modules fallback links, which the harness heals at boot.
@@ -102,10 +174,13 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
   `llm/stream` waterfall. One host process = one ledger file; multiple
   harness instances should use separate `$DSH_HOME`s or share the ledger via
   a network store.
-- **Replayed responses** (provider-side cache replays, e.g. pi-ai replay
-  state) are excluded from totals by default because their billable original
-  was recorded when it first ran. If the original ran before this plugin was
-  installed, the tokens exist only on the replayed copies — pass
-  `--include-replayed` to surface them.
+- **All-zero usage calls** (error-path completions) are not recorded, and
+  query-time filtering drops any legacy zero rows, so call counts and token
+  totals always agree on what is billable.
 - Estimates are heuristics (chars/4 density), never provider numbers; they
   stay marked `estimated` in every surface.
+- The new Settings nav entry uses a line-chart glyph added to the shell's
+  `navIcon()` map (harness-side change; unknown ids fall back to a gear).
+- This is the **first third-party `dsh.client` package**: the scan-over-all-
+  entries mechanism is verified against the harness sources, but expect to
+  be off the beaten path.

@@ -16,8 +16,9 @@
  * never mix silently.
  *
  * Surfaces:
- *   - `/usage` command: text report + JSON/CSV export
  *   - `usageLedger` service: query API (the `usage_stats` tool consumes it)
+ *   - `/usage-ledger` RPC channel: aggregates for the browser half (the
+ *     数据与统计 settings section, served from lib/client.js)
  *
  * Token counts only — no pricing, no currency.
  *
@@ -26,12 +27,9 @@
 
 import { Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import { mkdir, writeFile } from 'node:fs/promises'
-import { dirname, isAbsolute, resolve } from 'node:path'
-import { USAGE, parseCommandArgs } from './args.js'
 import { DAY_MS, aggregate, entryFromCall, parsePeriod } from './ledger.js'
-import { renderCsv, renderJson, renderTextReport } from './report.js'
 import { openLedgerStore } from './store.js'
+import { runDashboardQuery } from './rpc.js'
 
 export const name = 'usage-ledger'
 
@@ -100,26 +98,33 @@ export class UsageLedgerService extends Service {
       this.ctx.logger.warn(`usage-ledger: store unavailable, running in-memory: ${error instanceof Error ? error.message : String(error)}`)
     }
 
-    // The /usage command; the commands registry is part of the base layer.
-    this.ctx.inject(['commands'], (cmdCtx) => {
-      cmdCtx.effect(() => cmdCtx.commands.register({
-        name: 'usage',
-        description: 'Token usage report across sessions (this month by default)',
-        input: { hint: '[period] [--by model|provider|day|session] [--json file] [--csv file]' },
-        handler: (invocation) => this.runCommand(invocation),
-      }), 'usage-ledger: /usage command')
-    })
-
     this.ctx.logger.info('usage-ledger: recording all llm/stream calls')
+
+    // The browser half (the 数据与统计 settings section) pulls aggregates over
+    // a private loopback RPC channel — the open plugin path over connection.
+    // Profiles without a connection service (headless, TUI) never fire this
+    // optional injection, and the ledger keeps working unchanged.
+    this.ctx.inject(['connection'], (connCtx) => {
+      connCtx.effect(() => connCtx.connection.rpc.handle('/usage-ledger', (endpoint, payload) => {
+        if (endpoint !== 'dashboard') {
+          return { ok: false, error: { code: 'not-found', message: `unknown endpoint ${endpoint}` } }
+        }
+        return runDashboardQuery(payload, (options) => this.query(options))
+      }, { authority: 'loopback' }), 'usage-ledger: /usage-ledger rpc channel')
+    })
   }
 
   /**
    * llm/stream middleware: pass every chunk through untouched and record one
    * entry when the stream reports provider usage. Recording happens on stream
    * end (or abort), so a failed call without a usage chunk never inflates the
-   * ledger, and the `finish` chunk's replayState marks replayed responses.
-   * With `estimateFallback`, a usage-less stream is instead heuristically
-   * priced from the request and the accumulated output deltas.
+   * ledger, and an all-zero usage (error-path completions) is skipped too —
+   * nothing was consumed, nothing is billable. The finish chunk's
+   * `replayState` is provenance metadata present on every pi-ai completion
+   * (it feeds later history reconstruction), NOT a replay marker, so it is
+   * deliberately ignored. With `estimateFallback`, a usage-less stream is
+   * instead heuristically priced from the request and the accumulated output
+   * deltas.
    * @param options - the GenerateOptions the caller assembled.
    * @param next - the inner stream (already wrapped by earlier middleware).
    * @returns the observed stream.
@@ -129,14 +134,12 @@ export class UsageLedgerService extends Service {
     const ledger = this
     return (async function* () {
       let usage
-      let replayed = false
       let outputChars = 0
       let outputOverhead = 0
       try {
         for await (const chunk of inner) {
           if (chunk !== null && typeof chunk === 'object') {
             if (chunk.type === 'usage' && usage === undefined) usage = chunk.usage
-            else if (chunk.type === 'finish' && chunk.replayState !== undefined) replayed = true
             else if (chunk.type === 'text-delta' || chunk.type === 'reasoning-delta') outputChars += typeof chunk.text === 'string' ? chunk.text.length : 0
             else if (chunk.type === 'tool-call-delta') outputChars += (typeof chunk.argumentsDelta === 'string' ? chunk.argumentsDelta.length : 0) + (typeof chunk.name === 'string' ? chunk.name.length : 0)
             else if (chunk.type === 'block-end') outputOverhead += 4
@@ -145,12 +148,11 @@ export class UsageLedgerService extends Service {
         }
       } finally {
         if (usage !== undefined) {
-          ledger.record({ options, usage, replayed, time: Date.now() })
+          if (usageHasTokens(usage)) ledger.record({ options, usage, time: Date.now() })
         } else if (ledger.config.estimateFallback) {
           ledger.record({
             options,
             usage: ledger.estimateUsage(options, outputChars, outputOverhead),
-            replayed,
             estimated: true,
             time: Date.now(),
           })
@@ -258,21 +260,18 @@ export class UsageLedgerService extends Service {
 
   /**
    * Query the ledger (durable + pending) for one period and dimension.
-   * @param options - { from, to, by?, includeReplayed? }
+   * @param options - { from, to, by? }
    * @returns aggregation plus the raw entry list and report metadata.
    */
   query(options) {
     const { from, to } = options
     const by = options.by ?? 'model'
-    const includeReplayed = options.includeReplayed === true
-    let replayedExcluded = 0
     const entries = []
     const accept = (entry) => {
       if (entry.time < from || entry.time >= to) return
-      if (entry.replayed === true && !includeReplayed) {
-        replayedExcluded += 1
-        return
-      }
+      // Legacy rows recorded before the zero-usage skip: drop them here too,
+      // so historical call counts stay consistent with what is billable.
+      if (!usageHasTokens(entry)) return
       entries.push(entry)
     }
     for (const entry of this.records.values()) accept(entry)
@@ -295,61 +294,19 @@ export class UsageLedgerService extends Service {
     aggregated.totals.estimatedTokens = estimatedTokens
     return {
       ...aggregated,
-      replayedExcluded,
       entries,
       from,
       to,
       dimension: by,
     }
   }
+}
 
-  /** /usage handler: parse args, aggregate, render, and export on request. */
-  async runCommand(invocation) {
-    const parsed = parseCommandArgs(invocation.rawInput)
-    if (parsed.error !== undefined) return { kind: 'error', text: `${parsed.error}\n\n${USAGE}` }
-    if (parsed.help) return { kind: 'success', text: USAGE }
-    const period = parsePeriod(parsed.period, Date.now())
-    if (!period.ok) return { kind: 'error', text: `${period.error}\n\n${USAGE}` }
-    const result = this.query({
-      from: period.from,
-      to: period.to,
-      by: parsed.by,
-      includeReplayed: parsed.includeReplayed,
-    })
-    let text = renderTextReport({ ...result, label: period.label })
-    const baseDir = invocation.agent?.session?.header?.cwd ?? process.cwd()
-    if (parsed.json !== undefined) {
-      const target = parsed.json ?? defaultExportName('json', period)
-      try {
-        const file = await this.writeExport(baseDir, target, renderJson(result.entries, {
-          period: period.label,
-          from: period.from,
-          to: period.to,
-        }))
-        text += `\n\nJSON report written to ${file}`
-      } catch (error) {
-        return { kind: 'error', text: `could not write JSON report: ${error instanceof Error ? error.message : String(error)}` }
-      }
-    }
-    if (parsed.csv !== undefined) {
-      const target = parsed.csv ?? defaultExportName('csv', period)
-      try {
-        const file = await this.writeExport(baseDir, target, renderCsv(result.rows))
-        text += `\n\nCSV report written to ${file}`
-      } catch (error) {
-        return { kind: 'error', text: `could not write CSV report: ${error instanceof Error ? error.message : String(error)}` }
-      }
-    }
-    return { kind: 'success', text }
-  }
-
-  /** Write one export file under the session workspace (or the cwd). */
-  async writeExport(baseDir, target, content) {
-    const file = isAbsolute(target) ? target : resolve(baseDir, target)
-    await mkdir(dirname(file), { recursive: true })
-    await writeFile(file, content, 'utf8')
-    return file
-  }
+/** Whether a reported usage carries any tokens at all (zeros = error-path call, not billable). */
+function usageHasTokens(usage) {
+  const sum = (usage?.inputTokens ?? 0) + (usage?.outputTokens ?? 0)
+    + (usage?.cacheReadTokens ?? 0) + (usage?.cacheWriteTokens ?? 0) + (usage?.reasoningTokens ?? 0)
+  return sum > 0
 }
 
 /** Fixed-density fallback matching the token meter's published heuristic. */
@@ -374,14 +331,6 @@ function roughEstimateBlock(block) {
     default:
       return 4 + Math.ceil(JSON.stringify(block).length / 4)
   }
-}
-
-function defaultExportName(kind, period) {
-  const stamp = (ms) => {
-    const date = new Date(ms)
-    return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
-  }
-  return `usage-${stamp(period.from)}..${stamp(Math.min(period.to, Date.now()))}.${kind}`
 }
 
 export default UsageLedgerService

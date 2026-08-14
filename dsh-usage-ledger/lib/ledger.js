@@ -32,7 +32,6 @@ export function entryFromCall(raw) {
     ...(Number.isFinite(usage?.cacheReadTokens) && usage.cacheReadTokens > 0 ? { cacheReadTokens: usage.cacheReadTokens } : {}),
     ...(Number.isFinite(usage?.cacheWriteTokens) && usage.cacheWriteTokens > 0 ? { cacheWriteTokens: usage.cacheWriteTokens } : {}),
     ...(Number.isFinite(usage?.reasoningTokens) && usage.reasoningTokens > 0 ? { reasoningTokens: usage.reasoningTokens } : {}),
-    ...(raw.replayed === true ? { replayed: true } : {}),
     ...(raw.estimated === true ? { estimated: true } : {}),
   }
 }
@@ -97,8 +96,8 @@ function labelOfMonth(date) {
 
 /**
  * Aggregate entries over one breakdown dimension (token counts only).
- * @param entries - entries inside the period (replayed already excluded per
- *   `includeReplayed`).
+ * @param entries - entries inside the period (zero-usage calls already
+ *   filtered).
  * @param dimension - 'model' | 'provider' | 'day' | 'session'.
  * @param locale - locale for day labels.
  * @returns { totals, rows } with per-row token aggregates.

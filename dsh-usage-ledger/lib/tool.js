@@ -39,10 +39,6 @@ export function apply(ctx) {
         enum: ['model', 'provider', 'day', 'session'],
         description: 'Breakdown dimension. Default: model.',
       },
-      include_replayed: {
-        type: 'boolean',
-        description: 'Include replayed (cached) calls in totals. Default: false.',
-      },
     },
     output: TEXT_OUTPUT,
     execute: (args) => {
@@ -52,7 +48,6 @@ export function apply(ctx) {
         from: period.from,
         to: period.to,
         by: args.by ?? 'model',
-        includeReplayed: args.include_replayed === true,
       })
       return renderTextReport({ ...result, label: period.label })
     },

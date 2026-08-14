@@ -1,6 +1,7 @@
 /**
- * Report rendering for the usage ledger: monospace text (the /usage command
- * result body), JSON (raw entries), and CSV (aggregated rows).
+ * Report rendering for the usage ledger: the monospace text report served
+ * to the usage_stats agent tool (the settings panel renders its own UI from
+ * the aggregate rows over RPC).
  *
  * Token counts only — the ledger deliberately carries no pricing.
  *
@@ -32,9 +33,8 @@ function totalTokens(bucket) {
 
 /**
  * Render the monospace text report.
- * The first line is the one-line summary (shown collapsed in the chat UI);
- * the rest is the expandable body.
- * @param data - { label, totals, rows, dimension, replayedExcluded }
+ * The first line is the one-line summary; the rest is the body.
+ * @param data - { label, totals, rows, dimension }
  */
 export function renderTextReport(data) {
   const { totals, rows, dimension, label } = data
@@ -59,7 +59,6 @@ export function renderTextReport(data) {
     section.push('reported         ' + call(totals.reportedCalls) + ' calls · ' + tok(totals.reportedTokens) + ' tokens')
     if (totals.estimatedCalls > 0) section.push('estimated        ' + call(totals.estimatedCalls) + ' calls · ' + tok(totals.estimatedTokens) + ' tokens (heuristic)')
   }
-  if (data.replayedExcluded > 0) section.push('replayed         ' + right(formatNumber(data.replayedExcluded), 14) + ' calls excluded (pass --include-replayed)')
   lines.push(...section)
 
   if (rows.length > 0) {
@@ -77,32 +76,4 @@ export function renderTextReport(data) {
 
 function truncate(text, width) {
   return text.length <= width ? text : `${text.slice(0, width - 1)}…`
-}
-
-/** JSON export: the raw entry array for the period. */
-export function renderJson(entries, meta) {
-  return `${JSON.stringify({ ...meta, entries }, null, 2)}\n`
-}
-
-/** CSV export: aggregated rows with one header line. */
-export function renderCsv(rows) {
-  const header = ['dimension', 'calls', 'input_tokens', 'cache_read_tokens', 'cache_write_tokens', 'output_tokens', 'total_tokens']
-  const lines = [header.join(',')]
-  for (const row of rows) {
-    lines.push([
-      csv(row.label),
-      row.calls,
-      row.inputTokens,
-      row.cacheReadTokens,
-      row.cacheWriteTokens,
-      row.outputTokens,
-      totalTokens(row),
-    ].join(','))
-  }
-  return `${lines.join('\n')}\n`
-}
-
-function csv(value) {
-  const text = String(value)
-  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text
 }
