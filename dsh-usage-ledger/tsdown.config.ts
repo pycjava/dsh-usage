@@ -66,7 +66,12 @@ export default defineConfig({
           minify: true,
         })
         const classMap: Record<string, string> = {}
-        for (const [local, exp] of Object.entries(cssExports ?? {})) classMap[local] = exp.name
+        // Sort by local name: lightningcss iterates its exports map in a
+        // process-dependent order, which would make every build churn the
+        // committed bundle (and its content hash) without a semantic change.
+        for (const [local, exp] of Object.entries(cssExports ?? {}).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+          classMap[local] = exp.name
+        }
         const tagId = `${ID}/${basename(fileId)}`
         return [
           `const css = ${JSON.stringify(code.toString())};`,

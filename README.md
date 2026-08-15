@@ -4,7 +4,7 @@
 
 一句话目标:让「我这个月用了多少 token、按模型分布如何」在设置面板里一眼可见、agent 一问即答——而且是**本地、持久、跨会话、跨模型/提供方**的真实答案,不是猜的。
 
-实现位于 `dsh-usage-ledger/`(npm 包 `dsh-usage-ledger@0.3.0`,**双面包**:宿主半边 + 浏览器半边),详见其 [README](dsh-usage-ledger/README.md)。
+实现位于 `dsh-usage-ledger/`(npm 包 `dsh-usage-ledger@0.4.2`,**双面包**:宿主半边 + 浏览器半边),详见其 [README](dsh-usage-ledger/README.md)。
 
 ---
 
@@ -51,7 +51,7 @@
 
 ### 2. 聚合查询(Answers)
 
-宿主侧唯一查询入口 `ctx.usageLedger.query({ from, to, by, includeReplayed })`,工具、RPC 通道共用。任意时间范围(今天 / 本月 / 7d / Nd / YYYY-MM / YYYY-MM..YYYY-MM / 全部)× 任意维度(按模型、按提供方、按天、按会话):
+宿主侧唯一查询入口 `ctx.usageLedger.query({ from, to, by })`,工具、RPC 通道共用。任意时间范围(今天 / 本月 / 7d / Nd / YYYY-MM / YYYY-MM..YYYY-MM / 全部)× 任意维度(按模型、按提供方、按天、按会话):
 
 - 总 token(input / cache read / cache write / output 分开)、总调用次数;
 - 实报 vs 估算拆分(估算占比高说明账目可信度低);
@@ -60,7 +60,7 @@
 ### 3. 展示面(两个,同一本账)
 
 - **工具**:`usage_stats` agent 工具(注册进 tools registry,由独立的 `usage-ledger-tool` 行挂载),模型可直接回答「这个月用了多少 token」,返回 monospace 报表;
-- **设置面板**:App 客户端设置页的**「数据与统计」** dashboard——时间范围切换(最近 7 天 / 最近 30 天)、六张统计卡(tokens 用量、会话数量、调用次数、活跃天数、当前连续天数、最常用模型及占比)、GitHub 风格**活跃热力图**(近 16 周,按日 token 强度着色)、**按天 Token 趋势**堆叠柱状图(按模型分色);数字按语言本地化(zh 万/亿,en K/M/G),样式走客户端主题 token(`--dsw-alias-*`),深浅色自适应。
+- **设置面板**:App 客户端设置页的**「数据与统计」** dashboard——时间范围切换(最近 7 天 / 最近 30 天)+ 手动刷新、六张统计卡(tokens 用量、会话数量、调用次数、活跃天数、当前连续天数、最常用模型及占比)、GitHub 风格**活跃热力图**(近 53 周,按日 token 强度着色)、**按天 Token 趋势**堆叠柱状图(按模型分色);数字按语言本地化(zh 万/亿,en K/M/G),样式走客户端主题 token(`--dsw-alias-*`),深浅色自适应。
 
 ### 工具报表示例(usage_stats 返回文本,实际输出)
 
@@ -91,16 +91,16 @@ deepseek-official/deepseek-v4-pro        1        500K        100K        600K
 cd dsh-usage-ledger
 npm install
 npm run build        # tsdown → lib/client.js(+ map)
-npm pack             # → dsh-usage-ledger-0.3.0.tgz
+npm pack             # → dsh-usage-ledger-0.4.2.tgz
 
 # 安装(装完重启 App 客户端——宿主插件与客户端模块都只在启动时加载):
-dsh plugin --profile web add /path/to/dsh-usage-ledger-0.3.0.tgz
+dsh plugin --profile web add /path/to/dsh-usage-ledger-0.4.2.tgz
 
 # 验证:
 dsh --profile web --dump-config      # 应看到 # == dsh-usage-ledger 层(两行)
 
 # 使用:
-设置 → 数据与统计                       # 面板:周期 × 维度自由切换
+设置 → 数据与统计                       # 面板:最近 7 天 / 30 天切换 + 刷新
 usage_stats 工具                        # 对话中让 agent 查询(如「这个月用了多少 token」)
 ```
 
@@ -135,12 +135,12 @@ bundle 补丁两行:usage-ledger(双面:宿主服务 + 浏览器 bundle)· usage
           │  ctx.usageLedger.query()          ctx.connection.rpc.handle('/usage-ledger', loopback)
           ▼                                              │
   usage_stats 工具(monospace 报表)                       │
-                                                         │  POST /usage-ledger/query { period, by, includeReplayed }
+                                                         │  POST /usage-ledger/dashboard { period }
 浏览器(App 客户端)                                       │
   /plugins/dsh-usage-ledger/client.js ──────────────────┘
           │  settings.section slot(id: usage, label: 数据与统计)
           ▼
-  设置面板:汇总卡 + 实报/估算拆分 + 四色分段条明细表
+  设置面板:汇总卡 + 热力图 + 按天趋势(实报/估算在汇总与脚注分开展示)
 ```
 
 ### 数据模型
@@ -177,7 +177,7 @@ bundle 补丁两行:usage-ledger(双面:宿主服务 + 浏览器 bundle)· usage
 - worker 线程或独立进程里的调用(如 workflow worker、其他 dsh 实例)不经过本进程的 `llm/stream` waterfall;一个宿主进程 = 一本账,多实例请分开 `$DSH_HOME`;
 - usage 全零的调用(错误路径完成)不入账;查询时同样过滤历史遗留的全零条目,次数与 token 口径一致;
 - 估算永远是启发式(chars/4),不是提供方数字;所有展示面都会带 `estimated` 标记;
-- 设置导航里新 section 的图标回退为齿轮(壳的 `navIcon()` 只硬编码三个 id;自定义图标需上游小 PR);
+- 设置导航里 `usage` id 的图标由壳的 `navIcon()` 映射为折线图图标(当前宿主已内置);旧版本宿主未收录该 id 时回退为齿轮;
 - 插件集变更(装/卸/升级)需重启客户端生效——设计如此;本插件是**第一个第三方 `dsh.client` 包**,机制已在宿主源码逐行核实。
 
 ---

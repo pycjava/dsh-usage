@@ -100,7 +100,7 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
     return () => { current = false }
   }, [query, period, request])
 
-  const zh = localeId.startsWith('zh')
+  const zh = localeId().startsWith('zh')
   const report = state.status === 'ready' ? state.report : undefined
 
   const heat = useMemo(() => {
@@ -178,18 +178,28 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
     <div className={css.section} aria-busy={state.status === 'loading'}>
       <div className={css.header}>
         <span className={css.rangeLabel}>{t('range')}</span>
-        <div className={css.seg} role="group" aria-label={t('range')}>
-          {PERIODS.map((value) => (
-            <button
-              key={value}
-              type="button"
-              className={css.segButton}
-              aria-pressed={period === value}
-              onClick={() => { setPeriod(value) }}
-            >
-              {t(`period.${value}`)}
-            </button>
-          ))}
+        <div className={css.headerActions}>
+          <div className={css.seg} role="group" aria-label={t('range')}>
+            {PERIODS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={css.segButton}
+                aria-pressed={period === value}
+                onClick={() => { setPeriod(value) }}
+              >
+                {t(`period.${value}`)}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className={css.refresh}
+            aria-label={t('refresh')}
+            onClick={() => { setRequest((value) => value + 1) }}
+          >
+            {t('refresh')}
+          </button>
         </div>
       </div>
 
@@ -351,7 +361,7 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
           </div>
 
           <p className={css.meta}>
-            {report!.label}
+            {period === '7d' ? t('period.7d') : t('period.30d')}
             {report!.totals.reportedTokens !== undefined ? (
               <>
                 {' · '}

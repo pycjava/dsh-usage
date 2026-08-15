@@ -53,6 +53,6 @@ export function apply(ctx: ClientContext): void {
     order: 20,
     label: () => t('nav'),
     locale: NS,
-    inject: () => ({ query, localeId: localeId() }),
+    inject: () => ({ query, localeId }),
   }, UsageSection))
 }

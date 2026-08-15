@@ -40,14 +40,19 @@ export interface DashboardReport {
 /** Envelope returned by Connection RPC calls. */
 export type RpcResult<T> =
   | { readonly ok: true; readonly value: T }
-  | { readonly ok: false; readonly error: { code: string; message: string } }
+  | { readonly ok: false; readonly error: { readonly code: string; readonly message: string; readonly details: Record<string, unknown> } }
 
 /** The injected face the registration hands to the section component. */
 export interface UsageSectionInjected {
   /** Query the host ledger over the plugin's private RPC channel. */
   query: (payload: { period: string }) => Promise<RpcResult<DashboardReport>>
-  /** Active locale id ('zh' | 'en'), for number/date formatting. */
-  localeId: string
+  /**
+   * Read the active locale id ('zh' | 'en') at RENDER time. The slot
+   * framework caches this injected face once, so a plain string would go
+   * stale after the user switches language; the thunk keeps number/date
+   * formatting in sync with the locale seat's re-render.
+   */
+  localeId: () => string
 }
 
 /** Locale seat delivered to entries whose registration declares `locale:`. */

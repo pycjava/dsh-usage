@@ -7,7 +7,7 @@ window.__ModuleLoader__.load({
 		let react = require("react");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		//#region \0dsh-css:D:\project\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
-		const css = ".v8bDAq_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.v8bDAq_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.v8bDAq_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.v8bDAq_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.v8bDAq_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.v8bDAq_status,.v8bDAq_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.v8bDAq_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.v8bDAq_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.v8bDAq_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.v8bDAq_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.v8bDAq_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.v8bDAq_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.v8bDAq_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.v8bDAq_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.v8bDAq_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.v8bDAq_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.v8bDAq_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.v8bDAq_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.v8bDAq_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.v8bDAq_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.v8bDAq_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.v8bDAq_heatCellL0,.v8bDAq_heatCellL1,.v8bDAq_heatCellL2,.v8bDAq_heatCellL3,.v8bDAq_heatCellL4,.v8bDAq_heatCellOff{border-radius:2px;min-width:0;min-height:0}.v8bDAq_heatCellOff{background:0 0}.v8bDAq_heatCellL0{background:var(--dsw-alias-border-l3)}.v8bDAq_heatCellL1{background:var(--dsw-static-deepseek-100)}.v8bDAq_heatCellL2{background:var(--dsw-static-deepseek-200)}.v8bDAq_heatCellL3{background:var(--dsw-static-deepseek-300)}.v8bDAq_heatCellL4{background:var(--dsw-static-deepseek-450)}.v8bDAq_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.v8bDAq_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.v8bDAq_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.v8bDAq_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.v8bDAq_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.v8bDAq_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.v8bDAq_tooltipTotal,.v8bDAq_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.v8bDAq_tooltipTotal .v8bDAq_tooltipValue{font-weight:600}.v8bDAq_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.v8bDAq_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.v8bDAq_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.v8bDAq_trendSegment{flex:none;width:100%;display:block}.v8bDAq_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.v8bDAq_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.v8bDAq_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.v8bDAq_legendItem{align-items:center;gap:6px;display:inline-flex}.v8bDAq_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
+		const css = ".v8bDAq_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.v8bDAq_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.v8bDAq_headerActions{align-items:center;gap:8px;display:inline-flex}.v8bDAq_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.v8bDAq_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.v8bDAq_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.v8bDAq_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.v8bDAq_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.v8bDAq_status,.v8bDAq_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.v8bDAq_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.v8bDAq_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.v8bDAq_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.v8bDAq_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.v8bDAq_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.v8bDAq_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.v8bDAq_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.v8bDAq_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.v8bDAq_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.v8bDAq_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.v8bDAq_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.v8bDAq_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.v8bDAq_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.v8bDAq_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.v8bDAq_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.v8bDAq_heatCellL0,.v8bDAq_heatCellL1,.v8bDAq_heatCellL2,.v8bDAq_heatCellL3,.v8bDAq_heatCellL4,.v8bDAq_heatCellOff{border-radius:2px;min-width:0;min-height:0}.v8bDAq_heatCellOff{background:0 0}.v8bDAq_heatCellL0{background:var(--dsw-alias-border-l3)}.v8bDAq_heatCellL1{background:var(--dsw-static-deepseek-100)}.v8bDAq_heatCellL2{background:var(--dsw-static-deepseek-200)}.v8bDAq_heatCellL3{background:var(--dsw-static-deepseek-300)}.v8bDAq_heatCellL4{background:var(--dsw-static-deepseek-450)}.v8bDAq_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.v8bDAq_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.v8bDAq_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.v8bDAq_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.v8bDAq_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.v8bDAq_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.v8bDAq_tooltipTotal,.v8bDAq_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.v8bDAq_tooltipTotal .v8bDAq_tooltipValue{font-weight:600}.v8bDAq_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.v8bDAq_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.v8bDAq_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.v8bDAq_trendSegment{flex:none;width:100%;display:block}.v8bDAq_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.v8bDAq_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.v8bDAq_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.v8bDAq_legendItem{align-items:center;gap:6px;display:inline-flex}.v8bDAq_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
 		const tagId = "dsh-usage-ledger/UsageSection.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -17,47 +17,49 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var UsageSection_module_css_default = {
-			"header": "v8bDAq_header",
-			"tooltip": "v8bDAq_tooltip",
-			"heatCellL1": "v8bDAq_heatCellL1",
-			"legendDot": "v8bDAq_legendDot",
-			"blockTitle": "v8bDAq_blockTitle",
-			"trendFrame": "v8bDAq_trendFrame",
-			"tooltipRow": "v8bDAq_tooltipRow",
-			"trendBar": "v8bDAq_trendBar",
-			"cardValueSmall": "v8bDAq_cardValueSmall",
-			"segButton": "v8bDAq_segButton",
-			"heat": "v8bDAq_heat",
-			"seg": "v8bDAq_seg",
-			"trendSegment": "v8bDAq_trendSegment",
-			"heatCellL0": "v8bDAq_heatCellL0",
-			"heatLegend": "v8bDAq_heatLegend",
-			"heatMonths": "v8bDAq_heatMonths",
-			"trendColumn": "v8bDAq_trendColumn",
-			"tooltipDate": "v8bDAq_tooltipDate",
-			"tooltipName": "v8bDAq_tooltipName",
-			"ticks": "v8bDAq_ticks",
-			"legendItem": "v8bDAq_legendItem",
+			"block": "v8bDAq_block",
 			"blockHead": "v8bDAq_blockHead",
-			"rangeLabel": "v8bDAq_rangeLabel",
-			"section": "v8bDAq_section",
-			"heatCellL3": "v8bDAq_heatCellL3",
+			"blockTitle": "v8bDAq_blockTitle",
+			"card": "v8bDAq_card",
+			"cardLabel": "v8bDAq_cardLabel",
+			"cardSub": "v8bDAq_cardSub",
 			"cardValue": "v8bDAq_cardValue",
-			"meta": "v8bDAq_meta",
+			"cardValueSmall": "v8bDAq_cardValueSmall",
+			"cards": "v8bDAq_cards",
+			"failure": "v8bDAq_failure",
+			"header": "v8bDAq_header",
+			"headerActions": "v8bDAq_headerActions",
+			"heat": "v8bDAq_heat",
+			"heatCellL0": "v8bDAq_heatCellL0",
+			"heatCellL1": "v8bDAq_heatCellL1",
+			"heatCellL2": "v8bDAq_heatCellL2",
+			"heatCellL3": "v8bDAq_heatCellL3",
 			"heatCellL4": "v8bDAq_heatCellL4",
 			"heatCellOff": "v8bDAq_heatCellOff",
-			"card": "v8bDAq_card",
-			"heatCellL2": "v8bDAq_heatCellL2",
+			"heatLegend": "v8bDAq_heatLegend",
+			"heatMonths": "v8bDAq_heatMonths",
+			"legend": "v8bDAq_legend",
+			"legendDot": "v8bDAq_legendDot",
+			"legendItem": "v8bDAq_legendItem",
+			"meta": "v8bDAq_meta",
+			"rangeLabel": "v8bDAq_rangeLabel",
+			"refresh": "v8bDAq_refresh",
+			"section": "v8bDAq_section",
+			"seg": "v8bDAq_seg",
+			"segButton": "v8bDAq_segButton",
 			"status": "v8bDAq_status",
-			"trend": "v8bDAq_trend",
-			"failure": "v8bDAq_failure",
-			"cardLabel": "v8bDAq_cardLabel",
-			"block": "v8bDAq_block",
+			"ticks": "v8bDAq_ticks",
+			"tooltip": "v8bDAq_tooltip",
+			"tooltipDate": "v8bDAq_tooltipDate",
+			"tooltipName": "v8bDAq_tooltipName",
+			"tooltipRow": "v8bDAq_tooltipRow",
 			"tooltipTotal": "v8bDAq_tooltipTotal",
 			"tooltipValue": "v8bDAq_tooltipValue",
-			"legend": "v8bDAq_legend",
-			"cardSub": "v8bDAq_cardSub",
-			"cards": "v8bDAq_cards"
+			"trend": "v8bDAq_trend",
+			"trendBar": "v8bDAq_trendBar",
+			"trendColumn": "v8bDAq_trendColumn",
+			"trendFrame": "v8bDAq_trendFrame",
+			"trendSegment": "v8bDAq_trendSegment"
 		};
 		//#endregion
 		//#region src/client/UsageSection.tsx
@@ -139,7 +141,7 @@ window.__ModuleLoader__.load({
 				period,
 				request
 			]);
-			const zh = localeId.startsWith("zh");
+			const zh = localeId().startsWith("zh");
 			const report = state.status === "ready" ? state.report : void 0;
 			const heat = (0, react.useMemo)(() => {
 				if (report === void 0) return {
@@ -222,19 +224,30 @@ window.__ModuleLoader__.load({
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 							className: UsageSection_module_css_default.rangeLabel,
 							children: t("range")
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: UsageSection_module_css_default.seg,
-							role: "group",
-							"aria-label": t("range"),
-							children: PERIODS.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: UsageSection_module_css_default.headerActions,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: UsageSection_module_css_default.seg,
+								role: "group",
+								"aria-label": t("range"),
+								children: PERIODS.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									className: UsageSection_module_css_default.segButton,
+									"aria-pressed": period === value,
+									onClick: () => {
+										setPeriod(value);
+									},
+									children: t(`period.${value}`)
+								}, value))
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
-								className: UsageSection_module_css_default.segButton,
-								"aria-pressed": period === value,
+								className: UsageSection_module_css_default.refresh,
+								"aria-label": t("refresh"),
 								onClick: () => {
-									setPeriod(value);
+									setRequest((value) => value + 1);
 								},
-								children: t(`period.${value}`)
-							}, value))
+								children: t("refresh")
+							})]
 						})]
 					}),
 					state.status === "loading" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
@@ -470,7 +483,7 @@ window.__ModuleLoader__.load({
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
 							className: UsageSection_module_css_default.meta,
-							children: [report.label, report.totals.reportedTokens !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+							children: [period === "7d" ? t("period.7d") : t("period.30d"), report.totals.reportedTokens !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 								" · ",
 								formatTokens(report.totals.reportedTokens, zh),
 								" ",
@@ -539,6 +552,7 @@ window.__ModuleLoader__.load({
 			loading: "加载中…",
 			error: "读取用量数据失败。",
 			retry: "重试",
+			refresh: "刷新",
 			empty: "还没有任何用量记录——开始对话后,这里会出现统计。",
 			range: "时间范围",
 			"period.7d": "最近 7 天",
@@ -568,6 +582,7 @@ window.__ModuleLoader__.load({
 			loading: "Loading…",
 			error: "Failed to read usage data.",
 			retry: "Retry",
+			refresh: "Refresh",
 			empty: "No usage recorded yet — chat with a model and the stats appear here.",
 			range: "Time range",
 			"period.7d": "Last 7 days",
@@ -629,7 +644,7 @@ window.__ModuleLoader__.load({
 				locale: NS,
 				inject: () => ({
 					query,
-					localeId: localeId()
+					localeId
 				})
 			}, UsageSection));
 		}

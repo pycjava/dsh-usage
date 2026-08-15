@@ -9,8 +9,9 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
-import { aggregate, entryFromCall, parsePeriod } from '../lib/ledger.js'
+import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
 import { formatCompact, formatNumber, renderTextReport } from '../lib/report.js'
 import { runDashboardQuery } from '../lib/rpc.js'
 import { openLedgerStore } from '../lib/store.js'
@@ -44,7 +45,7 @@ assert.equal(parsePeriod('2026-07', now).from, julStart)
 assert.equal(parsePeriod('2026-07', now).to, augStart)
 assert.equal(parsePeriod('2026-06..2026-08', now).from, junStart)
 assert.equal(parsePeriod('2026-06..2026-08', now).to, now + 1)
-assert.equal(parsePeriod('7d', now).from, now - 7 * 86_400_000)
+assert.equal(parsePeriod('7d', now).from, new Date(2026, 7, 14).getTime()) // local calendar days: Aug 14..20
 assert.equal(parsePeriod('all', now).from, 0)
 assert.equal(parsePeriod('nonsense', now).ok, false)
 assert.equal(parsePeriod('2026-13', now).ok, false)
@@ -80,6 +81,24 @@ assert.ok(text.includes('reported'))
 assert.ok(text.includes('estimated'))
 assert.ok(text.includes('deepseek-official/deepseek-chat'))
 
+// by-day rows keep chronological order (formatted labels sort badly: Aug 2 < Aug 10 < Aug 20)
+const dayRows = aggregate([
+  entryFromCall({ id: 'day-20', time: new Date(2026, 7, 20).getTime(), options: { provider: 'p', model: 'm' }, usage: { inputTokens: 1, outputTokens: 0 } }),
+  entryFromCall({ id: 'day-02', time: new Date(2026, 7, 2).getTime(), options: { provider: 'p', model: 'm' }, usage: { inputTokens: 1, outputTokens: 0 } }),
+  entryFromCall({ id: 'day-10', time: new Date(2026, 7, 10).getTime(), options: { provider: 'p', model: 'm' }, usage: { inputTokens: 1, outputTokens: 0 } }),
+], 'day').rows.map((row) => row.key)
+assert.deepEqual(dayRows, ['2026-08-02', '2026-08-10', '2026-08-20'])
+
+// failed flush recovery: already-written ids stay durable, unwritten ids return to pending
+{
+  const pending = new Map()
+  const batch = [['a', { id: 'a' }], ['b', { id: 'b' }], ['c', { id: 'c' }]]
+  requeueUnwritten(batch, pending, new Set(['b']))
+  assert.deepEqual([...pending.keys()], ['a', 'c'])
+  requeueUnwritten(batch, pending, new Set(['a', 'b', 'c']))
+  assert.deepEqual([...pending.keys()], ['a', 'c'])     // idempotent against existing pending entries
+}
+
 // ---- sqlite store round-trip ----------------------------------------------
 {
   const dir = mkdtempSync(join(tmpdir(), 'usage-ledger-test-'))
@@ -88,23 +107,33 @@ assert.ok(text.includes('deepseek-official/deepseek-chat'))
     store.put('e1', 100, { id: 'e1', time: 100, provider: 'p', model: 'm', inputTokens: 1, outputTokens: 2 })
     store.put('e2', 200, { id: 'e2', time: 200, provider: 'p', model: 'm', inputTokens: 3, outputTokens: 4 })
     let loaded = store.loadAll()
-    assert.equal(loaded.size, 2)
-    assert.deepEqual(loaded.get('e1'), { id: 'e1', time: 100, provider: 'p', model: 'm', inputTokens: 1, outputTokens: 2 })
+    assert.equal(loaded.corrupt, 0)
+    assert.equal(loaded.records.size, 2)
+    assert.deepEqual(loaded.records.get('e1'), { id: 'e1', time: 100, provider: 'p', model: 'm', inputTokens: 1, outputTokens: 2 })
     // insert-or-replace
     store.put('e1', 150, { id: 'e1', time: 150, provider: 'p', model: 'm', inputTokens: 9, outputTokens: 0 })
-    assert.equal(store.loadAll().get('e1').inputTokens, 9)
+    assert.equal(store.loadAll().records.get('e1').inputTokens, 9)
     // prune
     assert.equal(store.pruneBefore(151), 1)
     loaded = store.loadAll()
-    assert.equal(loaded.size, 1)
-    assert.ok(loaded.has('e2'))
+    assert.equal(loaded.records.size, 1)
+    assert.ok(loaded.records.has('e2'))
     // delete + reopen persistence
     store.delete('e2')
-    assert.equal(store.loadAll().size, 0)
+    assert.equal(store.loadAll().records.size, 0)
     store.close()
     const reopened = openLedgerStore(join(dir, 'ledger.sqlite'))
-    assert.equal(reopened.loadAll().size, 0)
+    assert.equal(reopened.loadAll().records.size, 0)
     reopened.close()
+    // one corrupt row must not hide every other readable entry
+    const corruptDb = new DatabaseSync(join(dir, 'ledger.sqlite'))
+    corruptDb.exec('INSERT OR REPLACE INTO entries (id, time, json) VALUES (\'bad\', 300, \'{not-json\')')
+    corruptDb.close()
+    const tolerant = openLedgerStore(join(dir, 'ledger.sqlite'))
+    const tolerantLoad = tolerant.loadAll()
+    assert.equal(tolerantLoad.corrupt, 1)
+    assert.equal(tolerantLoad.records.size, 0)
+    tolerant.close()
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -152,13 +181,35 @@ assert.ok(text.includes('deepseek-official/deepseek-chat'))
   assert.equal(none.topModel, null)
   assert.equal(none.series.length, 4)
 
+  // a PAST month's series anchors to that month, not to "today"
+  const julyEntry = mk('july', at(7, 2, 10), 'p1', 'mA', 's9', 10, 1)
+  const july = buildDashboard([julyEntry], {
+    from: at(7, 1, 0), to: at(8, 1, 0), now: now2, allTimeEntries: [julyEntry],
+  })
+  assert.equal(july.series.length, 31)
+  assert.equal(july.series[0].day, '2026-07-01')
+  assert.equal(july.series[1].tokens, 11)
+  assert.equal(july.series.at(-1).day, '2026-07-31')
+
+  // this-month before noon keeps the first calendar day of the month
+  const earlyNow = at(8, 20, 5)
+  const monthFirst = mk('month-first', at(8, 1, 0), 'p1', 'mA', 's9', 5, 1)
+  const earlyMonth = buildDashboard([monthFirst], {
+    from: at(8, 1, 0), to: earlyNow + 1, now: earlyNow, allTimeEntries: [monthFirst],
+  })
+  assert.equal(earlyMonth.series.length, 20)
+  assert.equal(earlyMonth.series[0].day, '2026-08-01')
+  assert.equal(earlyMonth.series[0].tokens, 6)
+
   // rpc dashboard endpoint: period default + value shape
   const rpcQuery = (options) => ({ entries: options.from === 0 ? [...older, ...periodEntries] : periodEntries, totals: {}, rows: [] })
   const rpc = runDashboardQuery({}, rpcQuery, now2)
   assert.equal(rpc.ok, true)
   assert.equal(rpc.value.label, 'last 30 days')
   assert.equal(rpc.value.totals.calls, 4)
-  assert.equal(runDashboardQuery({ period: 'nonsense' }, rpcQuery, now2).error.code, 'bad-request')
+  const badPeriod = runDashboardQuery({ period: 'nonsense' }, rpcQuery, now2)
+  assert.equal(badPeriod.error.code, 'bad-request')
+  assert.deepEqual(badPeriod.error.details, { issues: [] })
 }
 
 console.log('smoke: all assertions passed')

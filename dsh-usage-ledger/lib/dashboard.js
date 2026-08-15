@@ -22,6 +22,21 @@ function startOfLocalDay(ms) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
 }
 
+/** Add whole LOCAL calendar days (DST-safe: local dates advance one per step). */
+function addCalendarDays(ms, days) {
+  const date = new Date(ms)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days).getTime()
+}
+
+/** Whole local calendar days from `start`'s date through `end`'s date, inclusive. */
+function calendarDaysBetween(start, end) {
+  const left = new Date(start)
+  const right = new Date(end)
+  const leftUtc = Date.UTC(left.getFullYear(), left.getMonth(), left.getDate())
+  const rightUtc = Date.UTC(right.getFullYear(), right.getMonth(), right.getDate())
+  return Math.round((rightUtc - leftUtc) / DAY_MS) + 1
+}
+
 /** Tokens carried by one entry (same sum as the reports: input + caches + output). */
 function entryTokens(entry) {
   return entry.inputTokens + (entry.cacheReadTokens ?? 0) + (entry.cacheWriteTokens ?? 0) + entry.outputTokens
@@ -73,13 +88,16 @@ export function buildDashboard(entries, options) {
   }
   const totalTokens = inputTokens + cacheReadTokens + cacheWriteTokens + outputTokens
 
-  // Daily stacked series: N local days ending today, N = round(period/DAY).
-  const count = Math.max(1, Math.min(400, Math.round((to - from) / DAY_MS)))
-  const todayStart = startOfLocalDay(now)
+  // Daily stacked series: one bucket per LOCAL calendar day inside [from, to),
+  // anchored to the period's own end (which may be a past month/range), not
+  // to "today". Current windows end at today by construction.
+  const seriesEnd = Math.min(startOfLocalDay(to - 1), startOfLocalDay(now))
+  const seriesStart = startOfLocalDay(from)
+  const count = Math.max(1, Math.min(400, calendarDaysBetween(seriesStart, seriesEnd)))
   const models = [...byModel.entries()].sort((a, b) => b[1] - a[1]).map(([label]) => label)
   const series = []
   for (let index = count - 1; index >= 0; index--) {
-    const day = dayKey(todayStart - index * DAY_MS)
+    const day = dayKey(addCalendarDays(seriesEnd, -index))
     const dayModels = byDay.get(day)
     const values = {}
     let tokens = 0
@@ -109,12 +127,13 @@ export function buildDashboard(entries, options) {
 
   // Current streak: consecutive active days ending at the most recent active
   // day — a streak stays alive while today or yesterday has activity.
+  const todayStart = startOfLocalDay(now)
   let streakDays = 0
-  if (dailyTotals[dayKey(now)] !== undefined || dailyTotals[dayKey(now - DAY_MS)] !== undefined) {
-    let cursor = dailyTotals[dayKey(now)] !== undefined ? todayStart : startOfLocalDay(now - DAY_MS)
+  if (dailyTotals[dayKey(now)] !== undefined || dailyTotals[dayKey(addCalendarDays(now, -1))] !== undefined) {
+    let cursor = dailyTotals[dayKey(now)] !== undefined ? todayStart : addCalendarDays(todayStart, -1)
     while (dailyTotals[dayKey(cursor)] !== undefined) {
       streakDays += 1
-      cursor -= DAY_MS
+      cursor = addCalendarDays(cursor, -1)
     }
   }
 

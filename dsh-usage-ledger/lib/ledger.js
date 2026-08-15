@@ -12,6 +12,27 @@
 /** Millis per day, for retention math. */
 export const DAY_MS = 86_400_000
 
+/** Local calendar midnight of one instant. */
+function startOfLocalDay(ms) {
+  const date = new Date(ms)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+}
+
+/**
+ * Requeue only the entries a failed flush attempt did NOT write. The ledger
+ * query reads durable `records` plus `pending`; re-adding already-written
+ * entries would count them twice until the next successful flush.
+ * @param batch - the batch the failed attempt tried to write ([id, entry]).
+ * @param pending - the service's pending map.
+ * @param written - ids whose store.put succeeded during this attempt.
+ */
+export function requeueUnwritten(batch, pending, written) {
+  for (const [id, entry] of batch) {
+    if (written.has(id) || pending.has(id)) continue
+    pending.set(id, entry)
+  }
+}
+
 /**
  * Build the ledger entry for one observed LLM call.
  * @param raw - observed call facts: request options plus the usage chunk.
@@ -74,7 +95,11 @@ export function parsePeriod(raw, now) {
     if (!Number.isSafeInteger(count) || count < 1 || count > 3660) {
       return { ok: false, error: `period "${raw}": day counts must be 1..3660` }
     }
-    return { ok: true, from: now - count * DAY_MS, to: now + 1, label: `last ${count} days` }
+    // "last N days" is N LOCAL calendar days ending today, so the trend
+    // series (one bucket per local day) and the entry window agree exactly.
+    const first = new Date(startOfToday)
+    first.setDate(first.getDate() - (count - 1))
+    return { ok: true, from: first.getTime(), to: now + 1, label: `last ${count} days` }
   }
   const range = /^(\d{4}-\d{2})\.\.(\d{4}-\d{2})$/.exec(token)
   if (range !== null) {
@@ -119,9 +144,11 @@ export function aggregate(entries, dimension, locale = 'en-US') {
     bucket.outputTokens += entry.outputTokens ?? 0
     bucket.reasoningTokens += entry.reasoningTokens ?? 0
   }
+  // Sort by the raw bucket key: day keys (YYYY-MM-DD) stay chronological,
+  // and model/provider/session labels are equal to their keys anyway.
   const rows = [...buckets.values()]
+    .sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0))
     .map((bucket) => ({ ...bucket, label: bucketLabel(bucket, dimension, locale) }))
-    .sort((left, right) => (left.label < right.label ? -1 : left.label > right.label ? 1 : 0))
   const totals = rows.reduce((sum, row) => {
     sum.calls += row.calls
     sum.estimatedCalls += row.estimatedCalls

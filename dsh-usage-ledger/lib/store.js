@@ -40,13 +40,18 @@ export function openLedgerStore(path) {
     pruneBefore(cutoff) {
       return prune.run(cutoff).changes
     },
-    /** Load every stored entry into a fresh Map (id -> entry). */
+    /** Load every readable stored entry into a fresh Map, skipping (and counting) corrupt rows. */
     loadAll() {
       const records = new Map()
+      let corrupt = 0
       for (const row of selectAll.all()) {
-        records.set(row.id, JSON.parse(row.json))
+        try {
+          records.set(row.id, JSON.parse(row.json))
+        } catch {
+          corrupt += 1
+        }
       }
-      return records
+      return { records, corrupt }
     },
     close() {
       db.close()

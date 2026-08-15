@@ -9,6 +9,15 @@ import { buildDashboard } from './dashboard.js'
 import { parsePeriod } from './ledger.js'
 
 /**
+ * Business-failure branch of the Connection RPC envelope. The host wire
+ * schema requires `details` on every RpcError and only admits codes from its
+ * closed table; `bad-request` carries the (possibly empty) issue list.
+ */
+export function badRequest(message) {
+  return { ok: false, error: { code: 'bad-request', message, details: { issues: [] } } }
+}
+
+/**
  * Build the dashboard payload (the settings panel's sole request): period
  * summary + activity heatmap + daily stacked-by-model trend. Entries come
  * from the ledger query; the all-time window feeds the streak and heatmap.
@@ -19,7 +28,7 @@ import { parsePeriod } from './ledger.js'
  */
 export function runDashboardQuery(payload, query, now = Date.now()) {
   const period = parsePeriod(typeof payload?.period === 'string' ? payload.period : '30d', now)
-  if (!period.ok) return { ok: false, error: { code: 'bad-request', message: period.error } }
+  if (!period.ok) return badRequest(period.error)
   const periodEntries = query({ from: period.from, to: period.to, by: 'model' }).entries
   const allTimeEntries = query({ from: 0, to: period.to, by: 'model' }).entries
   const value = {

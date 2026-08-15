@@ -27,9 +27,9 @@
 
 import { Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import { DAY_MS, aggregate, entryFromCall, parsePeriod } from './ledger.js'
+import { DAY_MS, aggregate, entryFromCall, parsePeriod, requeueUnwritten } from './ledger.js'
 import { openLedgerStore } from './store.js'
-import { runDashboardQuery } from './rpc.js'
+import { badRequest, runDashboardQuery } from './rpc.js'
 
 export const name = 'usage-ledger'
 
@@ -88,15 +88,26 @@ export class UsageLedgerService extends Service {
     // Open the store synchronously so no entry captured during loading can
     // slip past durability. A failed open (missing node:sqlite, unwritable
     // home) degrades to the in-memory ledger instead of failing the tree.
+    let opened = undefined
     try {
       const path = this.ctx.dshHomePath('storages', 'usage-ledger.sqlite')
-      this.store = openLedgerStore(path)
-      this.records = this.store.loadAll()
+      opened = openLedgerStore(path)
+      const loaded = opened.loadAll()
+      this.store = opened
+      this.records = loaded.records
+      if (loaded.corrupt > 0) {
+        this.ctx.logger.warn(`usage-ledger: skipped ${loaded.corrupt} unreadable stored entr${loaded.corrupt === 1 ? 'y' : 'ies'}`)
+      }
       this.ctx.logger.info(`usage-ledger: durable store attached at ${path} (${this.records.size} stored entries)`)
-      this.ctx.effect(() => () => this.closeStore(), 'usage-ledger: store lifecycle')
     } catch (error) {
+      if (opened !== undefined) {
+        try { opened.close() } catch {}
+      }
+      this.store = undefined
+      this.records = new Map()
       this.ctx.logger.warn(`usage-ledger: store unavailable, running in-memory: ${error instanceof Error ? error.message : String(error)}`)
     }
+    this.ctx.effect(() => () => this.closeStore(), 'usage-ledger: store lifecycle')
 
     this.ctx.logger.info('usage-ledger: recording all llm/stream calls')
 
@@ -107,7 +118,7 @@ export class UsageLedgerService extends Service {
     this.ctx.inject(['connection'], (connCtx) => {
       connCtx.effect(() => connCtx.connection.rpc.handle('/usage-ledger', (endpoint, payload) => {
         if (endpoint !== 'dashboard') {
-          return { ok: false, error: { code: 'not-found', message: `unknown endpoint ${endpoint}` } }
+          return badRequest(`unknown endpoint ${endpoint}`)
         }
         return runDashboardQuery(payload, (options) => this.query(options))
       }, { authority: 'loopback' }), 'usage-ledger: /usage-ledger rpc channel')
@@ -189,6 +200,9 @@ export class UsageLedgerService extends Service {
         const oldest = this.pending.keys().next().value
         if (oldest !== undefined) this.pending.delete(oldest)
         this.memoryDropped += 1
+        if (this.memoryDropped === 1 || this.memoryDropped % 1000 === 0) {
+          this.ctx.logger.warn(`usage-ledger: in-memory ledger full, dropping oldest entries (${this.memoryDropped} dropped so far)`)
+        }
       }
       return
     }
@@ -204,16 +218,20 @@ export class UsageLedgerService extends Service {
     if (this.flushing !== undefined) return this.flushing
     const store = this.store
     const batch = [...this.pending.entries()]
+    const written = new Set()
     this.pending.clear()
     this.flushing = (async () => {
       for (const [id, entry] of batch) {
         store.put(id, entry.time, entry)
         this.records.set(id, entry)
+        written.add(id)
       }
       this.prune()
       this.ctx.logger.debug(`usage-ledger: flushed ${batch.length} entries (${this.records.size} durable)`)
     })().catch((error) => {
-      for (const [id, entry] of batch) if (!this.pending.has(id)) this.pending.set(id, entry)
+      // Only entries this attempt did NOT write go back: ones already in
+      // `records` are durable and must not be counted again by the query.
+      requeueUnwritten(batch, this.pending, written)
       this.scheduleFlush()
       throw error
     }).finally(() => {

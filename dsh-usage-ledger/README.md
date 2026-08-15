@@ -26,13 +26,13 @@ provider?** No pricing, no currency — just an honest token ledger.
 - **`usage_stats` agent tool** — the model can answer "how many tokens did we
   use this month?" from the same durable ledger (monospace text report).
 - **数据与统计 settings panel** — a dashboard section in the web client's
-  Settings (App GUI): a time-range toggle (last 7d / last 30d), six summary
-  cards (tokens used, sessions, calls, active days, current streak, top model
-  with its share), a GitHub-style activity heatmap (last 16 weeks, cells
-  shaded by daily tokens), and a daily token trend chart with stacked
-  per-model bars. Zero harness changes: the panel registers into the open
-  `settings.section` slot and pulls aggregates over the plugin's own loopback
-  RPC channel.
+  Settings (App GUI): a time-range toggle (last 7d / last 30d) with a manual
+  refresh button, six summary cards (tokens used, sessions, calls, active
+  days, current streak, top model with its share), a GitHub-style activity
+  heatmap (last 53 weeks, cells shaded by daily tokens), and a daily token
+  trend chart with stacked per-model bars. Zero harness changes: the panel
+  registers into the open `settings.section` slot and pulls aggregates over
+  the plugin's own loopback RPC channel.
 
 ## Package layout
 
@@ -58,8 +58,8 @@ test/smoke.mjs        standalone smoke test for the pure modules
   `window.__DSH_BOOT__` automatically and is served at
   `/plugins/dsh-usage-ledger/client.js`.
 - `usage-ledger-tool` (subpath row) mounts the `usage_stats` tool; delete
-  that row to hide the tool from agents — ledger, command, and panel are
-  unaffected.
+  that row to hide the tool from agents — the ledger and the settings panel
+  are unaffected.
 - The browser half's `apply(ctx)` registers its `zh`/`en` dictionaries and
   one entry in the `settings.section` list slot (id `usage`, label
   数据与统计). The settings shell projects its nav from that slot's ledger,
@@ -68,9 +68,9 @@ test/smoke.mjs        standalone smoke test for the pure modules
   profiles) registers a private RPC channel with
   `ctx.connection.rpc.handle('/usage-ledger', …, { authority: 'loopback' })`;
   the panel calls it with `ctx.connection.rpc.call`. The sole endpoint
-  `query` takes `{ period, by, includeReplayed }` and returns aggregates
-  only (the raw entry list never leaves the host). Headless/TUI profiles
-  never register the channel and are otherwise unaffected.
+  `dashboard` takes `{ period }` and returns dashboard aggregates only (the
+  raw entry list never leaves the host). Headless/TUI profiles never register
+  the channel and are otherwise unaffected.
 
 ## Build
 
