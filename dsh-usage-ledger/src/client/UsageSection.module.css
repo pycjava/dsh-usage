@@ -213,6 +213,15 @@
 
 /* ---- stacked daily trend ---- */
 
+/* Chart and tick strip share one capped, centered frame: the percentage-
+ * positioned ticks always stay glued to the bars, whatever the frame width. */
+.trendFrame {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-inline: auto;
+}
+
 .trend {
   position: relative;
   display: flex;
@@ -224,7 +233,7 @@
 .trendColumn {
   flex: 1;
   min-width: 4px;
-  max-width: 30px;
+  max-width: 110px;
   height: 100%;
   display: flex;
   flex-direction: column;

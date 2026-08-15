@@ -35,6 +35,17 @@ const MODEL_COLORS = ['#4d93f8', '#22c55e', '#f7ad31', '#a78bfa', '#f87171', '#7
  * the cells small when the grid stretches to the panel width. */
 const HEAT_WEEKS = 53
 
+/** Trend column cap + gap (px). Must mirror .trendColumn/.trend CSS: the
+ * frame width formula keeps ticks and tooltip on the columns' coordinate
+ * system. The cap is high enough that the 7d chart fills the block (wide
+ * bars, one date label per bar) while 30d still stretches edge to edge. */
+const TREND_COLUMN_MAX = 110
+const TREND_GAP = 2
+
+/** Minimum gap (px) between adjacent tick centers: the 11px "M/D" date
+ * labels stay ~30px wide, so 44px keeps them from crowding. */
+const TREND_TICK_GAP = 44
+
 /** Local YYYY-MM-DD key (mirrors the host's day convention). */
 function dayKeyOf(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -126,9 +137,18 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
   )
   const trendTicks = useMemo(() => {
     if (report === undefined) return []
-    const last = report.series.length - 1
-    if (last < 1) return [0]
-    return [...new Set([0, Math.floor(last / 4), Math.floor(last / 2), Math.ceil((3 * last) / 4), last])]
+    const count = report.series.length
+    if (count < 2) return [0]
+    // Nominal tick-strip width (mirrors the inline frame formula): pick the
+    // largest even step whose ticks stay ≥TREND_TICK_GAP apart. 7d labels
+    // every bar, 30d roughly weekly, never more than 7 ticks.
+    const frame = Math.min(720, count * (TREND_COLUMN_MAX + TREND_GAP) - TREND_GAP)
+    const maxTicks = Math.min(7, Math.max(2, Math.floor(frame / TREND_TICK_GAP) + 1))
+    const step = Math.ceil((count - 1) / (maxTicks - 1))
+    const ticks: number[] = []
+    for (let index = 0; index < count - 1; index += step) ticks.push(index)
+    ticks.push(count - 1)
+    return ticks
   }, [report])
 
   // Tooltip inputs, guarded against a hover outliving a period switch.
@@ -256,59 +276,64 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
             <div className={css.blockHead}>
               <h3 className={css.blockTitle}>{t('trend')}</h3>
             </div>
-            <div className={css.trend} onMouseLeave={() => setHovered(null)}>
-              {report!.series.map((day, index) => (
-                <div
-                  className={css.trendColumn}
-                  key={day.day}
-                  aria-label={`${heatLabel(day.day)} · ${formatTokens(day.tokens, zh)}`}
-                  onMouseEnter={() => setHovered(index)}
-                >
-                  <div className={css.trendBar}>
-                    {[...report!.models].reverse().map((model) => {
-                      const value = day.values[model] ?? 0
-                      if (value === 0) return null
-                      return (
-                        <span
-                          key={model}
-                          className={css.trendSegment}
-                          style={{
-                            height: `${Math.max(1.5, (value / trendMax) * 100)}%`,
-                            background: MODEL_COLORS[report!.models.indexOf(model) % MODEL_COLORS.length],
-                          }}
-                        />
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
-              {hoveredDay !== undefined ? (
-                <div
-                  className={css.tooltip}
-                  style={{ left: `${hoveredLeft}%`, transform: `translateX(${hoveredShift})` }}
-                  role="status"
-                >
-                  <span className={css.tooltipDate}>{heatLabel(hoveredDay.day)}</span>
-                  <div className={css.tooltipTotal}>
-                    <span className={css.tooltipName}>{t('tooltip.total')}</span>
-                    <span className={css.tooltipValue}>{formatTokens(hoveredDay.tokens, zh)}</span>
-                  </div>
-                  {hoveredRows.map((row) => (
-                    <div className={css.tooltipRow} key={row.model}>
-                      <span className={css.legendDot} style={{ background: row.color }} />
-                      <span className={css.tooltipName}>{modelShortName(row.model)}</span>
-                      <span className={css.tooltipValue}>{formatTokens(row.value, zh)}</span>
+            <div
+              className={css.trendFrame}
+              style={{ width: `min(100%, ${report!.series.length * (TREND_COLUMN_MAX + TREND_GAP) - TREND_GAP}px)` }}
+            >
+              <div className={css.trend} onMouseLeave={() => setHovered(null)}>
+                {report!.series.map((day, index) => (
+                  <div
+                    className={css.trendColumn}
+                    key={day.day}
+                    aria-label={`${heatLabel(day.day)} · ${formatTokens(day.tokens, zh)}`}
+                    onMouseEnter={() => setHovered(index)}
+                  >
+                    <div className={css.trendBar}>
+                      {[...report!.models].reverse().map((model) => {
+                        const value = day.values[model] ?? 0
+                        if (value === 0) return null
+                        return (
+                          <span
+                            key={model}
+                            className={css.trendSegment}
+                            style={{
+                              height: `${Math.max(1.5, (value / trendMax) * 100)}%`,
+                              background: MODEL_COLORS[report!.models.indexOf(model) % MODEL_COLORS.length],
+                            }}
+                          />
+                        )
+                      })}
                     </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-            <div className={css.ticks} aria-hidden="true">
-              {trendTicks.map((index) => (
-                <span key={index} style={{ left: `${((index + 0.5) / report!.series.length) * 100}%` }}>
-                  {dateLabel(report!.series[index].day)}
-                </span>
-              ))}
+                  </div>
+                ))}
+                {hoveredDay !== undefined ? (
+                  <div
+                    className={css.tooltip}
+                    style={{ left: `${hoveredLeft}%`, transform: `translateX(${hoveredShift})` }}
+                    role="status"
+                  >
+                    <span className={css.tooltipDate}>{heatLabel(hoveredDay.day)}</span>
+                    <div className={css.tooltipTotal}>
+                      <span className={css.tooltipName}>{t('tooltip.total')}</span>
+                      <span className={css.tooltipValue}>{formatTokens(hoveredDay.tokens, zh)}</span>
+                    </div>
+                    {hoveredRows.map((row) => (
+                      <div className={css.tooltipRow} key={row.model}>
+                        <span className={css.legendDot} style={{ background: row.color }} />
+                        <span className={css.tooltipName}>{modelShortName(row.model)}</span>
+                        <span className={css.tooltipValue}>{formatTokens(row.value, zh)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              <div className={css.ticks} aria-hidden="true">
+                {trendTicks.map((index) => (
+                  <span key={index} style={{ left: `${((index + 0.5) / report!.series.length) * 100}%` }}>
+                    {dateLabel(report!.series[index].day)}
+                  </span>
+                ))}
+              </div>
             </div>
             {report!.models.length > 0 ? (
               <div className={css.legend}>

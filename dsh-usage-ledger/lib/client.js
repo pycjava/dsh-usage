@@ -7,7 +7,7 @@ window.__ModuleLoader__.load({
 		let react = require("react");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		//#region \0dsh-css:D:\project\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
-		const css = ".v8bDAq_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.v8bDAq_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.v8bDAq_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.v8bDAq_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.v8bDAq_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.v8bDAq_status,.v8bDAq_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.v8bDAq_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.v8bDAq_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.v8bDAq_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.v8bDAq_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.v8bDAq_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.v8bDAq_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.v8bDAq_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.v8bDAq_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.v8bDAq_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.v8bDAq_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.v8bDAq_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.v8bDAq_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.v8bDAq_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.v8bDAq_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.v8bDAq_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.v8bDAq_heatCellL0,.v8bDAq_heatCellL1,.v8bDAq_heatCellL2,.v8bDAq_heatCellL3,.v8bDAq_heatCellL4,.v8bDAq_heatCellOff{border-radius:2px;min-width:0;min-height:0}.v8bDAq_heatCellOff{background:0 0}.v8bDAq_heatCellL0{background:var(--dsw-alias-border-l3)}.v8bDAq_heatCellL1{background:var(--dsw-static-deepseek-100)}.v8bDAq_heatCellL2{background:var(--dsw-static-deepseek-200)}.v8bDAq_heatCellL3{background:var(--dsw-static-deepseek-300)}.v8bDAq_heatCellL4{background:var(--dsw-static-deepseek-450)}.v8bDAq_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.v8bDAq_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:30px;height:100%;display:flex}.v8bDAq_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.v8bDAq_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.v8bDAq_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.v8bDAq_tooltipTotal,.v8bDAq_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.v8bDAq_tooltipTotal .v8bDAq_tooltipValue{font-weight:600}.v8bDAq_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.v8bDAq_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.v8bDAq_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.v8bDAq_trendSegment{flex:none;width:100%;display:block}.v8bDAq_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.v8bDAq_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.v8bDAq_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.v8bDAq_legendItem{align-items:center;gap:6px;display:inline-flex}.v8bDAq_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
+		const css = ".v8bDAq_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.v8bDAq_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.v8bDAq_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.v8bDAq_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.v8bDAq_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.v8bDAq_status,.v8bDAq_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.v8bDAq_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.v8bDAq_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.v8bDAq_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.v8bDAq_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.v8bDAq_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.v8bDAq_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.v8bDAq_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.v8bDAq_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.v8bDAq_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.v8bDAq_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.v8bDAq_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.v8bDAq_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.v8bDAq_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.v8bDAq_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.v8bDAq_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.v8bDAq_heatCellL0,.v8bDAq_heatCellL1,.v8bDAq_heatCellL2,.v8bDAq_heatCellL3,.v8bDAq_heatCellL4,.v8bDAq_heatCellOff{border-radius:2px;min-width:0;min-height:0}.v8bDAq_heatCellOff{background:0 0}.v8bDAq_heatCellL0{background:var(--dsw-alias-border-l3)}.v8bDAq_heatCellL1{background:var(--dsw-static-deepseek-100)}.v8bDAq_heatCellL2{background:var(--dsw-static-deepseek-200)}.v8bDAq_heatCellL3{background:var(--dsw-static-deepseek-300)}.v8bDAq_heatCellL4{background:var(--dsw-static-deepseek-450)}.v8bDAq_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.v8bDAq_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.v8bDAq_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.v8bDAq_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.v8bDAq_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.v8bDAq_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.v8bDAq_tooltipTotal,.v8bDAq_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.v8bDAq_tooltipTotal .v8bDAq_tooltipValue{font-weight:600}.v8bDAq_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.v8bDAq_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.v8bDAq_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.v8bDAq_trendSegment{flex:none;width:100%;display:block}.v8bDAq_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.v8bDAq_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.v8bDAq_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.v8bDAq_legendItem{align-items:center;gap:6px;display:inline-flex}.v8bDAq_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
 		const tagId = "dsh-usage-ledger/UsageSection.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -17,46 +17,47 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var UsageSection_module_css_default = {
-			"segButton": "v8bDAq_segButton",
-			"cards": "v8bDAq_cards",
-			"cardSub": "v8bDAq_cardSub",
+			"header": "v8bDAq_header",
+			"tooltip": "v8bDAq_tooltip",
+			"heatCellL1": "v8bDAq_heatCellL1",
+			"legendDot": "v8bDAq_legendDot",
 			"blockTitle": "v8bDAq_blockTitle",
-			"heatCellL4": "v8bDAq_heatCellL4",
-			"trendColumn": "v8bDAq_trendColumn",
-			"cardValueSmall": "v8bDAq_cardValueSmall",
-			"block": "v8bDAq_block",
-			"trend": "v8bDAq_trend",
-			"trendSegment": "v8bDAq_trendSegment",
-			"heatMonths": "v8bDAq_heatMonths",
-			"heatLegend": "v8bDAq_heatLegend",
-			"card": "v8bDAq_card",
-			"heatCellL3": "v8bDAq_heatCellL3",
-			"ticks": "v8bDAq_ticks",
-			"tooltipDate": "v8bDAq_tooltipDate",
+			"trendFrame": "v8bDAq_trendFrame",
+			"tooltipRow": "v8bDAq_tooltipRow",
 			"trendBar": "v8bDAq_trendBar",
-			"cardLabel": "v8bDAq_cardLabel",
+			"cardValueSmall": "v8bDAq_cardValueSmall",
+			"segButton": "v8bDAq_segButton",
+			"heat": "v8bDAq_heat",
+			"seg": "v8bDAq_seg",
+			"trendSegment": "v8bDAq_trendSegment",
 			"heatCellL0": "v8bDAq_heatCellL0",
-			"heatCellOff": "v8bDAq_heatCellOff",
-			"status": "v8bDAq_status",
-			"legend": "v8bDAq_legend",
-			"meta": "v8bDAq_meta",
-			"rangeLabel": "v8bDAq_rangeLabel",
-			"failure": "v8bDAq_failure",
+			"heatLegend": "v8bDAq_heatLegend",
+			"heatMonths": "v8bDAq_heatMonths",
+			"trendColumn": "v8bDAq_trendColumn",
+			"tooltipDate": "v8bDAq_tooltipDate",
+			"tooltipName": "v8bDAq_tooltipName",
+			"ticks": "v8bDAq_ticks",
 			"legendItem": "v8bDAq_legendItem",
 			"blockHead": "v8bDAq_blockHead",
+			"rangeLabel": "v8bDAq_rangeLabel",
+			"section": "v8bDAq_section",
+			"heatCellL3": "v8bDAq_heatCellL3",
 			"cardValue": "v8bDAq_cardValue",
-			"seg": "v8bDAq_seg",
-			"tooltip": "v8bDAq_tooltip",
+			"meta": "v8bDAq_meta",
+			"heatCellL4": "v8bDAq_heatCellL4",
+			"heatCellOff": "v8bDAq_heatCellOff",
+			"card": "v8bDAq_card",
 			"heatCellL2": "v8bDAq_heatCellL2",
-			"heat": "v8bDAq_heat",
+			"status": "v8bDAq_status",
+			"trend": "v8bDAq_trend",
+			"failure": "v8bDAq_failure",
+			"cardLabel": "v8bDAq_cardLabel",
+			"block": "v8bDAq_block",
 			"tooltipTotal": "v8bDAq_tooltipTotal",
-			"heatCellL1": "v8bDAq_heatCellL1",
-			"tooltipName": "v8bDAq_tooltipName",
-			"header": "v8bDAq_header",
 			"tooltipValue": "v8bDAq_tooltipValue",
-			"legendDot": "v8bDAq_legendDot",
-			"tooltipRow": "v8bDAq_tooltipRow",
-			"section": "v8bDAq_section"
+			"legend": "v8bDAq_legend",
+			"cardSub": "v8bDAq_cardSub",
+			"cards": "v8bDAq_cards"
 		};
 		//#endregion
 		//#region src/client/UsageSection.tsx
@@ -80,6 +81,10 @@ window.__ModuleLoader__.load({
 		/** Heatmap grid: weeks shown, ending at the current week. A full year keeps
 		* the cells small when the grid stretches to the panel width. */
 		const HEAT_WEEKS = 53;
+		const TREND_GAP = 2;
+		/** Minimum gap (px) between adjacent tick centers: the 11px "M/D" date
+		* labels stay ~30px wide, so 44px keeps them from crowding. */
+		const TREND_TICK_GAP = 44;
 		/** Local YYYY-MM-DD key (mirrors the host's day convention). */
 		function dayKeyOf(date) {
 			const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -175,15 +180,15 @@ window.__ModuleLoader__.load({
 			const trendMax = (0, react.useMemo)(() => report === void 0 ? 1 : Math.max(1, ...report.series.map((day) => day.tokens)), [report]);
 			const trendTicks = (0, react.useMemo)(() => {
 				if (report === void 0) return [];
-				const last = report.series.length - 1;
-				if (last < 1) return [0];
-				return [.../* @__PURE__ */ new Set([
-					0,
-					Math.floor(last / 4),
-					Math.floor(last / 2),
-					Math.ceil(3 * last / 4),
-					last
-				])];
+				const count = report.series.length;
+				if (count < 2) return [0];
+				const frame = Math.min(720, count * 112 - TREND_GAP);
+				const maxTicks = Math.min(7, Math.max(2, Math.floor(frame / TREND_TICK_GAP) + 1));
+				const step = Math.ceil((count - 1) / (maxTicks - 1));
+				const ticks = [];
+				for (let index = 0; index < count - 1; index += step) ticks.push(index);
+				ticks.push(count - 1);
+				return ticks;
 			}, [report]);
 			const inRange = hovered !== null && report !== void 0 && hovered < report.series.length;
 			const hoveredDay = inRange ? report.series[hovered] : void 0;
@@ -377,75 +382,78 @@ window.__ModuleLoader__.load({
 									})
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: UsageSection_module_css_default.trend,
-									onMouseLeave: () => setHovered(null),
-									children: [report.series.map((day, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-										className: UsageSection_module_css_default.trendColumn,
-										"aria-label": `${heatLabel(day.day)} · ${formatTokens(day.tokens, zh)}`,
-										onMouseEnter: () => setHovered(index),
-										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-											className: UsageSection_module_css_default.trendBar,
-											children: [...report.models].reverse().map((model) => {
-												const value = day.values[model] ?? 0;
-												if (value === 0) return null;
-												return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-													className: UsageSection_module_css_default.trendSegment,
-													style: {
-														height: `${Math.max(1.5, value / trendMax * 100)}%`,
-														background: MODEL_COLORS[report.models.indexOf(model) % MODEL_COLORS.length]
-													}
-												}, model);
+									className: UsageSection_module_css_default.trendFrame,
+									style: { width: `min(100%, ${report.series.length * 112 - TREND_GAP}px)` },
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: UsageSection_module_css_default.trend,
+										onMouseLeave: () => setHovered(null),
+										children: [report.series.map((day, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: UsageSection_module_css_default.trendColumn,
+											"aria-label": `${heatLabel(day.day)} · ${formatTokens(day.tokens, zh)}`,
+											onMouseEnter: () => setHovered(index),
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+												className: UsageSection_module_css_default.trendBar,
+												children: [...report.models].reverse().map((model) => {
+													const value = day.values[model] ?? 0;
+													if (value === 0) return null;
+													return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+														className: UsageSection_module_css_default.trendSegment,
+														style: {
+															height: `${Math.max(1.5, value / trendMax * 100)}%`,
+															background: MODEL_COLORS[report.models.indexOf(model) % MODEL_COLORS.length]
+														}
+													}, model);
+												})
 											})
-										})
-									}, day.day)), hoveredDay !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: UsageSection_module_css_default.tooltip,
-										style: {
-											left: `${hoveredLeft}%`,
-											transform: `translateX(${hoveredShift})`
-										},
-										role: "status",
-										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-												className: UsageSection_module_css_default.tooltipDate,
-												children: heatLabel(hoveredDay.day)
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-												className: UsageSection_module_css_default.tooltipTotal,
-												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-													className: UsageSection_module_css_default.tooltipName,
-													children: t("tooltip.total")
-												}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-													className: UsageSection_module_css_default.tooltipValue,
-													children: formatTokens(hoveredDay.tokens, zh)
-												})]
-											}),
-											hoveredRows.map((row) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-												className: UsageSection_module_css_default.tooltipRow,
-												children: [
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-														className: UsageSection_module_css_default.legendDot,
-														style: { background: row.color }
-													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										}, day.day)), hoveredDay !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: UsageSection_module_css_default.tooltip,
+											style: {
+												left: `${hoveredLeft}%`,
+												transform: `translateX(${hoveredShift})`
+											},
+											role: "status",
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+													className: UsageSection_module_css_default.tooltipDate,
+													children: heatLabel(hoveredDay.day)
+												}),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: UsageSection_module_css_default.tooltipTotal,
+													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 														className: UsageSection_module_css_default.tooltipName,
-														children: modelShortName(row.model)
-													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+														children: t("tooltip.total")
+													}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 														className: UsageSection_module_css_default.tooltipValue,
-														children: formatTokens(row.value, zh)
-													})
-												]
-											}, row.model))
-										]
-									}) : null]
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-									className: UsageSection_module_css_default.ticks,
-									"aria-hidden": "true",
-									children: trendTicks.map((index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										style: { left: `${(index + .5) / report.series.length * 100}%` },
-										children: dateLabel(report.series[index].day)
-									}, index))
+														children: formatTokens(hoveredDay.tokens, zh)
+													})]
+												}),
+												hoveredRows.map((row) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: UsageSection_module_css_default.tooltipRow,
+													children: [
+														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															className: UsageSection_module_css_default.legendDot,
+															style: { background: row.color }
+														}),
+														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															className: UsageSection_module_css_default.tooltipName,
+															children: modelShortName(row.model)
+														}),
+														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															className: UsageSection_module_css_default.tooltipValue,
+															children: formatTokens(row.value, zh)
+														})
+													]
+												}, row.model))
+											]
+										}) : null]
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: UsageSection_module_css_default.ticks,
+										"aria-hidden": "true",
+										children: trendTicks.map((index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											style: { left: `${(index + .5) / report.series.length * 100}%` },
+											children: dateLabel(report.series[index].day)
+										}, index))
+									})]
 								}),
 								report.models.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 									className: UsageSection_module_css_default.legend,
