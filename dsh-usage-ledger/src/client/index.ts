@@ -50,7 +50,7 @@ export function apply(ctx: ClientContext): void {
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section',
     id: 'usage',
-    order: 20,
+    order: 30, // 排在 agent-presets(order 20) 之后
     label: () => t('nav'),
     locale: NS,
     inject: () => ({ query, localeId }),

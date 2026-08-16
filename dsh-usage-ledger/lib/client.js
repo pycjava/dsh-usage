@@ -6,8 +6,31 @@ window.__ModuleLoader__.load({
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react = require("react");
 		let react_jsx_runtime = require("react/jsx-runtime");
-		//#region \0dsh-css:D:\project\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
-		const css = ".v8bDAq_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.v8bDAq_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.v8bDAq_headerActions{align-items:center;gap:8px;display:inline-flex}.v8bDAq_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.v8bDAq_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.v8bDAq_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.v8bDAq_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.v8bDAq_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.v8bDAq_status,.v8bDAq_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.v8bDAq_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.v8bDAq_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.v8bDAq_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.v8bDAq_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.v8bDAq_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.v8bDAq_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.v8bDAq_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.v8bDAq_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.v8bDAq_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.v8bDAq_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.v8bDAq_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.v8bDAq_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.v8bDAq_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.v8bDAq_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.v8bDAq_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.v8bDAq_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.v8bDAq_heatCellL0,.v8bDAq_heatCellL1,.v8bDAq_heatCellL2,.v8bDAq_heatCellL3,.v8bDAq_heatCellL4,.v8bDAq_heatCellOff{border-radius:2px;min-width:0;min-height:0}.v8bDAq_heatCellOff{background:0 0}.v8bDAq_heatCellL0{background:var(--dsw-alias-border-l3)}.v8bDAq_heatCellL1{background:var(--dsw-static-deepseek-100)}.v8bDAq_heatCellL2{background:var(--dsw-static-deepseek-200)}.v8bDAq_heatCellL3{background:var(--dsw-static-deepseek-300)}.v8bDAq_heatCellL4{background:var(--dsw-static-deepseek-450)}.v8bDAq_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.v8bDAq_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.v8bDAq_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.v8bDAq_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.v8bDAq_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.v8bDAq_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.v8bDAq_tooltipTotal,.v8bDAq_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.v8bDAq_tooltipTotal .v8bDAq_tooltipValue{font-weight:600}.v8bDAq_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.v8bDAq_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.v8bDAq_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.v8bDAq_trendSegment{flex:none;width:100%;display:block}.v8bDAq_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.v8bDAq_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.v8bDAq_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.v8bDAq_legendItem{align-items:center;gap:6px;display:inline-flex}.v8bDAq_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
+		//#region lib/heat-level.js
+		/**
+		* Heatmap shade for one day's token total, shared by the browser half
+		* (UsageSection) and the smoke tests.
+		*
+		* Token usage spans orders of magnitude, so a plain linear share of the
+		* busiest day flattens every smaller-but-real day into the near-white
+		* level 1 — the panel then looks like it only shows the busiest day. A log
+		* scale maps each order of magnitude to a visible shade: level 1 = any
+		* activity, level 4 = the max day, with the levels between spread across
+		* the token-range below the max.
+		*
+		* @param {number} tokens - day total (0 or positive).
+		* @param {number} max - largest day total (must be positive).
+		* @returns {number} 0 for empty days, 1..4 for active days.
+		*/
+		function heatLevel(tokens, max) {
+			if (!(tokens > 0)) return 0;
+			const safeMax = max > 0 ? max : 1;
+			const intensity = safeMax > 1 ? Math.log(tokens) / Math.log(safeMax) : tokens / safeMax;
+			return Math.min(4, 1 + Math.floor(3 * intensity));
+		}
+		//#endregion
+		//#region \0dsh-css:D:\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
+		const css = ".QewMRW_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.QewMRW_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.QewMRW_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.QewMRW_headerActions{align-items:center;gap:8px;display:inline-flex}.QewMRW_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.QewMRW_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.QewMRW_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.QewMRW_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.QewMRW_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.QewMRW_status,.QewMRW_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.QewMRW_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.QewMRW_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.QewMRW_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.QewMRW_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.QewMRW_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.QewMRW_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.QewMRW_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.QewMRW_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.QewMRW_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.QewMRW_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.QewMRW_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.QewMRW_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.QewMRW_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.QewMRW_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.QewMRW_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.QewMRW_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.QewMRW_heatCellL0,.QewMRW_heatCellL1,.QewMRW_heatCellL2,.QewMRW_heatCellL3,.QewMRW_heatCellL4,.QewMRW_heatCellOff{border-radius:2px;min-width:0;min-height:0}.QewMRW_heatCellOff{background:0 0}.QewMRW_heatCellL0{background:var(--dsw-alias-border-l3)}.QewMRW_heatCellL1{background:var(--dsw-static-deepseek-100)}.QewMRW_heatCellL2{background:var(--dsw-static-deepseek-200)}.QewMRW_heatCellL3{background:var(--dsw-static-deepseek-300)}.QewMRW_heatCellL4{background:var(--dsw-static-deepseek-450)}.QewMRW_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.QewMRW_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.QewMRW_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.QewMRW_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.QewMRW_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.QewMRW_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.QewMRW_tooltipTotal,.QewMRW_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.QewMRW_tooltipTotal .QewMRW_tooltipValue{font-weight:600}.QewMRW_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.QewMRW_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.QewMRW_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.QewMRW_trendSegment{flex:none;width:100%;display:block}.QewMRW_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.QewMRW_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.QewMRW_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.QewMRW_legendItem{align-items:center;gap:6px;display:inline-flex}.QewMRW_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
 		const tagId = "dsh-usage-ledger/UsageSection.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -17,49 +40,49 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var UsageSection_module_css_default = {
-			"block": "v8bDAq_block",
-			"blockHead": "v8bDAq_blockHead",
-			"blockTitle": "v8bDAq_blockTitle",
-			"card": "v8bDAq_card",
-			"cardLabel": "v8bDAq_cardLabel",
-			"cardSub": "v8bDAq_cardSub",
-			"cardValue": "v8bDAq_cardValue",
-			"cardValueSmall": "v8bDAq_cardValueSmall",
-			"cards": "v8bDAq_cards",
-			"failure": "v8bDAq_failure",
-			"header": "v8bDAq_header",
-			"headerActions": "v8bDAq_headerActions",
-			"heat": "v8bDAq_heat",
-			"heatCellL0": "v8bDAq_heatCellL0",
-			"heatCellL1": "v8bDAq_heatCellL1",
-			"heatCellL2": "v8bDAq_heatCellL2",
-			"heatCellL3": "v8bDAq_heatCellL3",
-			"heatCellL4": "v8bDAq_heatCellL4",
-			"heatCellOff": "v8bDAq_heatCellOff",
-			"heatLegend": "v8bDAq_heatLegend",
-			"heatMonths": "v8bDAq_heatMonths",
-			"legend": "v8bDAq_legend",
-			"legendDot": "v8bDAq_legendDot",
-			"legendItem": "v8bDAq_legendItem",
-			"meta": "v8bDAq_meta",
-			"rangeLabel": "v8bDAq_rangeLabel",
-			"refresh": "v8bDAq_refresh",
-			"section": "v8bDAq_section",
-			"seg": "v8bDAq_seg",
-			"segButton": "v8bDAq_segButton",
-			"status": "v8bDAq_status",
-			"ticks": "v8bDAq_ticks",
-			"tooltip": "v8bDAq_tooltip",
-			"tooltipDate": "v8bDAq_tooltipDate",
-			"tooltipName": "v8bDAq_tooltipName",
-			"tooltipRow": "v8bDAq_tooltipRow",
-			"tooltipTotal": "v8bDAq_tooltipTotal",
-			"tooltipValue": "v8bDAq_tooltipValue",
-			"trend": "v8bDAq_trend",
-			"trendBar": "v8bDAq_trendBar",
-			"trendColumn": "v8bDAq_trendColumn",
-			"trendFrame": "v8bDAq_trendFrame",
-			"trendSegment": "v8bDAq_trendSegment"
+			"block": "QewMRW_block",
+			"blockHead": "QewMRW_blockHead",
+			"blockTitle": "QewMRW_blockTitle",
+			"card": "QewMRW_card",
+			"cardLabel": "QewMRW_cardLabel",
+			"cardSub": "QewMRW_cardSub",
+			"cardValue": "QewMRW_cardValue",
+			"cardValueSmall": "QewMRW_cardValueSmall",
+			"cards": "QewMRW_cards",
+			"failure": "QewMRW_failure",
+			"header": "QewMRW_header",
+			"headerActions": "QewMRW_headerActions",
+			"heat": "QewMRW_heat",
+			"heatCellL0": "QewMRW_heatCellL0",
+			"heatCellL1": "QewMRW_heatCellL1",
+			"heatCellL2": "QewMRW_heatCellL2",
+			"heatCellL3": "QewMRW_heatCellL3",
+			"heatCellL4": "QewMRW_heatCellL4",
+			"heatCellOff": "QewMRW_heatCellOff",
+			"heatLegend": "QewMRW_heatLegend",
+			"heatMonths": "QewMRW_heatMonths",
+			"legend": "QewMRW_legend",
+			"legendDot": "QewMRW_legendDot",
+			"legendItem": "QewMRW_legendItem",
+			"meta": "QewMRW_meta",
+			"rangeLabel": "QewMRW_rangeLabel",
+			"refresh": "QewMRW_refresh",
+			"section": "QewMRW_section",
+			"seg": "QewMRW_seg",
+			"segButton": "QewMRW_segButton",
+			"status": "QewMRW_status",
+			"ticks": "QewMRW_ticks",
+			"tooltip": "QewMRW_tooltip",
+			"tooltipDate": "QewMRW_tooltipDate",
+			"tooltipName": "QewMRW_tooltipName",
+			"tooltipRow": "QewMRW_tooltipRow",
+			"tooltipTotal": "QewMRW_tooltipTotal",
+			"tooltipValue": "QewMRW_tooltipValue",
+			"trend": "QewMRW_trend",
+			"trendBar": "QewMRW_trendBar",
+			"trendColumn": "QewMRW_trendColumn",
+			"trendFrame": "QewMRW_trendFrame",
+			"trendSegment": "QewMRW_trendSegment"
 		};
 		//#endregion
 		//#region src/client/UsageSection.tsx
@@ -159,7 +182,7 @@ window.__ModuleLoader__.load({
 						const ms = first + (week * 7 + row) * 864e5;
 						const future = ms > todayStart;
 						const tokens = future ? 0 : report.dailyTotals[dayKeyOf(new Date(ms))] ?? 0;
-						const level = tokens === 0 ? 0 : Math.min(4, Math.max(1, Math.ceil(4 * tokens / max)));
+						const level = future ? 0 : heatLevel(tokens, max);
 						column.push({
 							key: dayKeyOf(new Date(ms)),
 							tokens,
@@ -639,7 +662,7 @@ window.__ModuleLoader__.load({
 			ctx.slots.inject("settings.section", () => ctx.slots.register({
 				name: "settings.section",
 				id: "usage",
-				order: 20,
+				order: 30,
 				label: () => t("nav"),
 				locale: NS,
 				inject: () => ({

@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { heatLevel } from '../../lib/heat-level.js'
 import type {
   DashboardReport, LocaleSeat, SettingsSectionOwnerProps, UsageSectionInjected,
 } from './types.ts'
@@ -116,7 +117,7 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
         const ms = first + (week * 7 + row) * 86_400_000
         const future = ms > todayStart
         const tokens = future ? 0 : (report.dailyTotals[dayKeyOf(new Date(ms))] ?? 0)
-        const level = tokens === 0 ? 0 : Math.min(4, Math.max(1, Math.ceil((4 * tokens) / max)))
+        const level = future ? 0 : heatLevel(tokens, max)
         column.push({ key: dayKeyOf(new Date(ms)), tokens, level, future })
       }
       columns.push(column)

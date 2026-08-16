@@ -12,6 +12,7 @@ import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
 import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
+import { heatLevel } from '../lib/heat-level.js'
 import { formatCompact, formatNumber, renderTextReport } from '../lib/report.js'
 import { runDashboardQuery } from '../lib/rpc.js'
 import { openLedgerStore } from '../lib/store.js'
@@ -138,6 +139,17 @@ assert.deepEqual(dayRows, ['2026-08-02', '2026-08-10', '2026-08-20'])
     rmSync(dir, { recursive: true, force: true })
   }
 }
+
+// ---- heatmap shading -------------------------------------------------------
+// One huge day must not flatten every other active day into level 1: the
+// log scale keeps a 8.8M-token day clearly visible next to a 64M max.
+assert.equal(heatLevel(0, 64_000_000), 0)
+assert.equal(heatLevel(1, 64_000_000), 1)
+assert.equal(heatLevel(1_000, 64_000_000), 2)
+assert.equal(heatLevel(1_000_000, 64_000_000), 3)
+assert.equal(heatLevel(8_832_794, 64_000_000), 3)
+assert.equal(heatLevel(64_000_000, 64_000_000), 4)
+assert.equal(heatLevel(1, 1), 4)
 
 // ---- dashboard aggregation (settings panel) --------------------------------
 {
