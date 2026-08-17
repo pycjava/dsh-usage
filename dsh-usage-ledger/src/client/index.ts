@@ -9,12 +9,19 @@
  * @module dsh-usage-ledger/client
  */
 
-import { UsageSection } from './UsageSection.tsx'
+import { createElement } from 'react'
+import { UsageNavIcon, UsageSection } from './UsageSection.tsx'
 import { en, zh } from './locales.ts'
 import type { DashboardReport, RpcResult } from './types.ts'
 
 /** Dictionary namespace owned by this plugin. */
 const NS = 'usage-ledger.settings'
+
+/** Stable nav glyph for the 数据与统计 settings section. The shell renders a
+ * registrant-supplied `icon` ahead of its id→glyph map (unknown ids would
+ * otherwise fall back to the settings gear). Built once at module scope so
+ * the shell's row snapshot keeps a stable element reference. */
+const NAV_ICON = createElement(UsageNavIcon, { size: 16 })
 
 /** Minimal client-context face this plugin uses (self-declared). */
 interface ClientContext {
@@ -52,6 +59,7 @@ export function apply(ctx: ClientContext): void {
     id: 'usage',
     order: 30, // 排在 agent-presets(order 20) 之后
     label: () => t('nav'),
+    icon: NAV_ICON,
     locale: NS,
     inject: () => ({ query, localeId }),
   }, UsageSection))

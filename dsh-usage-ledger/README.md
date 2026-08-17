@@ -62,8 +62,10 @@ test/smoke.mjs        standalone smoke test for the pure modules
   are unaffected.
 - The browser half's `apply(ctx)` registers its `zh`/`en` dictionaries and
   one entry in the `settings.section` list slot (id `usage`, label
-  数据与统计). The settings shell projects its nav from that slot's ledger,
-  so no shell edits are needed.
+  数据与统计), carrying the section's own line-chart nav glyph through the
+  `icon` registration option. The settings shell renders a registrant-supplied
+  `icon` ahead of its id→glyph map, so the icon ships with the plugin instead
+  of living in the shell.
 - Data path: the host half (when a `connection` service exists — web
   profiles) registers a private RPC channel with
   `ctx.connection.rpc.handle('/usage-ledger', …, { authority: 'loopback' })`;
@@ -102,6 +104,33 @@ The bundle declares `dsh.bundle.patch`, so `dsh` appends it to the profile's
 bundle list automatically. Verify with `dsh --profile web --dump-config`,
 then restart the running app — host plugins and client modules load at
 boot.
+
+## The settings nav icon (为什么别人装上也应显示折线图)
+
+The 「数据与统计」nav glyph is registered by the plugin itself: the
+`settings.section` entry carries `icon` (a line-chart element, see
+`src/client/index.ts`). Whether that glyph actually renders depends on the
+harness shell:
+
+- **Harness that supports the `icon` option (upstream feature, see
+  `docs/settings-section-icon-upstream.md`)** — the shell renders the
+  registrant's icon ahead of its id map, so **every install shows the
+  line-chart glyph automatically**. This is the durable fix: submit that
+  small change upstream so a DSH release ships it; then nothing else is
+  needed on any machine.
+- **Older prebuilt harness (e.g. 0.1.0-rc.6)** — the shell maps icons by
+  `id` and drops unknown registration options, so the gear shows. For those
+  installs the stopgap is a one-time shell patch:
+
+  ```sh
+  node node_modules/dsh-usage-ledger/scripts/patch-settings-icon.mjs
+  ```
+
+  It inserts the `usage` → line-chart branch into the installed shell's
+  `navIcon()` (idempotent; a marker makes re-runs a no-op). It is a
+  **stopgap**: it edits the installed harness's own files, depends on the
+  harness's bundle shape, and is lost on harness updates — prefer shipping
+  the upstream feature over relying on it.
 
 ## Usage
 
@@ -179,8 +208,12 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
   totals always agree on what is billable.
 - Estimates are heuristics (chars/4 density), never provider numbers; they
   stay marked `estimated` in every surface.
-- The new Settings nav entry uses a line-chart glyph added to the shell's
-  `navIcon()` map (harness-side change; unknown ids fall back to a gear).
+- The Settings nav entry registers its own line-chart glyph through the
+  `icon` option on the `settings.section` registration, so the icon is owned
+  by the plugin (it ships in the tarball). The harness shell must render a
+  registrant-supplied `icon` ahead of its id map — the small shell feature
+  `settings.section` gains once the `icon` slot option and nav rendering are
+  merged upstream; shells without it fall back to the gear glyph.
 - This is the **first third-party `dsh.client` package**: the scan-over-all-
   entries mechanism is verified against the harness sources, but expect to
   be off the beaten path.

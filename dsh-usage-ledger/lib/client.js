@@ -29,8 +29,8 @@ window.__ModuleLoader__.load({
 			return Math.min(4, 1 + Math.floor(3 * intensity));
 		}
 		//#endregion
-		//#region \0dsh-css:D:\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
-		const css = ".QewMRW_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.QewMRW_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.QewMRW_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.QewMRW_headerActions{align-items:center;gap:8px;display:inline-flex}.QewMRW_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.QewMRW_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.QewMRW_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.QewMRW_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.QewMRW_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.QewMRW_status,.QewMRW_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.QewMRW_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.QewMRW_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.QewMRW_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.QewMRW_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.QewMRW_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.QewMRW_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.QewMRW_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.QewMRW_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.QewMRW_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.QewMRW_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.QewMRW_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.QewMRW_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.QewMRW_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.QewMRW_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.QewMRW_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.QewMRW_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.QewMRW_heatCellL0,.QewMRW_heatCellL1,.QewMRW_heatCellL2,.QewMRW_heatCellL3,.QewMRW_heatCellL4,.QewMRW_heatCellOff{border-radius:2px;min-width:0;min-height:0}.QewMRW_heatCellOff{background:0 0}.QewMRW_heatCellL0{background:var(--dsw-alias-border-l3)}.QewMRW_heatCellL1{background:var(--dsw-static-deepseek-100)}.QewMRW_heatCellL2{background:var(--dsw-static-deepseek-200)}.QewMRW_heatCellL3{background:var(--dsw-static-deepseek-300)}.QewMRW_heatCellL4{background:var(--dsw-static-deepseek-450)}.QewMRW_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.QewMRW_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.QewMRW_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.QewMRW_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.QewMRW_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.QewMRW_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.QewMRW_tooltipTotal,.QewMRW_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.QewMRW_tooltipTotal .QewMRW_tooltipValue{font-weight:600}.QewMRW_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.QewMRW_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.QewMRW_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.QewMRW_trendSegment{flex:none;width:100%;display:block}.QewMRW_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.QewMRW_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.QewMRW_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.QewMRW_legendItem{align-items:center;gap:6px;display:inline-flex}.QewMRW_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
+		//#region \0dsh-css:D:\Study\js\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
+		const css = ".Rk5X7G_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.Rk5X7G_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.Rk5X7G_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.Rk5X7G_headerActions{align-items:center;gap:8px;display:inline-flex}.Rk5X7G_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.Rk5X7G_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.Rk5X7G_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.Rk5X7G_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.Rk5X7G_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.Rk5X7G_status,.Rk5X7G_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.Rk5X7G_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.Rk5X7G_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.Rk5X7G_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.Rk5X7G_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.Rk5X7G_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.Rk5X7G_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.Rk5X7G_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.Rk5X7G_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.Rk5X7G_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.Rk5X7G_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.Rk5X7G_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.Rk5X7G_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.Rk5X7G_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.Rk5X7G_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.Rk5X7G_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.Rk5X7G_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.Rk5X7G_heatCellL0,.Rk5X7G_heatCellL1,.Rk5X7G_heatCellL2,.Rk5X7G_heatCellL3,.Rk5X7G_heatCellL4,.Rk5X7G_heatCellOff{border-radius:2px;min-width:0;min-height:0}.Rk5X7G_heatCellOff{background:0 0}.Rk5X7G_heatCellL0{background:var(--dsw-alias-border-l3)}.Rk5X7G_heatCellL1{background:var(--dsw-static-deepseek-100)}.Rk5X7G_heatCellL2{background:var(--dsw-static-deepseek-200)}.Rk5X7G_heatCellL3{background:var(--dsw-static-deepseek-300)}.Rk5X7G_heatCellL4{background:var(--dsw-static-deepseek-450)}.Rk5X7G_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.Rk5X7G_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.Rk5X7G_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.Rk5X7G_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.Rk5X7G_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.Rk5X7G_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.Rk5X7G_tooltipTotal,.Rk5X7G_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.Rk5X7G_tooltipTotal .Rk5X7G_tooltipValue{font-weight:600}.Rk5X7G_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.Rk5X7G_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.Rk5X7G_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.Rk5X7G_trendSegment{flex:none;width:100%;display:block}.Rk5X7G_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.Rk5X7G_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.Rk5X7G_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.Rk5X7G_legendItem{align-items:center;gap:6px;display:inline-flex}.Rk5X7G_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
 		const tagId = "dsh-usage-ledger/UsageSection.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -40,49 +40,49 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var UsageSection_module_css_default = {
-			"block": "QewMRW_block",
-			"blockHead": "QewMRW_blockHead",
-			"blockTitle": "QewMRW_blockTitle",
-			"card": "QewMRW_card",
-			"cardLabel": "QewMRW_cardLabel",
-			"cardSub": "QewMRW_cardSub",
-			"cardValue": "QewMRW_cardValue",
-			"cardValueSmall": "QewMRW_cardValueSmall",
-			"cards": "QewMRW_cards",
-			"failure": "QewMRW_failure",
-			"header": "QewMRW_header",
-			"headerActions": "QewMRW_headerActions",
-			"heat": "QewMRW_heat",
-			"heatCellL0": "QewMRW_heatCellL0",
-			"heatCellL1": "QewMRW_heatCellL1",
-			"heatCellL2": "QewMRW_heatCellL2",
-			"heatCellL3": "QewMRW_heatCellL3",
-			"heatCellL4": "QewMRW_heatCellL4",
-			"heatCellOff": "QewMRW_heatCellOff",
-			"heatLegend": "QewMRW_heatLegend",
-			"heatMonths": "QewMRW_heatMonths",
-			"legend": "QewMRW_legend",
-			"legendDot": "QewMRW_legendDot",
-			"legendItem": "QewMRW_legendItem",
-			"meta": "QewMRW_meta",
-			"rangeLabel": "QewMRW_rangeLabel",
-			"refresh": "QewMRW_refresh",
-			"section": "QewMRW_section",
-			"seg": "QewMRW_seg",
-			"segButton": "QewMRW_segButton",
-			"status": "QewMRW_status",
-			"ticks": "QewMRW_ticks",
-			"tooltip": "QewMRW_tooltip",
-			"tooltipDate": "QewMRW_tooltipDate",
-			"tooltipName": "QewMRW_tooltipName",
-			"tooltipRow": "QewMRW_tooltipRow",
-			"tooltipTotal": "QewMRW_tooltipTotal",
-			"tooltipValue": "QewMRW_tooltipValue",
-			"trend": "QewMRW_trend",
-			"trendBar": "QewMRW_trendBar",
-			"trendColumn": "QewMRW_trendColumn",
-			"trendFrame": "QewMRW_trendFrame",
-			"trendSegment": "QewMRW_trendSegment"
+			"block": "Rk5X7G_block",
+			"blockHead": "Rk5X7G_blockHead",
+			"blockTitle": "Rk5X7G_blockTitle",
+			"card": "Rk5X7G_card",
+			"cardLabel": "Rk5X7G_cardLabel",
+			"cardSub": "Rk5X7G_cardSub",
+			"cardValue": "Rk5X7G_cardValue",
+			"cardValueSmall": "Rk5X7G_cardValueSmall",
+			"cards": "Rk5X7G_cards",
+			"failure": "Rk5X7G_failure",
+			"header": "Rk5X7G_header",
+			"headerActions": "Rk5X7G_headerActions",
+			"heat": "Rk5X7G_heat",
+			"heatCellL0": "Rk5X7G_heatCellL0",
+			"heatCellL1": "Rk5X7G_heatCellL1",
+			"heatCellL2": "Rk5X7G_heatCellL2",
+			"heatCellL3": "Rk5X7G_heatCellL3",
+			"heatCellL4": "Rk5X7G_heatCellL4",
+			"heatCellOff": "Rk5X7G_heatCellOff",
+			"heatLegend": "Rk5X7G_heatLegend",
+			"heatMonths": "Rk5X7G_heatMonths",
+			"legend": "Rk5X7G_legend",
+			"legendDot": "Rk5X7G_legendDot",
+			"legendItem": "Rk5X7G_legendItem",
+			"meta": "Rk5X7G_meta",
+			"rangeLabel": "Rk5X7G_rangeLabel",
+			"refresh": "Rk5X7G_refresh",
+			"section": "Rk5X7G_section",
+			"seg": "Rk5X7G_seg",
+			"segButton": "Rk5X7G_segButton",
+			"status": "Rk5X7G_status",
+			"ticks": "Rk5X7G_ticks",
+			"tooltip": "Rk5X7G_tooltip",
+			"tooltipDate": "Rk5X7G_tooltipDate",
+			"tooltipName": "Rk5X7G_tooltipName",
+			"tooltipRow": "Rk5X7G_tooltipRow",
+			"tooltipTotal": "Rk5X7G_tooltipTotal",
+			"tooltipValue": "Rk5X7G_tooltipValue",
+			"trend": "Rk5X7G_trend",
+			"trendBar": "Rk5X7G_trendBar",
+			"trendColumn": "Rk5X7G_trendColumn",
+			"trendFrame": "Rk5X7G_trendFrame",
+			"trendSegment": "Rk5X7G_trendSegment"
 		};
 		//#endregion
 		//#region src/client/UsageSection.tsx
@@ -564,6 +564,72 @@ window.__ModuleLoader__.load({
 		function IconSparkle() {
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(Glyph, { path: "M7 0.5l1.5 4.4 4.4 1.6-4.4 1.6L7 12.5 5.5 8.1 1.1 6.5l4.4-1.6L7 0.5zM11.5 9.5l0.7 1.8 1.8 0.7-1.8 0.7-0.7 1.8-0.7-1.8-1.8-0.7 1.8-0.7 0.7-1.8z" });
 		}
+		/** 16px line-chart glyph registered as the settings-section nav icon (see
+		* `index.ts` — passed via the `icon` registration option the shell renders
+		* ahead of its id→glyph map). Matches the DSH Outline16 family: thin strokes,
+		* `currentColor`, so it follows the nav theme. */
+		function UsageNavIcon({ size = 16, className }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+				width: size,
+				height: size,
+				className,
+				viewBox: "0 0 16 16",
+				fill: "none",
+				xmlns: "http://www.w3.org/2000/svg",
+				"aria-hidden": "true",
+				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", {
+						d: "M2 13.5V2.5",
+						stroke: "currentColor",
+						strokeWidth: "1.3",
+						strokeLinecap: "round"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", {
+						d: "M2 13.5H14",
+						stroke: "currentColor",
+						strokeWidth: "1.3",
+						strokeLinecap: "round"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", {
+						d: "M3.5 11L6 7.5L8.5 9L11 4.5L13.5 2.5",
+						stroke: "currentColor",
+						strokeWidth: "1.3",
+						strokeLinecap: "round",
+						strokeLinejoin: "round"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "3.5",
+						cy: "11",
+						r: "1.1",
+						fill: "currentColor"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "6",
+						cy: "7.5",
+						r: "1.1",
+						fill: "currentColor"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "8.5",
+						cy: "9",
+						r: "1.1",
+						fill: "currentColor"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "11",
+						cy: "4.5",
+						r: "1.1",
+						fill: "currentColor"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "13.5",
+						cy: "2.5",
+						r: "1.1",
+						fill: "currentColor"
+					})
+				]
+			});
+		}
 		//#endregion
 		//#region src/client/locales.ts
 		/**
@@ -644,6 +710,11 @@ window.__ModuleLoader__.load({
 		*/
 		/** Dictionary namespace owned by this plugin. */
 		const NS = "usage-ledger.settings";
+		/** Stable nav glyph for the 数据与统计 settings section. The shell renders a
+		* registrant-supplied `icon` ahead of its id→glyph map (unknown ids would
+		* otherwise fall back to the settings gear). Built once at module scope so
+		* the shell's row snapshot keeps a stable element reference. */
+		const NAV_ICON = (0, react.createElement)(UsageNavIcon, { size: 16 });
 		/** Services required by the settings-section registration. */
 		const inject = [
 			"slots",
@@ -664,6 +735,7 @@ window.__ModuleLoader__.load({
 				id: "usage",
 				order: 30,
 				label: () => t("nav"),
+				icon: NAV_ICON,
 				locale: NS,
 				inject: () => ({
 					query,

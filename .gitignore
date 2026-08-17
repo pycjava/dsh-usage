@@ -4,5 +4,9 @@
 # Node
 node_modules/
 
+# Package-manager caches
+.npm-cache/
+.pnpm-cache/
+
 # ZCode session-local plans
 .zcode/

@@ -418,3 +418,22 @@ function IconBolt(): ReactNode {
 function IconSparkle(): ReactNode {
   return <Glyph path="M7 0.5l1.5 4.4 4.4 1.6-4.4 1.6L7 12.5 5.5 8.1 1.1 6.5l4.4-1.6L7 0.5zM11.5 9.5l0.7 1.8 1.8 0.7-1.8 0.7-0.7 1.8-0.7-1.8-1.8-0.7 1.8-0.7 0.7-1.8z" />
 }
+
+/** 16px line-chart glyph registered as the settings-section nav icon (see
+ * `index.ts` — passed via the `icon` registration option the shell renders
+ * ahead of its id→glyph map). Matches the DSH Outline16 family: thin strokes,
+ * `currentColor`, so it follows the nav theme. */
+export function UsageNavIcon({ size = 16, className }: { size?: number; className?: string }): ReactNode {
+  return (
+    <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M2 13.5V2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M2 13.5H14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M3.5 11L6 7.5L8.5 9L11 4.5L13.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="3.5" cy="11" r="1.1" fill="currentColor" />
+      <circle cx="6" cy="7.5" r="1.1" fill="currentColor" />
+      <circle cx="8.5" cy="9" r="1.1" fill="currentColor" />
+      <circle cx="11" cy="4.5" r="1.1" fill="currentColor" />
+      <circle cx="13.5" cy="2.5" r="1.1" fill="currentColor" />
+    </svg>
+  )
+}
