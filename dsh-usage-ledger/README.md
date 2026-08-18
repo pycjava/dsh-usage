@@ -29,8 +29,10 @@ provider?** No pricing, no currency — just an honest token ledger.
   Settings (App GUI): a time-range toggle (last 7d / last 30d) with a manual
   refresh button, six summary cards (tokens used, sessions, calls, active
   days, current streak, top model with its share), a GitHub-style activity
-  heatmap (last 53 weeks, cells shaded by daily tokens), and a daily token
-  trend chart with stacked per-model bars. Zero harness changes: the panel
+  heatmap (last 53 weeks, cells shaded by daily tokens), a daily token
+  trend chart with stacked per-model bars, and a model-usage share donut
+  (per-model tokens + percentage, long tail folded into Other). Zero harness
+  changes: the panel
   registers into the open `settings.section` slot and pulls aggregates over
   the plugin's own loopback RPC channel.
 
@@ -136,8 +138,9 @@ harness shell:
 
 In the App client: **Settings → 数据与统计** — a usage dashboard with a
 time-range toggle (last 7d / last 30d), summary cards (tokens, sessions,
-calls, active days, current streak, top model), an activity heatmap, and a
-daily token trend stacked by model.
+calls, active days, current streak, top model), an activity heatmap, a
+daily token trend stacked by model, and a model-usage share donut
+(per-model tokens + percentage).
 
 From a conversation, the `usage_stats` agent tool answers questions directly:
 

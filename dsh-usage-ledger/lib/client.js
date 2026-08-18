@@ -30,7 +30,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:D:\Study\js\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
-		const css = ".Rk5X7G_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.Rk5X7G_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.Rk5X7G_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.Rk5X7G_headerActions{align-items:center;gap:8px;display:inline-flex}.Rk5X7G_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.Rk5X7G_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.Rk5X7G_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.Rk5X7G_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.Rk5X7G_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.Rk5X7G_status,.Rk5X7G_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.Rk5X7G_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.Rk5X7G_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.Rk5X7G_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.Rk5X7G_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.Rk5X7G_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.Rk5X7G_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.Rk5X7G_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.Rk5X7G_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.Rk5X7G_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.Rk5X7G_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.Rk5X7G_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.Rk5X7G_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.Rk5X7G_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.Rk5X7G_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.Rk5X7G_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.Rk5X7G_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.Rk5X7G_heatCellL0,.Rk5X7G_heatCellL1,.Rk5X7G_heatCellL2,.Rk5X7G_heatCellL3,.Rk5X7G_heatCellL4,.Rk5X7G_heatCellOff{border-radius:2px;min-width:0;min-height:0}.Rk5X7G_heatCellOff{background:0 0}.Rk5X7G_heatCellL0{background:var(--dsw-alias-border-l3)}.Rk5X7G_heatCellL1{background:var(--dsw-static-deepseek-100)}.Rk5X7G_heatCellL2{background:var(--dsw-static-deepseek-200)}.Rk5X7G_heatCellL3{background:var(--dsw-static-deepseek-300)}.Rk5X7G_heatCellL4{background:var(--dsw-static-deepseek-450)}.Rk5X7G_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.Rk5X7G_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.Rk5X7G_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.Rk5X7G_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.Rk5X7G_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.Rk5X7G_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.Rk5X7G_tooltipTotal,.Rk5X7G_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.Rk5X7G_tooltipTotal .Rk5X7G_tooltipValue{font-weight:600}.Rk5X7G_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.Rk5X7G_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.Rk5X7G_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.Rk5X7G_trendSegment{flex:none;width:100%;display:block}.Rk5X7G_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.Rk5X7G_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.Rk5X7G_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.Rk5X7G_legendItem{align-items:center;gap:6px;display:inline-flex}.Rk5X7G_legendDot{border-radius:2px;flex:none;width:8px;height:8px}";
+		const css = ".Rk5X7G_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.Rk5X7G_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.Rk5X7G_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.Rk5X7G_headerActions{align-items:center;gap:8px;display:inline-flex}.Rk5X7G_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.Rk5X7G_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.Rk5X7G_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.Rk5X7G_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.Rk5X7G_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.Rk5X7G_status,.Rk5X7G_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.Rk5X7G_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.Rk5X7G_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.Rk5X7G_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.Rk5X7G_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.Rk5X7G_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.Rk5X7G_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.Rk5X7G_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.Rk5X7G_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.Rk5X7G_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.Rk5X7G_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.Rk5X7G_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.Rk5X7G_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.Rk5X7G_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.Rk5X7G_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.Rk5X7G_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.Rk5X7G_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.Rk5X7G_heatCellL0,.Rk5X7G_heatCellL1,.Rk5X7G_heatCellL2,.Rk5X7G_heatCellL3,.Rk5X7G_heatCellL4,.Rk5X7G_heatCellOff{border-radius:2px;min-width:0;min-height:0}.Rk5X7G_heatCellOff{background:0 0}.Rk5X7G_heatCellL0{background:var(--dsw-alias-border-l3)}.Rk5X7G_heatCellL1{background:var(--dsw-static-deepseek-100)}.Rk5X7G_heatCellL2{background:var(--dsw-static-deepseek-200)}.Rk5X7G_heatCellL3{background:var(--dsw-static-deepseek-300)}.Rk5X7G_heatCellL4{background:var(--dsw-static-deepseek-450)}.Rk5X7G_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.Rk5X7G_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.Rk5X7G_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.Rk5X7G_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.Rk5X7G_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.Rk5X7G_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.Rk5X7G_tooltipTotal,.Rk5X7G_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.Rk5X7G_tooltipTotal .Rk5X7G_tooltipValue{font-weight:600}.Rk5X7G_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.Rk5X7G_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.Rk5X7G_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.Rk5X7G_trendSegment{flex:none;width:100%;display:block}.Rk5X7G_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.Rk5X7G_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.Rk5X7G_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.Rk5X7G_legendItem{align-items:center;gap:6px;display:inline-flex}.Rk5X7G_legendDot{border-radius:2px;flex:none;width:8px;height:8px}.Rk5X7G_shareLayout{align-items:center;gap:20px;display:flex}.Rk5X7G_donutWrap{flex:none;width:132px;height:132px;position:relative}.Rk5X7G_donut{width:100%;height:100%;display:block}.Rk5X7G_donut circle{transition:opacity .12s}.Rk5X7G_donutCenter{pointer-events:none;flex-direction:column;justify-content:center;align-items:center;gap:2px;display:flex;position:absolute;inset:0}.Rk5X7G_donutTotal{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:18px;font-weight:600;line-height:22px}.Rk5X7G_donutUnit{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px}.Rk5X7G_shareLegend{flex-direction:column;flex:1;gap:2px;min-width:0;margin:0;padding:0;list-style:none;display:flex}.Rk5X7G_shareRow{border-radius:6px;align-items:center;gap:8px;padding:3px 6px;font-size:12px;line-height:16px;display:flex}.Rk5X7G_shareRow:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.Rk5X7G_shareName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.Rk5X7G_shareValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-secondary);white-space:nowrap}.Rk5X7G_sharePct{text-align:right;font-variant-numeric:tabular-nums;width:44px;color:var(--dsw-alias-label-primary);white-space:nowrap;font-weight:500}";
 		const tagId = "dsh-usage-ledger/UsageSection.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -49,6 +49,11 @@ window.__ModuleLoader__.load({
 			"cardValue": "Rk5X7G_cardValue",
 			"cardValueSmall": "Rk5X7G_cardValueSmall",
 			"cards": "Rk5X7G_cards",
+			"donut": "Rk5X7G_donut",
+			"donutCenter": "Rk5X7G_donutCenter",
+			"donutTotal": "Rk5X7G_donutTotal",
+			"donutUnit": "Rk5X7G_donutUnit",
+			"donutWrap": "Rk5X7G_donutWrap",
 			"failure": "Rk5X7G_failure",
 			"header": "Rk5X7G_header",
 			"headerActions": "Rk5X7G_headerActions",
@@ -70,6 +75,12 @@ window.__ModuleLoader__.load({
 			"section": "Rk5X7G_section",
 			"seg": "Rk5X7G_seg",
 			"segButton": "Rk5X7G_segButton",
+			"shareLayout": "Rk5X7G_shareLayout",
+			"shareLegend": "Rk5X7G_shareLegend",
+			"shareName": "Rk5X7G_shareName",
+			"sharePct": "Rk5X7G_sharePct",
+			"shareRow": "Rk5X7G_shareRow",
+			"shareValue": "Rk5X7G_shareValue",
 			"status": "Rk5X7G_status",
 			"ticks": "Rk5X7G_ticks",
 			"tooltip": "Rk5X7G_tooltip",
@@ -110,6 +121,13 @@ window.__ModuleLoader__.load({
 		/** Minimum gap (px) between adjacent tick centers: the 11px "M/D" date
 		* labels stay ~30px wide, so 44px keeps them from crowding. */
 		const TREND_TICK_GAP = 44;
+		/** Model-share donut geometry (SVG viewBox 120x120, center 60,60). */
+		const RING_RADIUS = 40;
+		const RING_STROKE = 14;
+		const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+		/** Most named rows before the tail collapses into Other (the rest still
+		* sums into its own slice, so the donut always covers 100%). */
+		const SHARE_MAX_NAMED = 5;
 		/** Local YYYY-MM-DD key (mirrors the host's day convention). */
 		function dayKeyOf(date) {
 			const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -143,6 +161,8 @@ window.__ModuleLoader__.load({
 			const [state, setState] = (0, react.useState)({ status: "loading" });
 			/** Trend column under the pointer; drives the floating tooltip. */
 			const [hovered, setHovered] = (0, react.useState)(null);
+			/** Model-share donut slice under the pointer (dims the others). */
+			const [shareHover, setShareHover] = (0, react.useState)(null);
 			(0, react.useEffect)(() => {
 				let current = true;
 				setState({ status: "loading" });
@@ -166,6 +186,22 @@ window.__ModuleLoader__.load({
 			]);
 			const zh = localeId().startsWith("zh");
 			const report = state.status === "ready" ? state.report : void 0;
+			/** Full provider/model label -> legend display name. Several providers can
+			* serve the same model name, so we keep the bare model name only while it is
+			* unique across the report; on a collision the full provider/model key is
+			* shown so the rows (and the donut slices) stay distinguishable. */
+			const modelDisplay = (0, react.useMemo)(() => {
+				const models = report?.models ?? [];
+				const counts = /* @__PURE__ */ new Map();
+				for (const label of models) {
+					const short = modelShortName(label);
+					counts.set(short, (counts.get(short) ?? 0) + 1);
+				}
+				const map = /* @__PURE__ */ new Map();
+				for (const label of models) map.set(label, (counts.get(modelShortName(label)) ?? 0) > 1 ? label : modelShortName(label));
+				return map;
+			}, [report]);
+			const labelOf = (label) => modelDisplay.get(label) ?? label;
 			const heat = (0, react.useMemo)(() => {
 				if (report === void 0) return {
 					columns: [],
@@ -215,6 +251,42 @@ window.__ModuleLoader__.load({
 				ticks.push(count - 1);
 				return ticks;
 			}, [report]);
+			/** Period model shares for the donut, derived from the daily series
+			* (summing values[model] over the window == the period's per-model totals).
+			* Long tails collapse into a single Other row; always sorted descending. */
+			const modelShares = (0, react.useMemo)(() => {
+				if (report === void 0) return [];
+				const total = report.totals.totalTokens;
+				const entries = report.models.map((model) => {
+					let tokens = 0;
+					for (const day of report.series) tokens += day.values[model] ?? 0;
+					return {
+						label: model,
+						tokens,
+						share: total > 0 ? tokens / total : 0
+					};
+				}).filter((row) => row.tokens > 0);
+				if (entries.length <= SHARE_MAX_NAMED) return entries;
+				const named = entries.slice(0, SHARE_MAX_NAMED);
+				const restTokens = entries.slice(SHARE_MAX_NAMED).reduce((sum, row) => sum + row.tokens, 0);
+				return [...named, {
+					label: t("share.other"),
+					tokens: restTokens,
+					share: total > 0 ? restTokens / total : 0
+				}];
+			}, [report, t]);
+			/** Donut slices with cumulative start angles (degrees, clockwise). */
+			const shareSlices = (0, react.useMemo)(() => {
+				let angle = 0;
+				return modelShares.map((row) => {
+					const slice = {
+						...row,
+						offset: angle
+					};
+					angle += row.share * 360;
+					return slice;
+				});
+			}, [modelShares]);
 			const inRange = hovered !== null && report !== void 0 && hovered < report.series.length;
 			const hoveredDay = inRange ? report.series[hovered] : void 0;
 			const hoveredRows = inRange ? report.models.map((model, index) => ({
@@ -358,7 +430,7 @@ window.__ModuleLoader__.load({
 										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											className: UsageSection_module_css_default.cardValueSmall,
 											title: report.topModel?.label ?? "",
-											children: report.topModel === null ? "—" : modelShortName(report.topModel.label)
+											children: report.topModel === null ? "—" : labelOf(report.topModel.label)
 										}),
 										report.topModel !== null ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											className: UsageSection_module_css_default.cardSub,
@@ -472,7 +544,7 @@ window.__ModuleLoader__.load({
 														}),
 														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 															className: UsageSection_module_css_default.tooltipName,
-															children: modelShortName(row.model)
+															children: labelOf(row.model)
 														}),
 														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 															className: UsageSection_module_css_default.tooltipValue,
@@ -499,10 +571,83 @@ window.__ModuleLoader__.load({
 										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											className: UsageSection_module_css_default.legendDot,
 											style: { background: MODEL_COLORS[index % MODEL_COLORS.length] }
-										}), modelShortName(model)]
+										}), labelOf(model)]
 									}, model))
 								}) : null
 							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: UsageSection_module_css_default.block,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: UsageSection_module_css_default.blockHead,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", {
+									className: UsageSection_module_css_default.blockTitle,
+									children: t("share")
+								})
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: UsageSection_module_css_default.shareLayout,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: UsageSection_module_css_default.donutWrap,
+									onMouseLeave: () => setShareHover(null),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+										className: UsageSection_module_css_default.donut,
+										viewBox: "0 0 120 120",
+										role: "img",
+										"aria-label": t("share"),
+										children: shareSlices.map((slice, index) => slice.share > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+											cx: "60",
+											cy: "60",
+											r: RING_RADIUS,
+											fill: "none",
+											strokeWidth: RING_STROKE,
+											stroke: MODEL_COLORS[index % MODEL_COLORS.length],
+											strokeDasharray: `${slice.share * RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`,
+											transform: `rotate(${slice.offset} 60 60)`,
+											opacity: shareHover === null || shareHover === index ? 1 : .35,
+											onMouseEnter: () => setShareHover(index)
+										}, slice.label) : null)
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: UsageSection_module_css_default.donutCenter,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: UsageSection_module_css_default.donutTotal,
+											children: formatTokens(report.totals.totalTokens, zh)
+										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: UsageSection_module_css_default.donutUnit,
+											children: t("unit.tokens")
+										})]
+									})]
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
+									className: UsageSection_module_css_default.shareLegend,
+									children: shareSlices.map((slice, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("li", {
+										className: UsageSection_module_css_default.shareRow,
+										onMouseEnter: () => setShareHover(index),
+										onMouseLeave: () => setShareHover(null),
+										children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												className: UsageSection_module_css_default.legendDot,
+												style: { background: MODEL_COLORS[index % MODEL_COLORS.length] }
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												className: UsageSection_module_css_default.shareName,
+												title: slice.label,
+												children: labelOf(slice.label)
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												className: UsageSection_module_css_default.shareValue,
+												children: [
+													formatTokens(slice.tokens, zh),
+													" ",
+													t("unit.tokens")
+												]
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												className: UsageSection_module_css_default.sharePct,
+												children: [Math.round(slice.share * 100), "%"]
+											})
+										]
+									}, slice.label))
+								})]
+							})]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
 							className: UsageSection_module_css_default.meta,
@@ -527,7 +672,8 @@ window.__ModuleLoader__.load({
 				]
 			});
 		}
-		/** Short display name of one provider/model pair (legend + top-model card). */
+		/** Short model name of one provider/model pair (text after the first '/').
+		* Collision-aware display happens in UsageSection via `labelOf`. */
 		function modelShortName(label) {
 			const slash = label.indexOf("/");
 			return slash < 0 ? label : label.slice(slash + 1);
@@ -657,6 +803,9 @@ window.__ModuleLoader__.load({
 			less: "较少",
 			more: "较多",
 			trend: "按天 Token 趋势",
+			share: "模型用量",
+			"share.other": "其他模型",
+			"unit.tokens": "tokens",
 			"tooltip.total": "总 tokens",
 			input: "输入",
 			cacheRead: "缓存读取",
@@ -687,6 +836,9 @@ window.__ModuleLoader__.load({
 			less: "Less",
 			more: "More",
 			trend: "Daily token trend",
+			share: "Model usage",
+			"share.other": "Other models",
+			"unit.tokens": "tokens",
 			"tooltip.total": "Total tokens",
 			input: "Input",
 			cacheRead: "Cache read",

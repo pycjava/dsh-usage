@@ -27,7 +27,7 @@ DSH 拥有完整的会话事件基础设施,但**没有一张「账」**——�
 - **实报优先,估算兜底**:提供方实报的 usage 直接入账;失败调用(无 usage chunk 或全零)不入账,不虚增;`estimateFallback`(**默认关**)开启后,无实报的调用用与 token-meter 同一套启发式(chars/4)入账并打 `estimated` 标记——实报与估算永远分开展示;
 - **幂等**:每次调用一条记录(uuid 键,`INSERT OR REPLACE`),重试不会重复记账;`finish.replayState` 刻意忽略——它是 pi-ai 的溯源元数据,不是「缓存重放」信号,不能作为排除依据;
 - **持久**:自带 `node:sqlite` 数据库(WAL),账本在 `$DSH_HOME/storages/usage-ledger.sqlite`,不依赖 storage hub,web / tui / headless 通用,跨 profile 共享同一本账;条目先进内存缓冲、批量落盘(定时 5s / 满 32 条 / 关停),单写者链串行化,失败整批保留并重试,不静默丢数据;
-- **双展示面,同一本账**:`usage_stats` agent 工具返回 monospace 报表;设置页「数据与统计」dashboard——时间范围切换(7 天 / 30 天)+ 手动刷新、六张统计卡(tokens 用量、会话数、调用次数、活跃天数、连续天数、最常用模型)、GitHub 风格活跃热力图(近 53 周)、按天 Token 趋势堆叠柱状图;数字按语言本地化(zh 万/亿,en K/M/G),样式走客户端主题 token,深浅色自适应;
+- **双展示面,同一本账**:`usage_stats` agent 工具返回 monospace 报表;设置页「数据与统计」dashboard——时间范围切换(7 天 / 30 天)+ 手动刷新、六张统计卡(tokens 用量、会话数、调用次数、活跃天数、连续天数、最常用模型)、GitHub 风格活跃热力图(近 53 周)、按天 Token 趋势堆叠柱状图 + 模型用量占比环形图;数字按语言本地化(zh 万/亿,en K/M/G),样式走客户端主题 token,深浅色自适应;
 - **全本地**:数据不出机器,与遥测(OTLP)无关;RPC 通道 `authority: loopback`,仅本机页面可查;
 - **降级不崩溃**:存储打不开时自动退化为内存账本(带上限、丢最旧并计数、打日志);无 connection 服务的 profile(headless/TUI)只是不注册 RPC 通道,记账照常。
 
@@ -61,7 +61,7 @@ bundle 补丁两行:usage-ledger(双面)· usage-ledger-tool(usage_stats 工具)
 浏览器(App 客户端)       /plugins/dsh-usage-ledger/client.js ◀─────────────────────┘
                                           │  settings.section slot(id: usage, label: 数据与统计)
                                           ▼
-                          设置面板:汇总卡 + 热力图 + 按天趋势(实报/估算在汇总与脚注分开展示)
+                          设置面板:汇总卡 + 热力图 + 按天趋势 + 模型用量占比环形图(实报/估算在汇总与脚注分开展示)
 ```
 
 数据模型:条目 `{ id, time, provider, model, sessionId?, purpose?, inputTokens, cacheReadTokens?, cacheWriteTokens?, outputTokens, reasoningTokens?, estimated? }`,存储为 `entries(id TEXT PRIMARY KEY, time INTEGER, json TEXT)` + time 索引;原始条目列表不出宿主,面板只拿聚合。

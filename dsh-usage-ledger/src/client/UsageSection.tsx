@@ -47,6 +47,15 @@ const TREND_GAP = 2
  * labels stay ~30px wide, so 44px keeps them from crowding. */
 const TREND_TICK_GAP = 44
 
+/** Model-share donut geometry (SVG viewBox 120x120, center 60,60). */
+const RING_RADIUS = 40
+const RING_STROKE = 14
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
+
+/** Most named rows before the tail collapses into Other (the rest still
+ * sums into its own slice, so the donut always covers 100%). */
+const SHARE_MAX_NAMED = 5
+
 /** Local YYYY-MM-DD key (mirrors the host's day convention). */
 function dayKeyOf(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -84,6 +93,8 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
   const [state, setState] = useState<ViewState>({ status: 'loading' })
   /** Trend column under the pointer; drives the floating tooltip. */
   const [hovered, setHovered] = useState<number | null>(null)
+  /** Model-share donut slice under the pointer (dims the others). */
+  const [shareHover, setShareHover] = useState<number | null>(null)
 
   useEffect(() => {
     let current = true
@@ -103,6 +114,25 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
 
   const zh = localeId().startsWith('zh')
   const report = state.status === 'ready' ? state.report : undefined
+
+  /** Full provider/model label -> legend display name. Several providers can
+   * serve the same model name, so we keep the bare model name only while it is
+   * unique across the report; on a collision the full provider/model key is
+   * shown so the rows (and the donut slices) stay distinguishable. */
+  const modelDisplay = useMemo(() => {
+    const models = report?.models ?? []
+    const counts = new Map<string, number>()
+    for (const label of models) {
+      const short = modelShortName(label)
+      counts.set(short, (counts.get(short) ?? 0) + 1)
+    }
+    const map = new Map<string, string>()
+    for (const label of models) {
+      map.set(label, (counts.get(modelShortName(label)) ?? 0) > 1 ? label : modelShortName(label))
+    }
+    return map
+  }, [report])
+  const labelOf = (label: string): string => modelDisplay.get(label) ?? label
 
   const heat = useMemo(() => {
     if (report === undefined) return { columns: [] as HeatColumn[][], months: [] as (string | null)[] }
@@ -151,6 +181,36 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
     ticks.push(count - 1)
     return ticks
   }, [report])
+
+  /** Period model shares for the donut, derived from the daily series
+   * (summing values[model] over the window == the period's per-model totals).
+   * Long tails collapse into a single Other row; always sorted descending. */
+  const modelShares = useMemo(() => {
+    if (report === undefined) return []
+    const total = report.totals.totalTokens
+    const entries = report.models
+      .map((model) => {
+        let tokens = 0
+        for (const day of report.series) tokens += day.values[model] ?? 0
+        return { label: model, tokens, share: total > 0 ? tokens / total : 0 }
+      })
+      .filter((row) => row.tokens > 0)
+    if (entries.length <= SHARE_MAX_NAMED) return entries
+    const named = entries.slice(0, SHARE_MAX_NAMED)
+    const rest = entries.slice(SHARE_MAX_NAMED)
+    const restTokens = rest.reduce((sum, row) => sum + row.tokens, 0)
+    return [...named, { label: t('share.other'), tokens: restTokens, share: total > 0 ? restTokens / total : 0 }]
+  }, [report, t])
+
+  /** Donut slices with cumulative start angles (degrees, clockwise). */
+  const shareSlices = useMemo(() => {
+    let angle = 0
+    return modelShares.map((row) => {
+      const slice = { ...row, offset: angle }
+      angle += row.share * 360
+      return slice
+    })
+  }, [modelShares])
 
   // Tooltip inputs, guarded against a hover outliving a period switch.
   const inRange = hovered !== null && report !== undefined && hovered < report.series.length
@@ -241,7 +301,7 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
             <div className={css.card}>
               <span className={css.cardLabel}><IconSparkle />{t('stat.topModel')}</span>
               <span className={css.cardValueSmall} title={report!.topModel?.label ?? ''}>
-                {report!.topModel === null ? '—' : modelShortName(report!.topModel.label)}
+                {report!.topModel === null ? '—' : labelOf(report!.topModel.label)}
               </span>
               {report!.topModel !== null ? (
                 <span className={css.cardSub}>{t('stat.share', { p: `${Math.round(report!.topModel.share * 100)}%` })}</span>
@@ -331,7 +391,7 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
                     {hoveredRows.map((row) => (
                       <div className={css.tooltipRow} key={row.model}>
                         <span className={css.legendDot} style={{ background: row.color }} />
-                        <span className={css.tooltipName}>{modelShortName(row.model)}</span>
+                        <span className={css.tooltipName}>{labelOf(row.model)}</span>
                         <span className={css.tooltipValue}>{formatTokens(row.value, zh)}</span>
                       </div>
                     ))}
@@ -354,11 +414,55 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
                       className={css.legendDot}
                       style={{ background: MODEL_COLORS[index % MODEL_COLORS.length] }}
                     />
-                    {modelShortName(model)}
+                    {labelOf(model)}
                   </span>
                 ))}
               </div>
             ) : null}
+          </div>
+
+          <div className={css.block}>
+            <div className={css.blockHead}>
+              <h3 className={css.blockTitle}>{t('share')}</h3>
+            </div>
+            <div className={css.shareLayout}>
+              <div className={css.donutWrap} onMouseLeave={() => setShareHover(null)}>
+                <svg className={css.donut} viewBox="0 0 120 120" role="img" aria-label={t('share')}>
+                  {shareSlices.map((slice, index) => (slice.share > 0 ? (
+                    <circle
+                      key={slice.label}
+                      cx="60" cy="60" r={RING_RADIUS}
+                      fill="none"
+                      strokeWidth={RING_STROKE}
+                      stroke={MODEL_COLORS[index % MODEL_COLORS.length]}
+                      strokeDasharray={`${slice.share * RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`}
+                      transform={`rotate(${slice.offset} 60 60)`}
+                      opacity={shareHover === null || shareHover === index ? 1 : 0.35}
+                      onMouseEnter={() => setShareHover(index)}
+                    />
+                  ) : null))}
+                </svg>
+                <div className={css.donutCenter}>
+                  <span className={css.donutTotal}>{formatTokens(report!.totals.totalTokens, zh)}</span>
+                  <span className={css.donutUnit}>{t('unit.tokens')}</span>
+                </div>
+              </div>
+              <ul className={css.shareLegend}>
+                {shareSlices.map((slice, index) => (
+                  <li
+                    key={slice.label}
+                    className={css.shareRow}
+                    onMouseEnter={() => setShareHover(index)}
+                    onMouseLeave={() => setShareHover(null)}
+                  >
+                    <span className={css.legendDot} style={{ background: MODEL_COLORS[index % MODEL_COLORS.length] }} />
+                    <span className={css.shareName} title={slice.label}>{labelOf(slice.label)}</span>
+                    <span className={css.shareValue}>{formatTokens(slice.tokens, zh)} {t('unit.tokens')}</span>
+                    <span className={css.sharePct}>{Math.round(slice.share * 100)}%</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <p className={css.meta}>
@@ -385,7 +489,8 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
   )
 }
 
-/** Short display name of one provider/model pair (legend + top-model card). */
+/** Short model name of one provider/model pair (text after the first '/').
+ * Collision-aware display happens in UsageSection via `labelOf`. */
 function modelShortName(label: string): string {
   const slash = label.indexOf('/')
   return slash < 0 ? label : label.slice(slash + 1)
