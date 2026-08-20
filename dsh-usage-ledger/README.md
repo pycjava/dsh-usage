@@ -178,6 +178,12 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
    error path) never inflate the ledger. The finish chunk's `replayState` is
    deliberately ignored: it is provenance metadata present on every pi-ai
    completion, not a replay signal.
+  **Only the innermost call of a delegation chain is recorded.** A delegating
+  wrapper provider (modlens' `(modlens vision)` facade, ...) forwards to a
+  real upstream by re-entering `ctx.llm.stream(...)`, so the same physical
+  call crosses this waterfall twice; the ledger tracks nesting on the async
+  stack and records the inner (real) call once, skipping the facade — see
+  `lib/nesting.js`.
 2. At load the service opens (or creates) its SQLite database at
    `$DSH_HOME/storages/usage-ledger.sqlite` and loads stored entries.
    Entries buffer in memory and flush on a timer, on a batch threshold, and
@@ -186,6 +192,16 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
 3. The `usage_stats` tool aggregates the durable + pending entries for the
    requested period. The settings panel does the same over the
    `/usage-ledger` RPC channel.
+
+## 清理历史重复记录(一次性)
+
+修复前经 modlens `(modlens vision)` 包装的调用会在账本里记两笔(门面 + 真实上游)。
+脚本会删掉门面记录、只保留真实上游那笔,并在删除前自动备份:
+
+```
+node scripts/dedupe-modlens.mjs --dry-run   # 先预览,不改动
+node scripts/dedupe-modlens.mjs             # 实际清理(建议先退出 DSH)
+```
 
 ## Requirements
 

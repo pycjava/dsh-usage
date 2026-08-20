@@ -16,6 +16,7 @@ import { heatLevel } from '../lib/heat-level.js'
 import { formatCompact, formatNumber, renderTextReport } from '../lib/report.js'
 import { runDashboardQuery } from '../lib/rpc.js'
 import { openLedgerStore } from '../lib/store.js'
+import { consumeInner, markDelegated } from '../lib/nesting.js'
 
 // ---- entry construction ---------------------------------------------------
 const entry = entryFromCall({
@@ -224,6 +225,107 @@ assert.equal(heatLevel(1, 1), 4)
   assert.deepEqual(badPeriod.error.details, { issues: [] })
 }
 
+// ---- innermost-delegation tracking (wrapper providers count once) --------
+{
+  // Replicates lib/index.js wrapStream's structure without the harness: the
+  // waterfall listener (markDelegated + consumeInner) plus a wrapper adapter
+  // that re-enters dispatch() for a real upstream — exactly the modlens
+  // `(modlens vision)` shape.
+  const runChain = async (chain) => {
+    const recorded = []
+    const wrap = (options, next) => {
+      markDelegated()
+      const inner = next()
+      return (async function* () {
+        let usage
+        for await (const chunk of consumeInner(inner, (store) => {
+          if (store.delegated) return
+          if (usage !== undefined) recorded.push({ provider: options.provider, model: options.model, tokens: usage })
+        })) {
+          if (chunk?.type === 'usage' && usage === undefined) usage = chunk.tokens
+          yield chunk
+        }
+      })()
+    }
+    const dispatch = (options, index) => wrap(options, () => adapter(options, index))
+    const adapter = (options, index) => {
+      if (index === chain.length - 1) {
+        return (async function* () {
+          yield { type: 'usage', tokens: 100 }
+          yield { type: 'finish' }
+        })()
+      }
+      // delegating wrapper: forward to the next provider in the chain
+      return (async function* () {
+        yield* dispatch({ ...options, provider: chain[index + 1].provider }, index + 1)
+      })()
+    }
+    const chunks = []
+    for await (const chunk of dispatch({ provider: chain[0].provider, model: chain[0].model }, 0)) chunks.push(chunk)
+    return { recorded, chunks }
+  }
+
+  // Plain (non-delegating) call: recorded once.
+  const plain = await runChain([{ provider: 'volce', model: 'deepseek-v4-flash' }])
+  assert.deepEqual(plain.recorded, [{ provider: 'volce', model: 'deepseek-v4-flash', tokens: 100 }])
+
+  // modlens-style facade over the same upstream: the physical call is the
+  // INNER (real provider) one; the facade must NOT be recorded again.
+  const wrapped = await runChain([
+    { provider: 'modlens-volce', model: 'deepseek-v4-flash' },
+    { provider: 'volce', model: 'deepseek-v4-flash' },
+  ])
+  assert.deepEqual(wrapped.recorded, [{ provider: 'volce', model: 'deepseek-v4-flash', tokens: 100 }])
+  // the usage chunk still reaches the caller exactly once
+  assert.equal(wrapped.chunks.filter((c) => c?.type === 'usage').length, 1)
+
+  // A deeper chain (facade -> facade -> real) records only the real call.
+  const deep = await runChain([
+    { provider: 'modlens-a', model: 'm' },
+    { provider: 'modlens-b', model: 'm' },
+    { provider: 'zai', model: 'm' },
+  ])
+  assert.deepEqual(deep.recorded, [{ provider: 'zai', model: 'm', tokens: 100 }])
+
+  // Concurrency: a delegating call running in parallel must not flip the
+  // flag of an unrelated top-level call (AsyncLocalStorage scoping).
+  const [a, b] = await Promise.all([
+    runChain([{ provider: 'volce', model: 'm' }]),
+    runChain([{ provider: 'modlens-zai', model: 'm' }, { provider: 'zai', model: 'm' }]),
+  ])
+  assert.deepEqual(a.recorded, [{ provider: 'volce', model: 'm', tokens: 100 }])
+  assert.deepEqual(b.recorded, [{ provider: 'zai', model: 'm', tokens: 100 }])
+
+  // Estimate fallback: the facade's estimate is skipped; the inner (real,
+  // usage-less) call records the estimate exactly once.
+  const estimateRun = async (chain) => {
+    const recorded = []
+    const wrap = (options, next) => {
+      markDelegated()
+      const inner = next()
+      return (async function* () {
+        for await (const chunk of consumeInner(inner, (store) => {
+          if (store.delegated) return
+          recorded.push({ provider: options.provider, model: options.model, estimated: true })
+        })) {
+          yield chunk
+        }
+      })()
+    }
+    const dispatch = (options, index) => wrap(options, () => adapter(options, index))
+    const adapter = (options, index) => {
+      if (index === chain.length - 1) return (async function* () { yield { type: 'finish' } })()
+      return (async function* () { yield* dispatch({ ...options, provider: chain[index + 1].provider }, index + 1) })()
+    }
+    for await (const chunk of dispatch({ provider: chain[0].provider, model: chain[0].model }, 0)) { void chunk }
+    return recorded
+  }
+  const est = await estimateRun([
+    { provider: 'modlens-volce', model: 'deepseek-v4-flash' },
+    { provider: 'volce', model: 'deepseek-v4-flash' },
+  ])
+  assert.deepEqual(est, [{ provider: 'volce', model: 'deepseek-v4-flash', estimated: true }])
+}
 console.log('smoke: all assertions passed')
 console.log()
 console.log(text)

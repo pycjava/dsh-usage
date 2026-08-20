@@ -30,6 +30,7 @@ import z from '@deepseek-ai/schemastery'
 import { DAY_MS, aggregate, entryFromCall, parsePeriod, requeueUnwritten } from './ledger.js'
 import { openLedgerStore } from './store.js'
 import { badRequest, runDashboardQuery } from './rpc.js'
+import { consumeInner, markDelegated } from './nesting.js'
 
 export const name = 'usage-ledger'
 
@@ -136,28 +137,31 @@ export class UsageLedgerService extends Service {
    * deliberately ignored. With `estimateFallback`, a usage-less stream is
    * instead heuristically priced from the request and the accumulated output
    * deltas.
+   *
+   * Only the innermost call of a delegation chain is recorded. A delegating
+   * wrapper (e.g. modlens' `(modlens vision)` facade) forwards to a real
+   * upstream by re-entering `ctx.llm.stream(...)`, so the same physical call
+   * crosses this waterfall twice and would be counted twice. `markDelegated()`
+   * flags the enclosing dispatch when such a delegation happens, and the
+   * record decision skips any dispatch marked `delegated` — the inner (real)
+   * call is the one that records.
    * @param options - the GenerateOptions the caller assembled.
    * @param next - the inner stream (already wrapped by earlier middleware).
    * @returns the observed stream.
    */
   wrapStream(options, next) {
+    // A dispatch created while another dispatch is being consumed is a
+    // delegation: it flips the enclosing dispatch's flag, so the enclosing
+    // (facade) call does not also record the same upstream usage.
+    markDelegated()
     const inner = next()
     const ledger = this
     return (async function* () {
       let usage
       let outputChars = 0
       let outputOverhead = 0
-      try {
-        for await (const chunk of inner) {
-          if (chunk !== null && typeof chunk === 'object') {
-            if (chunk.type === 'usage' && usage === undefined) usage = chunk.usage
-            else if (chunk.type === 'text-delta' || chunk.type === 'reasoning-delta') outputChars += typeof chunk.text === 'string' ? chunk.text.length : 0
-            else if (chunk.type === 'tool-call-delta') outputChars += (typeof chunk.argumentsDelta === 'string' ? chunk.argumentsDelta.length : 0) + (typeof chunk.name === 'string' ? chunk.name.length : 0)
-            else if (chunk.type === 'block-end') outputOverhead += 4
-          }
-          yield chunk
-        }
-      } finally {
+      for await (const chunk of consumeInner(inner, (store) => {
+        if (store.delegated) return
         if (usage !== undefined) {
           if (usageHasTokens(usage)) ledger.record({ options, usage, time: Date.now() })
         } else if (ledger.config.estimateFallback) {
@@ -168,6 +172,14 @@ export class UsageLedgerService extends Service {
             time: Date.now(),
           })
         }
+      })) {
+        if (chunk !== null && typeof chunk === 'object') {
+          if (chunk.type === 'usage' && usage === undefined) usage = chunk.usage
+          else if (chunk.type === 'text-delta' || chunk.type === 'reasoning-delta') outputChars += typeof chunk.text === 'string' ? chunk.text.length : 0
+          else if (chunk.type === 'tool-call-delta') outputChars += (typeof chunk.argumentsDelta === 'string' ? chunk.argumentsDelta.length : 0) + (typeof chunk.name === 'string' ? chunk.name.length : 0)
+          else if (chunk.type === 'block-end') outputOverhead += 4
+        }
+        yield chunk
       }
     })()
   }
