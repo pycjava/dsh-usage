@@ -1,6 +1,6 @@
 {
   "name": "dsh-usage-ledger",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Cross-session LLM usage ledger for DeepSeek Harness: token accounting per model/provider, a 数据与统计 settings panel, and a usage_stats agent tool",
   "license": "MIT",
   "type": "module",
