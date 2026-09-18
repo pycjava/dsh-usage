@@ -40,6 +40,7 @@ provider?** No pricing, no currency — just an honest token ledger.
 
 ```
 cordis.patch.yml      bundle patch: two rows (usage-ledger, usage-ledger-tool)
+                      plus a connection-row inject override (see RPC channel)
 lib/                  host half (plain ESM, no build) + the prebuilt client bundle
   index.js            UsageLedgerService: capture, store, RPC channel
   rpc.js              pure payload handling for the /usage-ledger channel
@@ -75,6 +76,15 @@ test/smoke.mjs        standalone smoke test for the pure modules
   `dashboard` takes `{ period }` and returns dashboard aggregates only (the
   raw entry list never leaves the host). Headless/TUI profiles never register
   the channel and are otherwise unaffected.
+- `rpc.handle` quirk (dsh build 2026-09): channel registration resolves
+  `webServer` from the connection *service fiber's* context, and that fiber
+  only injects `webRuntime` — so every plugin channel registration fails
+  silently with `cannot get property "webServer" without inject` and the
+  panel's POST falls through to the SPA fallback (HTTP 405). The bundle
+  patch therefore re-states the `connection` row with
+  `inject: [webRuntime, webServer]` (config passes through untouched;
+  profiles without the row warn-and-skip). Drop the override once a dsh
+  build resolves `webServer` from the caller's fiber.
 
 ## Build
 

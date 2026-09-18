@@ -8,6 +8,29 @@
 #                          and serves the /usage-ledger dashboard RPC channel
 #   - usage-ledger-tool    the model-facing `usage_stats` tool (delete this
 #                          row to hide the tool from agents)
+#
+# Plus one override row:
+#   - connection           Host/Origin fence + cookie auth is fine, but in
+#                          this dsh build `connection.rpc.handle(channel)`
+#                          registers its HTTP route via the *service fiber's*
+#                          context (`owner.webServer.register`), and that
+#                          fiber only injects [webRuntime]. Registering any
+#                          plugin RPC channel therefore dies with "cannot get
+#                          property webServer without inject" — silently, in
+#                          the plugin's anonymous inject child fiber — so the
+#                          browser panel's POST /usage-ledger/dashboard falls
+#                          through to the SPA fallback (HTTP 405,「读取用量
+#                          数据失败」). Adding webServer to the connection
+#                          row's inject fixes channel registration for every
+#                          plugin. Inject-only override: the row's config
+#                          (and any future keys) pass through untouched, and
+#                          profiles without a connection row (headless/TUI)
+#                          just warn-and-skip. Drop this row once a dsh build
+#                          resolves webServer from the caller's fiber.
+
+- id: connection
+  name: '@deepseek-ai/dsh-client-connection'
+  inject: [webRuntime, webServer]
 
 - insert:
     - id: usage-ledger

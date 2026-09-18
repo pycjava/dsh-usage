@@ -35,7 +35,7 @@ DSH 拥有完整的会话事件基础设施,但**没有一张「账」**——�
 
 | 环节 | 说明 |
 | --- | --- |
-| 挂载 | `cordis.patch.yml` 两行:`usage-ledger`(双面:宿主服务 + 浏览器 bundle)+ `usage-ledger-tool`(入口 `dsh-usage-ledger/tool`,挂 `usage_stats` 工具;整行摘除即可对 agent 隐藏工具,账本与面板照常工作);配置走 profile 配置树 |
+| 挂载 | `cordis.patch.yml` 两行 + 一处覆写:`usage-ledger`(双面:宿主服务 + 浏览器 bundle)+ `usage-ledger-tool`(入口 `dsh-usage-ledger/tool`,挂 `usage_stats` 工具;整行摘除即可对 agent 隐藏工具,账本与面板照常工作);另覆写 `connection` 行补 `inject: [webServer]`——本版 dsh 的 `connection.rpc.handle` 经服务自身 fiber 解析 webServer,不补则通道注册静默失败(面板 405);配置走 profile 配置树 |
 | 捕获 | 监听 `llm/stream` waterfall,透传 chunk 零侵入;实报优先 / 估算兜底;每次调用一条幂等记录 |
 | 存储 | 内存缓冲 → 批量落盘 `usage-ledger.sqlite`(WAL);启动时全量加载为内存镜像,查询在镜像上聚合,本地时区切日/月 |
 | 查询 | 唯一入口 `ctx.usageLedger.query({ from, to, by })`:任意时间范围(今天 / 本月 / 7d / Nd / YYYY-MM / 全部)× 任意维度(模型 / 提供方 / 天 / 会话);工具、RPC 通道共用;返回总 token(input / cache read / cache write / output 分开)、调用次数、实报 vs 估算拆分、分布视图 |
@@ -44,7 +44,7 @@ DSH 拥有完整的会话事件基础设施,但**没有一张「账」**——�
 架构:
 
 ```
-bundle 补丁两行:usage-ledger(双面)· usage-ledger-tool(usage_stats 工具)
+bundle 补丁:usage-ledger(双面)· usage-ledger-tool(usage_stats 工具)· connection 行补 inject webServer
 
 宿主(Node)                      llm/stream waterfall(进程内所有 LLM 调用)
                                           │ 监听(透传 chunk,零侵入)
@@ -80,6 +80,7 @@ dsh plugin --profile web add /path/to/dsh-usage-ledger-0.4.2.tgz
 
 # 验证:
 dsh --profile web --dump-config      # 应看到 # == dsh-usage-ledger 层(两行)
+                                      # 且 connection 行被覆写为 inject: [webRuntime, webServer]
 
 # 使用:
 设置 → 数据与统计        # 面板:最近 7 天 / 30 天切换 + 刷新
