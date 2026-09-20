@@ -37,3 +37,23 @@ export function runDashboardQuery(payload, query, now = Date.now()) {
   }
   return { ok: true, value }
 }
+
+/**
+ * Build the provider-quota payload — the panel's second, independent request.
+ *
+ * Quota reads are live (they may cross the network) and that is exactly why
+ * they get their own endpoint: a slow or broken vendor must never delay or
+ * fail the usage dashboard rendered beside them. Individual vendors fail
+ * inside the payload (`ok: false`) rather than as a channel error, so one
+ * broken route cannot blank out the others.
+ * @param payload - { force? } from the browser (the panel's refresh button).
+ * @param loadQuotas - the ledger service's quota read.
+ * @returns { ok: true, value: { quotas } } or a bad-request envelope.
+ */
+export async function runQuotaQuery(payload, loadQuotas) {
+  try {
+    return { ok: true, value: await loadQuotas({ force: payload?.force === true }) }
+  } catch (error) {
+    return badRequest(`quota read failed: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}

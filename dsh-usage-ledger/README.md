@@ -5,7 +5,8 @@ Cross-session LLM **token-usage accounting** for DeepSeek Harness, as a
 a browser half that adds a 数据与统计 (Data & Usage) section to the web
 client's Settings panel. It fills the gap the base harness deliberately
 leaves open: **how many tokens did I use — across every session, model, and
-provider?** No pricing, no currency — just an honest token ledger.
+provider?** No pricing, no currency conversion — just an honest token ledger,
+beside the allowance each provider reports for itself.
 
 ## What it does
 
@@ -14,6 +15,13 @@ provider?** No pricing, no currency — just an honest token ledger.
   One ledger entry per call that reports provider usage
   (`inputTokens`, `cacheReadTokens`, `cacheWriteTokens`, `outputTokens`,
   `reasoningTokens`), stamped with provider, model, session id, and purpose.
+- **Reports live provider allowance** (供应商额度): for every provider route
+  the deployment has configured, the panel shows what that vendor says is
+  left — 智谱 GLM and Kimi Coding Plan 5-hour/weekly windows with reset
+  countdowns, and DeepSeek's pay-as-you-go balance in its own currency. Zero
+  configuration: routes come from the settings tree and keys from the
+  credentials store the Models page writes. Quotas are live reads — never
+  ledger entries, never aggregated, never converted into money.
 - **Reported first, estimates flagged**: provider-reported usage is recorded
   as-is. With `estimateFallback` enabled (off by default), usage-less calls
   are priced with the token-meter's fixed heuristic and stamped `estimated`
@@ -24,15 +32,18 @@ provider?** No pricing, no currency — just an honest token ledger.
   ledger works identically in web, headless, and TUI profiles. If the store
   cannot open, the ledger degrades to an in-process record.
 - **`usage_stats` agent tool** — the model can answer "how many tokens did we
-  use this month?" from the same durable ledger (monospace text report).
+  use this month?" from the same durable ledger (monospace text report), and
+  "how much allowance is left?" by passing `includeQuotas: true` (that read
+  crosses the network).
 - **数据与统计 settings panel** — a dashboard section in the web client's
   Settings (App GUI): a time-range toggle (last 7d / last 30d) with a manual
   refresh button, six summary cards (tokens used, sessions, calls, active
-  days, current streak, top model with its share), a GitHub-style activity
-  heatmap (last 53 weeks, cells shaded by daily tokens), a daily token
-  trend chart with stacked per-model bars, and a model-usage share donut
-  (per-model tokens + percentage, long tail folded into Other). Zero harness
-  changes: the panel
+  days, current streak, top model with its share), a provider-allowance block
+  (one card per configured route: window bars, reset countdowns, plan badge,
+  balance), a GitHub-style activity heatmap (last 53 weeks, cells shaded by
+  daily tokens), a daily token trend chart with stacked per-model bars, and a
+  model-usage share donut (per-model tokens + percentage, long tail folded
+  into Other). Zero harness changes: the panel
   registers into the open `settings.section` slot and pulls aggregates over
   the plugin's own loopback RPC channel.
 
@@ -42,8 +53,13 @@ provider?** No pricing, no currency — just an honest token ledger.
 cordis.patch.yml      bundle patch: two rows (usage-ledger, usage-ledger-tool)
                       plus a connection-row inject override (see RPC channel)
 lib/                  host half (plain ESM, no build) + the prebuilt client bundle
-  index.js            UsageLedgerService: capture, store, RPC channel
+  index.js            UsageLedgerService: capture, store, quota discovery, RPC
+  ledger.js           entries, periods, aggregation (pure)
+  dashboard.js        panel aggregates (pure)
   rpc.js              pure payload handling for the /usage-ledger channel
+  quota.js            provider quota probes: fetch + parse + route matching + TTL cache
+  quota-view.js       display math shared by the panel and the report (pure)
+  report.js           monospace report + the quota section (host)
   tool.js             the usage_stats agent tool (host)
   client.js(.map)     browser half, built from src/client (see Build)
 src/client/           browser-half sources (TS/TSX + CSS Modules)
@@ -72,10 +88,15 @@ test/smoke.mjs        standalone smoke test for the pure modules
 - Data path: the host half (when a `connection` service exists — web
   profiles) registers a private RPC channel with
   `ctx.connection.rpc.handle('/usage-ledger', …, { authority: 'loopback' })`;
-  the panel calls it with `ctx.connection.rpc.call`. The sole endpoint
-  `dashboard` takes `{ period }` and returns dashboard aggregates only (the
-  raw entry list never leaves the host). Headless/TUI profiles never register
-  the channel and are otherwise unaffected.
+  the panel calls it with `ctx.connection.rpc.call`. Two endpoints:
+  `dashboard`, which takes `{ period }` and returns dashboard aggregates only
+  (the raw entry list never leaves the host), and `quotas`, which takes
+  `{ force }` and returns live provider allowance readings. They are separate
+  on purpose — a quota read crosses the network, and a slow or broken vendor
+  must never delay or fail the usage numbers beside it. Individual vendors
+  fail *inside* the payload (`ok: false`) so one bad route cannot blank out
+  the others. Headless/TUI profiles never register the channel and are
+  otherwise unaffected.
 - `rpc.handle` quirk (dsh build 2026-09): channel registration resolves
   `webServer` from the connection *service fiber's* context, and that fiber
   only injects `webRuntime` — so every plugin channel registration fails
@@ -148,9 +169,11 @@ harness shell:
 
 In the App client: **Settings → 数据与统计** — a usage dashboard with a
 time-range toggle (last 7d / last 30d), summary cards (tokens, sessions,
-calls, active days, current streak, top model), an activity heatmap, a
-daily token trend stacked by model, and a model-usage share donut
-(per-model tokens + percentage).
+calls, active days, current streak, top model), a 供应商额度 block (one card
+per configured provider route), an activity heatmap, a daily token trend
+stacked by model, and a model-usage share donut (per-model tokens +
+percentage). The panel's refresh button refreshes both halves: usage
+totals and a live allowance read.
 
 From a conversation, the `usage_stats` agent tool answers questions directly:
 
@@ -158,10 +181,43 @@ From a conversation, the `usage_stats` agent tool answers questions directly:
 "这个月用了多少 token?"          → this-month totals + by-model report
 "最近 7 天按天看看用量"           → last 7 days, daily rows
 "按提供方统计一下"                → by-provider breakdown
+"智谱和 Kimi 的额度还剩多少?"     → the same report + includeQuotas: true
 ```
 
 Tool parameters: `period` (this-month | today | 7d | 30d | Nd | YYYY-MM |
-YYYY-MM..YYYY-MM | all) and `by` (model | provider | day | session).
+YYYY-MM..YYYY-MM | all), `by` (model | provider | day | session), and
+`includeQuotas` (default false — the allowance section is only read when the
+question asks for it, because that read crosses the network).
+
+## Provider allowance (供应商额度)
+
+Which routes are probed is **discovered, never configured**: the plugin reads
+the resolved settings tree — the `llm-pi-ai` provider profiles plus the
+built-in `llm-deepseek` route — and probes each route whose family it knows.
+The API key comes from the route's own `apiKeyEnv` reference through the
+credentials seam, so a key the Models page stores for model calls is the same
+key the quota read uses. Add a provider on the Models page and its card
+appears; remove it and the card goes.
+
+| Probe | What it reports | Source |
+| --- | --- | --- |
+| `zhipu` | Coding Plan 5-hour / weekly windows, plan, MCP calls left | `open.bigmodel.cn/api/monitor/usage/quota/limit` (console API, not a public contract) |
+| `kimi` | Coding Plan 5-hour / weekly windows, membership, parallel limit | `api.kimi.com/coding/v1/usages` (needs a Kimi Code `sk-kimi-` key) |
+| `deepseek` | Pay-as-you-go balance: available, granted, topped up, sufficiency | `api.deepseek.com/user/balance` (official) |
+
+A route is matched to a family by its endpoint host first (`*.bigmodel.cn` /
+`*.z.ai`, `*.kimi.com`, `*.deepseek.com`), then by keywords in the route id
+(`zai`, `zhipu`, `glm`, `bigmodel`, `kimi`, `deepseek`). Routes matching
+neither are skipped silently — a local llama.cpp route shows no quota card
+rather than a broken one. The 智谱 and Kimi endpoints are community-verified
+console APIs, not public contracts: if a vendor changes its response shape,
+that one card reports "读取失败" and everything else keeps working.
+
+Readings are cached host-side for `ttlMs` (5 minutes by default) and shared
+between the panel and the tool, so opening the settings page repeatedly does
+not hammer a vendor. A refresh that fails serves the last good reading marked
+`cached` instead of blanking the card. Keys never leave the host process: the
+RPC payload carries numbers only.
 
 ## Configuration
 
@@ -176,6 +232,15 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
     flushIntervalMs: 5000    # durability latency for buffered entries
     flushEveryEntries: 32    # flush early once this many entries are buffered
     maxMemoryEntries: 200000 # in-memory cap when the store cannot open
+    quota:                   # live provider-allowance probes (all optional)
+      enabled: true          # false = no quota block, no quota network traffic
+      ttlMs: 300000          # serve one reading this long before probing again
+      timeoutMs: 15000       # network bound for one route's probe
+      providers:             # per-route repair, keyed by provider route id
+        zai-coding-cn:       # e.g. force a family, or follow a moved endpoint
+          probe: zhipu
+          url: https://open.bigmodel.cn/api/monitor/usage/quota/limit
+          credentialRef: ZAI_CODING_CN_API_KEY
 ```
 
 ## How it works
@@ -202,6 +267,12 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
 3. The `usage_stats` tool aggregates the durable + pending entries for the
    requested period. The settings panel does the same over the
    `/usage-ledger` RPC channel.
+4. Provider allowance is read on demand — never on the ledger's path. The
+   service asks the settings tree which routes exist, resolves each route's
+   key through the credentials seam, and probes the vendors' quota endpoints
+   (`lib/quota.js`), caching the readings for `ttlMs`. The panel gets them
+   from the `quotas` endpoint and the tool from `usage_stats` with
+   `includeQuotas: true`.
 
 ## 清理历史重复记录(一次性)
 
@@ -221,6 +292,10 @@ node scripts/dedupe-modlens.mjs             # 实际清理(建议先退出 DSH)
   `tokenMeter` service (0.1.0-rc.5-era releases).
 - The settings panel needs a web profile (the App client); other profiles
   simply skip the browser half and the RPC channel.
+- Provider allowance additionally needs the `settings` and `credentials`
+  services (mounted by the standard base layer). Without them the ledger and
+  the usage dashboard behave exactly as before — the quota block just does
+  not render.
 - The harness packages the plugin imports (`@deepseek-ai/cordis`,
   `@deepseek-ai/schemastery`, `@deepseek-ai/dsh-tools`) resolve through the
   profile's node_modules fallback links, which the harness heals at boot.
@@ -237,12 +312,18 @@ node scripts/dedupe-modlens.mjs             # 实际清理(建议先退出 DSH)
   totals always agree on what is billable.
 - Estimates are heuristics (chars/4 density), never provider numbers; they
   stay marked `estimated` in every surface.
-- The Settings nav entry registers its own line-chart glyph through the
-  `icon` option on the `settings.section` registration, so the icon is owned
-  by the plugin (it ships in the tarball). The harness shell must render a
-  registrant-supplied `icon` ahead of its id map — the small shell feature
-  `settings.section` gains once the `icon` slot option and nav rendering are
-  merged upstream; shells without it fall back to the gear glyph.
+- Allowance probes speak the vendors' **console** APIs for 智谱 and Kimi.
+  Those are not public contracts: a shape change or an endpoint move shows up
+  as one failed card (repairable per route through `quota.providers`). A route
+  whose key has no quota API — a plain pay-as-you-go Moonshot key, a local
+  gateway — is skipped rather than guessed at.
+- Allowance numbers are **live vendor readings**, not ledger aggregates: they
+  cover the vendor's own account, which may span more than this harness
+  instance, and they never influence the token totals.
+- The Settings nav entry supplies its own chart-line glyph through the
+  `settings.section` registration's `icon` option. Shells that predate the
+  registrant-supplied `icon` option ignore it and fall back to their
+  id-derived nav glyph (a gear for unknown ids).
 - This is the **first third-party `dsh.client` package**: the scan-over-all-
   entries mechanism is verified against the harness sources, but expect to
   be off the beaten path.

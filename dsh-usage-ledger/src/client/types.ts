@@ -42,10 +42,69 @@ export type RpcResult<T> =
   | { readonly ok: true; readonly value: T }
   | { readonly ok: false; readonly error: { readonly code: string; readonly message: string; readonly details: Record<string, unknown> } }
 
+/** One window of a Coding Plan allowance (percentages and/or raw units). */
+export interface QuotaWindow {
+  usedPercent?: number
+  remainingPercent?: number
+  limit?: number
+  used?: number
+  remaining?: number
+  resetAt?: string
+  resetIn?: number
+}
+
+/** A vendor's allowance numbers (discriminated by the probe's shape). */
+export type QuotaData =
+  | {
+    kind: 'windows'
+    plan?: string
+    membership?: string
+    parallelLimit?: number
+    mcp?: { remaining?: number }
+    fiveHour?: QuotaWindow
+    weekly?: QuotaWindow
+  }
+  | {
+    kind: 'balance'
+    currency: string
+    available: number
+    granted: number
+    toppedUp: number
+    sufficient: boolean
+  }
+
+/** One configured provider route's quota reading (failures included). */
+export interface QuotaReading {
+  /** Provider route id from the settings tree (e.g. `zai-coding-cn`). */
+  route: string
+  /** Probe family that answered: `zhipu` | `kimi` | `deepseek`. */
+  probe: string
+  /** The route's configured display name, when it has one. */
+  label?: string
+  ok: boolean
+  /** Failure class when `ok` is false: unconfigured | unsupported | error. */
+  reason?: string
+  /** Technical failure detail (usually vendor-neutral English). */
+  error?: string
+  /** Epoch millis of the vendor read (present when ok). */
+  fetchedAt?: number
+  /** Served from the last good read after a failed refresh (present when ok). */
+  stale?: boolean
+  /** The vendor's own numbers (present when ok). */
+  data?: QuotaData
+}
+
+/** Value half of the channel's quotas response. */
+export interface QuotaReport {
+  quotas: QuotaReading[]
+}
+
 /** The injected face the registration hands to the section component. */
 export interface UsageSectionInjected {
   /** Query the host ledger over the plugin's private RPC channel. */
   query: (payload: { period: string }) => Promise<RpcResult<DashboardReport>>
+  /** Read live provider quotas (the block's own, independent request). */
+  queryQuotas: (payload?: { force?: boolean }) => Promise<RpcResult<QuotaReport>>
   /**
    * Read the active locale id ('zh' | 'en') at RENDER time. The slot
    * framework caches this injected face once, so a plain string would go

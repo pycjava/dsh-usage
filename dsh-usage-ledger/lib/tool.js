@@ -1,7 +1,8 @@
 /**
  * The model-facing `usage_stats` tool over the usageLedger service, so an
  * agent can answer "how many tokens did we use this month" directly from the
- * durable ledger.
+ * durable ledger — and, when asked for it, "how much allowance is left" from
+ * the live provider quota reads (never from the ledger).
  *
  * Mounted by the `usage-ledger-tool` row (`dsh-usage-ledger/tool`).
  *
@@ -10,7 +11,7 @@
 
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { parsePeriod } from './ledger.js'
-import { renderTextReport } from './report.js'
+import { renderQuotaSection, renderTextReport } from './report.js'
 
 export const name = 'usage-ledger-tool'
 export const inject = ['tools', 'usageLedger']
@@ -26,7 +27,9 @@ export function apply(ctx) {
     description:
       'Read aggregated LLM token usage for this machine across all sessions: totals and a '
       + 'breakdown by model, provider, day, or session for a given period. Provider-reported '
-      + 'usage is preferred; heuristic estimates (if enabled) are marked separately.',
+      + 'usage is preferred; heuristic estimates (if enabled) are marked separately. Set '
+      + 'includeQuotas to also read live provider allowance (Coding Plan windows, pay-as-you-go '
+      + 'balance) for the configured provider routes — that part crosses the network.',
     parameters: {
       period: {
         type: 'string',
@@ -39,9 +42,15 @@ export function apply(ctx) {
         enum: ['model', 'provider', 'day', 'session'],
         description: 'Breakdown dimension. Default: model.',
       },
+      includeQuotas: {
+        type: 'boolean',
+        description:
+          'Also report what the configured provider routes have left (5-hour/weekly windows, '
+          + 'pay-as-you-go balance), read live from each vendor. Default: false.',
+      },
     },
     output: TEXT_OUTPUT,
-    execute: (args) => {
+    execute: async (args) => {
       const period = parsePeriod(args.period ?? 'this-month', Date.now())
       if (!period.ok) throw new Error(period.error)
       const result = ctx.usageLedger.query({
@@ -49,7 +58,11 @@ export function apply(ctx) {
         to: period.to,
         by: args.by ?? 'model',
       })
-      return renderTextReport({ ...result, label: period.label })
+      const report = renderTextReport({ ...result, label: period.label })
+      if (args.includeQuotas !== true) return report
+      const { quotas } = await ctx.usageLedger.quotas({ force: false })
+      const section = renderQuotaSection(quotas)
+      return section === '' ? report : `${report}\n${section}`
     },
   })
   ctx.effect(() => ctx.tools.register(tool), 'usage-ledger: usage_stats tool')

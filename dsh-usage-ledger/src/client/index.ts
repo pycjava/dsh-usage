@@ -12,7 +12,7 @@
 import { createElement } from 'react'
 import { UsageNavIcon, UsageSection } from './UsageSection.tsx'
 import { en, zh } from './locales.ts'
-import type { DashboardReport, RpcResult } from './types.ts'
+import type { DashboardReport, QuotaReport, RpcResult } from './types.ts'
 
 /** Dictionary namespace owned by this plugin. */
 const NS = 'usage-ledger.settings'
@@ -33,7 +33,7 @@ interface ClientContext {
   }
   connection: {
     rpc: {
-      call(channel: string, endpoint: string, payload?: unknown): Promise<RpcResult<DashboardReport>>
+      call<T>(channel: string, endpoint: string, payload?: unknown): Promise<RpcResult<T>>
     }
   }
   slots: {
@@ -51,7 +51,11 @@ export function apply(ctx: ClientContext): void {
 
   const t = ctx.locale.bind(NS)
   const query = (payload: { period: string }) =>
-    ctx.connection.rpc.call('/usage-ledger', 'dashboard', payload)
+    ctx.connection.rpc.call<DashboardReport>('/usage-ledger', 'dashboard', payload)
+  // Quotas are their own endpoint, so a vendor that is slow or down cannot
+  // delay (or fail) the usage dashboard rendered beside it.
+  const queryQuotas = (payload: { force?: boolean } = {}) =>
+    ctx.connection.rpc.call<QuotaReport>('/usage-ledger', 'quotas', payload)
   const localeId = (): string => ctx.locale.getSnapshot().active
 
   ctx.slots.inject('settings.section', () => ctx.slots.register({
@@ -61,6 +65,6 @@ export function apply(ctx: ClientContext): void {
     label: () => t('nav'),
     icon: NAV_ICON,
     locale: NS,
-    inject: () => ({ query, localeId }),
+    inject: () => ({ query, queryQuotas, localeId }),
   }, UsageSection))
 }

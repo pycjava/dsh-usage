@@ -18,9 +18,14 @@
  * Surfaces:
  *   - `usageLedger` service: query API (the `usage_stats` tool consumes it)
  *   - `/usage-ledger` RPC channel: aggregates for the browser half (the
- *     数据与统计 settings section, served from lib/client.js)
+ *     数据与统计 settings section, served from lib/client.js) plus live
+ *     provider quotas (`quotas`), read from the routes the deployment
+ *     configures and reported as the vendors themselves state them
  *
- * Token counts only — no pricing, no currency.
+ * Token counts only — no pricing, no currency conversion. Provider quotas are
+ * live reads of what the vendor reports (a pay-as-you-go balance included);
+ * they are never ledger entries, never aggregated, and never derived from
+ * token counts.
  *
  * @module dsh-usage-ledger
  */
@@ -28,8 +33,9 @@
 import { Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { DAY_MS, aggregate, entryFromCall, parsePeriod, requeueUnwritten } from './ledger.js'
+import { createQuotaCache, discoverTargets } from './quota.js'
 import { openLedgerStore } from './store.js'
-import { badRequest, runDashboardQuery } from './rpc.js'
+import { badRequest, runDashboardQuery, runQuotaQuery } from './rpc.js'
 import { consumeInner, markDelegated } from './nesting.js'
 
 export const name = 'usage-ledger'
@@ -49,6 +55,29 @@ export const Config = z.object({
   flushEveryEntries: z.natural().min(1).default(32),
   /** Cap for the in-memory fallback ledger (when the store cannot open). */
   maxMemoryEntries: z.natural().min(1).default(200_000),
+  /**
+   * Provider quota probes: what the configured LLM routes have left, read
+   * live from the vendors' own quota APIs. Route discovery is zero-config —
+   * the settings tree already names every route and its credential — so these
+   * keys only tune behavior or repair a vendor whose endpoint moved.
+   */
+  quota: z.object({
+    /** Probe configured routes at all (off = no quota block, no network). */
+    enabled: z.boolean().default(true),
+    /** Serve one reading for this long before probing again. */
+    ttlMs: z.natural().min(1000).default(300_000),
+    /** Network bound for one route's probe. */
+    timeoutMs: z.natural().min(1000).default(15_000),
+    /**
+     * Per-route overrides keyed by provider route id: force a probe family,
+     * point at a moved endpoint, or name a different credential reference.
+     */
+    providers: z.dict(z.object({
+      probe: z.string().default(''),
+      url: z.string().default(''),
+      credentialRef: z.string().default(''),
+    })).default({}),
+  }),
 })
 
 export class UsageLedgerService extends Service {
@@ -69,10 +98,21 @@ export class UsageLedgerService extends Service {
   memoryDropped = 0
   /** The token-meter service, when available (estimate fallback). */
   tokenMeter = undefined
+  /** The settings service, when available (quota route discovery). */
+  settings = undefined
+  /** The credentials service, when available (quota keys). */
+  credentials = undefined
+  /** TTL cache shared by the panel and the tool. */
+  quotaCache = undefined
 
   constructor(ctx, config) {
     super(ctx, 'usageLedger')
     this.config = config
+    const quota = config?.quota ?? {}
+    this.quotaCache = createQuotaCache({
+      ttlMs: Number.isFinite(quota.ttlMs) ? quota.ttlMs : undefined,
+      timeoutMs: Number.isFinite(quota.timeoutMs) ? quota.timeoutMs : undefined,
+    })
   }
 
   async [Service.init]() {
@@ -84,6 +124,18 @@ export class UsageLedgerService extends Service {
     // same heuristic the context meter uses.
     this.ctx.inject(['tokenMeter'], (meterCtx) => {
       this.tokenMeter = meterCtx.tokenMeter
+    })
+
+    // Provider quotas need two seams that a deployment may or may not mount:
+    // the settings tree (which routes exist, and under which credential
+    // reference) and the credentials store (the keys themselves). Both
+    // optional — a profile without them simply shows no quota block, and the
+    // ledger keeps working unchanged.
+    this.ctx.inject(['settings'], (settingsCtx) => {
+      this.settings = settingsCtx.settings
+    })
+    this.ctx.inject(['credentials'], (credentialsCtx) => {
+      this.credentials = credentialsCtx.credentials
     })
 
     // Open the store synchronously so no entry captured during loading can
@@ -118,10 +170,13 @@ export class UsageLedgerService extends Service {
     // optional injection, and the ledger keeps working unchanged.
     this.ctx.inject(['connection'], (connCtx) => {
       connCtx.effect(() => connCtx.connection.rpc.handle('/usage-ledger', (endpoint, payload) => {
-        if (endpoint !== 'dashboard') {
-          return badRequest(`unknown endpoint ${endpoint}`)
+        if (endpoint === 'dashboard') {
+          return runDashboardQuery(payload, (options) => this.query(options))
         }
-        return runDashboardQuery(payload, (options) => this.query(options))
+        if (endpoint === 'quotas') {
+          return runQuotaQuery(payload, (options) => this.quotas(options))
+        }
+        return badRequest(`unknown endpoint ${endpoint}`)
       }, { authority: 'loopback' }), 'usage-ledger: /usage-ledger rpc channel')
     })
   }
@@ -286,6 +341,62 @@ export class UsageLedgerService extends Service {
     const store = this.store
     this.store = undefined
     if (store !== undefined) store.close()
+  }
+
+  /**
+   * The configured LLM routes a quota probe can answer for.
+   *
+   * Zero-config on purpose: the settings tree already declares every route and
+   * the credential reference its key lives under, so a provider added (or
+   * removed) on the Models page changes this list with no plugin config.
+   * @returns [{ route, probe, credentialRef?, label? }].
+   */
+  quotaTargets() {
+    const quota = this.config.quota ?? {}
+    if (quota.enabled === false || this.settings === undefined) return []
+    let piAi
+    let deepseek
+    try {
+      piAi = this.settings.get('llm-pi-ai')
+      deepseek = this.settings.get('llm-deepseek')
+    } catch (error) {
+      this.ctx.logger.warn(`usage-ledger: cannot read the settings tree for quota routes: ${error instanceof Error ? error.message : String(error)}`)
+      return []
+    }
+    return discoverTargets({ piAi, deepseek, overrides: quota.providers ?? {} })
+  }
+
+  /**
+   * Resolve each target's API key through the harness credentials seam (the
+   * same store the Models page writes), so quota reads and model calls share
+   * one credential source. Keys stay host-side: only readings cross the wire.
+   */
+  async resolveQuotaKeys(targets) {
+    const credentials = this.credentials
+    const resolved = []
+    for (const target of targets) {
+      let apiKey
+      if (credentials !== undefined && target.credentialRef !== undefined) {
+        try {
+          apiKey = (await credentials.resolve(target.credentialRef))?.value
+        } catch (error) {
+          this.ctx.logger.warn(`usage-ledger: cannot resolve ${target.credentialRef}: ${error instanceof Error ? error.message : String(error)}`)
+        }
+      }
+      resolved.push({ ...target, apiKey })
+    }
+    return resolved
+  }
+
+  /**
+   * Read the provider quotas for every configured route (TTL-cached).
+   * @param options - { force } — the panel's refresh button skips the cache.
+   * @returns { quotas } — one reading per route; failures are readings too.
+   */
+  async quotas(options = {}) {
+    const targets = this.quotaTargets()
+    if (targets.length === 0) return { quotas: [] }
+    return this.quotaCache.load(await this.resolveQuotaKeys(targets), { force: options.force === true })
   }
 
   /**

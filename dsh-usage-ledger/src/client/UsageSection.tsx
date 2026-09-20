@@ -1,12 +1,14 @@
 /**
  * The 数据与统计 settings section: dashboard layout — period toggle, six
- * summary cards, a GitHub-style activity heatmap, and the daily token trend
- * stacked by model. Pure read surface; data arrives over the plugin's
- * private RPC channel.
+ * summary cards, the provider-allowance block, a GitHub-style activity
+ * heatmap, and the daily token trend stacked by model. Pure read surface;
+ * data arrives over the plugin's private RPC channel (the quota block over
+ * its own endpoint, so a slow vendor cannot delay the usage numbers).
  */
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { heatLevel } from '../../lib/heat-level.js'
+import { QuotaBlock } from './QuotaBlock.tsx'
 import type {
   DashboardReport, LocaleSeat, SettingsSectionOwnerProps, UsageSectionInjected,
 } from './types.ts'
@@ -87,7 +89,7 @@ function formatNumber(value: number): string {
 }
 
 /** Render the usage dashboard section. */
-export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNode {
+export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionProps): ReactNode {
   const [period, setPeriod] = useState<Period>('30d')
   const [request, setRequest] = useState(0)
   const [state, setState] = useState<ViewState>({ status: 'loading' })
@@ -308,7 +310,20 @@ export function UsageSection({ query, localeId, t }: UsageSectionProps): ReactNo
               ) : null}
             </div>
           </div>
+        </>
+      ) : null}
 
+      {/* Live vendor allowance: independent of the ledger, so it renders even
+          before the first token is recorded, and never blocks the cards. */}
+      <QuotaBlock
+        queryQuotas={queryQuotas}
+        localeId={localeId}
+        refreshToken={request}
+        t={t}
+      />
+
+      {state.status === 'ready' && report!.totals.calls > 0 ? (
+        <>
           <div className={css.block}>
             <div className={css.blockHead}>
               <h3 className={css.blockTitle}>{t('heatmap')}</h3>

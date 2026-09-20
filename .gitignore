@@ -10,3 +10,6 @@ node_modules/
 
 # ZCode session-local plans
 .zcode/
+
+# npm cache
+.npm-cache/

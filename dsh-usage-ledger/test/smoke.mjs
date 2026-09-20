@@ -1,7 +1,9 @@
-/**
+﻿/**
  * Standalone smoke test for the pure ledger modules (no harness needed):
- * entry construction, period parsing, aggregation, the text report, and
- * the SQLite store round-trip.
+ * entry construction, period parsing, aggregation, the text report, the
+ * SQLite store round-trip, and the provider-quota probes (parsers, route
+ * classification, TTL cache) — no network is touched: every probe check either
+ * uses a canned probe or exercises the unconfigured path.
  * Run with: node test/smoke.mjs
  */
 
@@ -13,8 +15,10 @@ import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
 import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
 import { heatLevel } from '../lib/heat-level.js'
-import { formatCompact, formatNumber, renderTextReport } from '../lib/report.js'
-import { runDashboardQuery } from '../lib/rpc.js'
+import { createQuotaCache, detectProbe, discoverTargets, parseDeepseek, parseKimi, parseZhipu, probeTarget } from '../lib/quota.js'
+import { formatCompactDuration, horizonSeconds, remainingPercentOf } from '../lib/quota-view.js'
+import { formatCompact, formatNumber, renderQuotaSection, renderTextReport } from '../lib/report.js'
+import { runDashboardQuery, runQuotaQuery } from '../lib/rpc.js'
 import { openLedgerStore } from '../lib/store.js'
 import { consumeInner, markDelegated } from '../lib/nesting.js'
 
@@ -326,6 +330,219 @@ assert.equal(heatLevel(1, 1), 4)
   ])
   assert.deepEqual(est, [{ provider: 'volce', model: 'deepseek-v4-flash', estimated: true }])
 }
+// ---- provider quota parsers (fixtures from the TokenMeter CLI) --------------
+{
+  // DeepSeek: CNY wins over other currencies; a missing balance list is an error
+  assert.deepEqual(parseDeepseek({
+    is_available: true,
+    balance_infos: [{ currency: 'CNY', total_balance: '110.00', granted_balance: '10.00', topped_up_balance: '100.00' }],
+  }), { currency: 'CNY', available: 110, granted: 10, toppedUp: 100, sufficient: true })
+  const mixed = parseDeepseek({
+    is_available: false,
+    balance_infos: [
+      { currency: 'USD', total_balance: '5.00', granted_balance: '0.00', topped_up_balance: '5.00' },
+      { currency: 'CNY', total_balance: '0.50', granted_balance: '0.50', topped_up_balance: '0.00' },
+    ],
+  })
+  assert.equal(mixed.currency, 'CNY')
+  assert.equal(mixed.available, 0.5)
+  assert.equal(mixed.sufficient, false)
+  assert.throws(() => parseDeepseek({ balance_infos: [] }), /no balance/)
+
+  // Kimi: labels, window durations, string numbers, horizon-only classification
+  const byLabel = parseKimi({
+    usage: { limit: 400, used: 40, remaining: 360, reset_in: 400_000 },
+    limits: [
+      { name: '5h window', detail: { limit: 100, used: 20, remaining: 80, reset_in: 12_000 } },
+      { name: 'weekly quota', detail: { limit: 400, used: 40, remaining: 360, reset_in: 400_000 } },
+    ],
+  })
+  assert.equal(Math.round(byLabel.fiveHour.remainingPercent), 80)
+  assert.equal(byLabel.fiveHour.resetIn, 12_000)
+  assert.equal(Math.round(byLabel.weekly.remainingPercent), 90)
+
+  const byDuration = parseKimi({
+    limits: [
+      { duration: 300, timeUnit: 'MINUTE', detail: { limit: 50, used: 10, remaining: 40 } },
+      { window: { duration: 7, timeUnit: 'DAY' }, detail: { limit: 500, used: 100, remaining: 400 } },
+    ],
+  })
+  assert.equal(Math.round(byDuration.fiveHour.remainingPercent), 80)
+  assert.equal(Math.round(byDuration.weekly.remainingPercent), 80)
+  assert.equal(parseKimi({ usage: { limit: 400, remaining: 300, reset_in: 500_000 } }).weekly.remainingPercent, 75)
+  assert.equal(parseKimi({ limits: [{ name: 'weekly', detail: { limit: 200, remaining: 50 } }] }).weekly.used, 150)
+  assert.deepEqual(parseKimi({}), { fiveHour: {}, weekly: {} })
+
+  const realistic = parseKimi({
+    user: { membership: { level: 'LEVEL_INTERMEDIATE' } },
+    usage: { limit: '100', used: '9', remaining: '91', resetTime: new Date(Date.now() + 5 * 86_400_000).toISOString() },
+    limits: [{ window: { duration: 300, timeUnit: 'TIME_UNIT_MINUTE' }, detail: { limit: '100', used: '1', remaining: '99', resetTime: new Date(Date.now() + 3 * 3_600_000).toISOString() } }],
+    parallel: { limit: '20' },
+  })
+  assert.equal(realistic.membership, 'LEVEL_INTERMEDIATE')
+  assert.equal(realistic.parallelLimit, 20)
+  assert.equal(Math.round(realistic.weekly.remainingPercent), 91)
+  assert.equal(Math.round(realistic.fiveHour.remainingPercent), 99)
+
+  // Zhipu: reset order splits the windows; TIME_LIMIT carries the MCP balance
+  const zhipuRaw = {
+    code: 200,
+    success: true,
+    data: {
+      level: 'pro',
+      limits: [
+        { type: 'TIME_LIMIT', percentage: 13, remaining: 870 },
+        { type: 'TOKENS_LIMIT', percentage: 18.5, nextResetTime: 1_757_490_000_000 },
+        { type: 'TOKENS_LIMIT', percentage: 4.2, nextResetTime: 1_757_900_000_000 },
+      ],
+    },
+  }
+  const zhipu = parseZhipu(zhipuRaw)
+  assert.equal(zhipu.plan, 'pro')
+  assert.equal(zhipu.fiveHour.usedPercent, 18.5)
+  assert.equal(zhipu.fiveHour.remainingPercent, 81.5)
+  assert.equal(Math.round(zhipu.weekly.remainingPercent * 10) / 10, 95.8)
+  assert.equal(zhipu.fiveHour.resetAt, new Date(1_757_490_000_000).toISOString())
+  assert.equal(zhipu.mcp.remaining, 870)
+  assert.equal(parseZhipu({ success: true, data: { level: 'max', limits: [{ type: 'TOKENS_LIMIT', percentage: 120 }] } }).fiveHour.remainingPercent, 0)
+  assert.throws(() => parseZhipu({ success: false, code: 401, msg: 'token invalid' }), /token invalid/)
+
+  // display math: remaining share, reset horizon, compact phrasing
+  assert.equal(remainingPercentOf({ limit: 200, remaining: 50 }), 25)
+  assert.equal(remainingPercentOf({ usedPercent: 30 }), 70)
+  assert.equal(remainingPercentOf(undefined), undefined)
+  assert.equal(horizonSeconds({ resetIn: 120 }, 0), 120)
+  assert.equal(Math.round(horizonSeconds({ resetAt: new Date(60_000).toISOString() }, 0)), 60)
+  assert.equal(formatCompactDuration(120), '2m')
+  assert.equal(formatCompactDuration(7_800), '2h 10m')
+  assert.equal(formatCompactDuration(273_600), '3d 4h')
+}
+
+// ---- quota route discovery --------------------------------------------------
+{
+  // endpoint host decides first, then the route id's keywords
+  assert.equal(detectProbe('zai-coding-cn', 'https://open.bigmodel.cn/api/coding/paas/v4'), 'zhipu')
+  assert.equal(detectProbe('kimi-proof', 'https://api.deepseek.com'), 'deepseek')   // host beats the id
+  assert.equal(detectProbe('glm-proxy', undefined), 'zhipu')                       // id fallback: no baseURL
+  assert.equal(detectProbe('glm-proxy', 'https://gateway.example/v1'), 'zhipu')    // id fallback: unknown host
+  assert.equal(detectProbe('kimi-coding', 'https://api.kimi.com/coding/v1'), 'kimi')
+  assert.equal(detectProbe('deepseek-official', 'https://api.deepseek.com'), 'deepseek')
+  assert.equal(detectProbe('some-local-llama', 'http://127.0.0.1:11434/v1'), undefined)
+
+  const targets = discoverTargets({
+    piAi: {
+      providers: {
+        'zai-coding-cn': { apiKeyEnv: 'ZAI_CODING_CN_API_KEY' },
+        'kimi-coding': { apiKeyEnv: 'KIMI_CODING_API_KEY', baseURL: 'https://api.kimi.com/coding/v1' },
+        'local-proxy': { apiKeyEnv: 'LOCAL_KEY', baseURL: 'http://127.0.0.1:11434/v1' },
+      },
+    },
+    deepseek: { apiKeyEnv: 'DEEPSEEK_API_KEY', baseURL: 'https://api.deepseek.com' },
+  })
+  assert.deepEqual(targets.map((target) => [target.route, target.probe]), [
+    ['zai-coding-cn', 'zhipu'],
+    ['kimi-coding', 'kimi'],
+    ['deepseek-official', 'deepseek'],
+  ])
+  assert.equal(targets[0].credentialRef, 'ZAI_CODING_CN_API_KEY')
+
+  // an override can force a family, move the endpoint, or rename the credential
+  const overridden = discoverTargets({
+    piAi: { providers: { 'local-proxy': { apiKeyEnv: 'LOCAL_KEY', baseURL: 'http://127.0.0.1:11434/v1' } } },
+    overrides: { 'local-proxy': { probe: 'zhipu', url: 'https://open.bigmodel.cn/x', credentialRef: 'OTHER_KEY' } },
+  })
+  assert.deepEqual(overridden, [{ route: 'local-proxy', probe: 'zhipu', credentialRef: 'OTHER_KEY', url: 'https://open.bigmodel.cn/x' }])
+  assert.deepEqual(discoverTargets({}), [])
+}
+
+// ---- quota probing + TTL cache ---------------------------------------------
+{
+  // A route with no credential is a reading, not an exception — and no fetch.
+  const unconfigured = await probeTarget({ route: 'kimi-coding', probe: 'kimi', credentialRef: 'KIMI_CODING_API_KEY' })
+  assert.equal(unconfigured.ok, false)
+  assert.equal(unconfigured.reason, 'unconfigured')
+  assert.match(unconfigured.error, /KIMI_CODING_API_KEY/)
+  assert.equal((await probeTarget({ route: 'x', probe: 'nope' })).reason, 'unsupported')
+
+  let clock = 1_000_000
+  const seen = []
+  const cache = createQuotaCache({
+    ttlMs: 60_000,
+    now: () => clock,
+    probe: async (target) => {
+      seen.push(target.route)
+      if (target.route === 'flaky') return { route: 'flaky', probe: 'kimi', ok: false, reason: 'error', error: 'HTTP 500' }
+      return { route: target.route, probe: target.probe, ok: true, fetchedAt: clock, stale: false, data: { kind: 'windows', fiveHour: { remainingPercent: 80 } } }
+    },
+  })
+  const targets = [{ route: 'steady', probe: 'kimi' }, { route: 'flaky', probe: 'kimi' }]
+
+  const first = await cache.load(targets)
+  assert.deepEqual(seen, ['steady', 'flaky'])
+  assert.equal(first.quotas.length, 2)
+  assert.equal(first.quotas[0].ok, true)
+
+  // inside the TTL nothing is re-probed
+  clock += 30_000
+  await cache.load(targets)
+  assert.deepEqual(seen, ['steady', 'flaky'])
+
+  // an explicit refresh (the panel's button) probes regardless of age
+  clock += 1_000
+  await cache.load(targets, { force: true })
+  assert.deepEqual(seen, ['steady', 'flaky', 'steady', 'flaky'])
+
+  // once the TTL lapses the next read probes again
+  clock += 60_001
+  await cache.load(targets)
+  assert.equal(seen.length, 6)
+
+  // a failed refresh serves the previous good reading flagged `stale`
+  let degradedCalls = 0
+  const degraded = createQuotaCache({
+    ttlMs: 0,
+    now: () => clock,
+    probe: async (target) => {
+      degradedCalls += 1
+      if (degradedCalls > 1) return { route: target.route, probe: 'kimi', ok: false, reason: 'error', error: 'HTTP 503' }
+      return { route: target.route, probe: 'kimi', ok: true, fetchedAt: clock, stale: false, data: { kind: 'windows', weekly: { remainingPercent: 12 } } }
+    },
+  })
+  const good = await degraded.load([{ route: 'steady', probe: 'kimi' }])
+  assert.equal(good.quotas[0].ok, true)
+  const stale = await degraded.load([{ route: 'steady', probe: 'kimi' }])
+  assert.equal(stale.quotas[0].ok, true)
+  assert.equal(stale.quotas[0].stale, true)
+  assert.equal(stale.quotas[0].data.weekly.remainingPercent, 12)
+  assert.equal(stale.quotas[0].error, 'HTTP 503')
+  degraded.clear()
+
+  // rpc envelope: a successful read and a thrown loader both answer cleanly
+  const rpcOk = await runQuotaQuery({ force: true }, async (options) => ({ quotas: [], forced: options.force }))
+  assert.deepEqual(rpcOk, { ok: true, value: { quotas: [], forced: true } })
+  const rpcBad = await runQuotaQuery({}, async () => { throw new Error('boom') })
+  assert.equal(rpcBad.ok, false)
+  assert.equal(rpcBad.error.code, 'bad-request')
+  assert.match(rpcBad.error.message, /boom/)
+}
+
+// ---- quota report section ---------------------------------------------------
+{
+  const section = renderQuotaSection([
+    { route: 'zai-coding-cn', probe: 'zhipu', ok: true, fetchedAt: 0, stale: false, data: { kind: 'windows', plan: 'pro', fiveHour: { remainingPercent: 81.5, resetIn: 7_800 }, weekly: { remainingPercent: 95.8, resetAt: new Date(Date.now() + 3 * 86_400_000).toISOString() }, mcp: { remaining: 870 } } },
+    { route: 'kimi-coding', probe: 'kimi', ok: false, reason: 'unconfigured', error: 'no value for KIMI_CODING_API_KEY' },
+    { route: 'deepseek-official', probe: 'deepseek', ok: true, stale: true, data: { kind: 'balance', currency: 'CNY', available: 110, granted: 10, toppedUp: 100, sufficient: true } },
+  ], Date.now())
+  assert.match(section, /provider quotas/)
+  assert.match(section, /智谱 GLM \(zai-coding-cn\) {2}plan pro/)
+  assert.match(section, /82% left {3}resets in 2h 10m/)
+  assert.match(section, /MCP calls {5}870 left/)
+  assert.match(section, /Kimi \(kimi-coding\) — no credential configured/)
+  assert.match(section, /balance\s+¥110\.00, granted ¥10\.00, topped up ¥100\.00/)
+  assert.match(section, /\[cached\]/)
+  assert.equal(renderQuotaSection([]), '')
+}
+
 console.log('smoke: all assertions passed')
 console.log()
 console.log(text)

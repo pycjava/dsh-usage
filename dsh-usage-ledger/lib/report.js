@@ -3,10 +3,16 @@
  * to the usage_stats agent tool (the settings panel renders its own UI from
  * the aggregate rows over RPC).
  *
- * Token counts only — the ledger deliberately carries no pricing.
+ * Token counts only — the ledger deliberately carries no pricing. The quota
+ * section appended on request repeats what the vendors themselves report
+ * (window percentages, and DeepSeek's pay-as-you-go balance in its own
+ * currency); nothing here converts tokens into money.
  *
  * @module dsh-usage-ledger/report
  */
+
+import { PROBE_LABELS } from './quota.js'
+import { currencySymbol, formatAmount, formatCompactDuration, horizonSeconds, remainingPercentOf } from './quota-view.js'
 
 const numberFormat = new Intl.NumberFormat('en-US')
 
@@ -76,4 +82,61 @@ export function renderTextReport(data) {
 
 function truncate(text, width) {
   return text.length <= width ? text : `${text.slice(0, width - 1)}…`
+}
+
+/** One window's line: "5h window        82% left   resets in 2h 10m". */
+function windowLine(name, window, now) {
+  const remaining = remainingPercentOf(window)
+  const percent = remaining === undefined ? '  —  ' : `${String(Math.round(remaining)).padStart(3)}%`
+  const parts = [`${percent} left`]
+  if (remaining === undefined && Number.isFinite(window?.remaining)) parts.push(`${formatCompact(window.remaining)} units left`)
+  const horizon = formatCompactDuration(horizonSeconds(window, now))
+  if (horizon !== undefined) parts.push(`resets in ${horizon}`)
+  else if (typeof window?.resetAt === 'string') parts.push(`resets ${window.resetAt}`)
+  return `    ${name.padEnd(14)}${parts.join('   ')}`
+}
+
+/**
+ * Render the live provider-quota section appended to the usage report.
+ *
+ * Text-only and vendor-honest: each route reports what its own API said, a
+ * route without a credential says so, and a failed route reports its error
+ * without hiding the routes beside it.
+ * @param quotas - the service's quota readings.
+ * @param now - current epoch millis (injectable for tests).
+ * @returns the section text, or '' when there is nothing to report.
+ */
+export function renderQuotaSection(quotas, now = Date.now()) {
+  if (!Array.isArray(quotas) || quotas.length === 0) return ''
+  const lines = ['', 'provider quotas (live, as the vendor reports them):']
+  for (const quota of quotas) {
+    const name = PROBE_LABELS[quota.probe] ?? quota.probe
+    if (quota.ok !== true) {
+      const head = `  ${name} (${quota.route})`
+      if (quota.reason === 'unconfigured') {
+        lines.push(`${head} — no credential configured (${quota.error})`)
+      } else {
+        lines.push(`${head} — unavailable: ${quota.error}`)
+      }
+      continue
+    }
+    const data = quota.data ?? {}
+    const stale = quota.stale === true ? '  [cached]' : ''
+    if (data.kind === 'balance') {
+      lines.push(`  ${name} (${quota.route})${stale}`)
+      const granted = data.granted > 0 ? `, granted ${currencySymbol(data.currency)}${formatAmount(data.granted)}` : ''
+      const toppedUp = data.toppedUp > 0 ? `, topped up ${currencySymbol(data.currency)}${formatAmount(data.toppedUp)}` : ''
+      lines.push(`    balance         ${currencySymbol(data.currency)}${formatAmount(data.available)}${granted}${toppedUp}${data.sufficient === false ? '   (insufficient)' : ''}`)
+      continue
+    }
+    const badge = [data.plan === undefined || data.plan === 'unknown' ? undefined : `plan ${data.plan}`, data.membership]
+      .filter((part) => part !== undefined)
+      .join(' · ')
+    lines.push(`  ${name} (${quota.route})${badge === '' ? '' : `  ${badge}`}${stale}`)
+    if (data.fiveHour !== undefined) lines.push(windowLine('5h window', data.fiveHour, now))
+    if (data.weekly !== undefined) lines.push(windowLine('weekly', data.weekly, now))
+    if (data.mcp?.remaining !== undefined) lines.push(`    ${'MCP calls'.padEnd(14)}${formatNumber(data.mcp.remaining)} left`)
+    if (data.parallelLimit !== undefined) lines.push(`    ${'parallel'.padEnd(14)}${formatNumber(data.parallelLimit)} requests`)
+  }
+  return lines.join('\n')
 }
