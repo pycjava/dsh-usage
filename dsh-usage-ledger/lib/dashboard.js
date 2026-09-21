@@ -1,8 +1,9 @@
 /**
  * Pure dashboard aggregation for the settings panel: summary cards (tokens,
  * sessions, calls, active days, current streak, top model), the activity
- * heatmap series, and the daily stacked-by-model trend. Computed from
- * period-filtered ledger entries; no harness imports — testable standalone.
+ * heatmap series, the daily per-model trend, and today's hourly breakdown
+ * (the panel's 今日 view). Computed from period-filtered ledger entries; no
+ * harness imports — testable standalone.
  *
  * @module dsh-usage-ledger/dashboard
  */
@@ -137,6 +138,22 @@ export function buildDashboard(entries, options) {
     }
   }
 
+  // Hourly buckets for the current local day, 00:00 through the current
+  // hour — the panel's 今日 view draws its per-model lines from these.
+  // Future hours stay absent so the lines never flat-tail into time that
+  // has not happened.
+  const currentHour = new Date(now).getHours()
+  const hours = []
+  for (let hour = 0; hour <= currentHour; hour++) hours.push({ hour, tokens: 0, values: {} })
+  for (const entry of allTimeEntries) {
+    if (entry.time < todayStart || entry.time > now) continue
+    const bucket = hours[new Date(entry.time).getHours()]
+    const model = `${entry.provider}/${entry.model}`
+    const tokens = entryTokens(entry)
+    bucket.values[model] = (bucket.values[model] ?? 0) + tokens
+    bucket.tokens += tokens
+  }
+
   return {
     totals: { calls, inputTokens, cacheReadTokens, cacheWriteTokens, outputTokens, totalTokens, reportedTokens, estimatedTokens },
     sessions: sessions.size,
@@ -146,5 +163,6 @@ export function buildDashboard(entries, options) {
     models,
     series,
     dailyTotals,
+    todayHours: { day: dayKey(now), hours },
   }
 }

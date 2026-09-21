@@ -78,8 +78,8 @@ window.__ModuleLoader__.load({
 			return Math.min(100, Math.max(0, value));
 		}
 		//#endregion
-		//#region \0dsh-css:D:\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
-		const css = ".QewMRW_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.QewMRW_header{justify-content:space-between;align-items:center;gap:12px;display:flex}.QewMRW_rangeLabel{color:var(--dsw-alias-label-secondary);font-size:13px}.QewMRW_headerActions{align-items:center;gap:8px;display:inline-flex}.QewMRW_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.QewMRW_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.QewMRW_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.QewMRW_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.QewMRW_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.QewMRW_status,.QewMRW_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.QewMRW_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.QewMRW_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.QewMRW_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.QewMRW_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.QewMRW_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.QewMRW_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.QewMRW_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.QewMRW_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.QewMRW_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.QewMRW_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.QewMRW_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.QewMRW_quotaMeta{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:11px;display:inline-flex}.QewMRW_quotaStale{border:1px solid var(--dsw-alias-border-l3);color:var(--dsw-alias-label-tertiary);border-radius:4px;padding:0 4px;font-size:10px;line-height:14px}.QewMRW_quotaGrid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;display:grid}.QewMRW_quotaCard{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.QewMRW_quotaHead{align-items:center;gap:6px;min-width:0;display:flex}.QewMRW_quotaTitle{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500;overflow:hidden}.QewMRW_quotaBadge{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);text-overflow:ellipsis;white-space:nowrap;border-radius:4px;flex:none;max-width:96px;padding:0 5px;font-size:10px;line-height:15px;overflow:hidden}.QewMRW_quotaRoute{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, monospace);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.QewMRW_quotaRow{flex-direction:column;gap:4px;display:flex}.QewMRW_quotaRowHead{justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;line-height:16px;display:flex}.QewMRW_quotaRowLabel{color:var(--dsw-alias-label-secondary)}.QewMRW_quotaValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-weight:600}.QewMRW_quotaBar{background:var(--dsw-alias-border-l3);border-radius:3px;height:6px;overflow:hidden}.QewMRW_quotaBarFill,.QewMRW_quotaBarFillLow{background:var(--dsw-static-deepseek-450);border-radius:3px;height:100%;display:block}.QewMRW_quotaBarFillLow{background:var(--dsw-alias-state-warn-primary,#f7ad31)}.QewMRW_quotaRowFoot{color:var(--dsw-alias-label-tertiary);justify-content:space-between;align-items:baseline;gap:8px;font-size:11px;line-height:14px;display:flex}.QewMRW_quotaBalance{flex-wrap:wrap;align-items:baseline;gap:8px;display:flex}.QewMRW_quotaBalanceValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:22px;font-weight:600;line-height:28px}.QewMRW_quotaOk,.QewMRW_quotaWarn{font-size:11px;line-height:16px}.QewMRW_quotaOk{color:var(--dsw-alias-state-success-primary,#22c55e)}.QewMRW_quotaWarn{color:var(--dsw-alias-state-warn-primary,#f7ad31)}.QewMRW_quotaSub{color:var(--dsw-alias-label-tertiary);text-overflow:ellipsis;font-size:11px;line-height:15px;overflow:hidden}.QewMRW_quotaError{color:var(--dsw-alias-state-error-primary);margin:0;font-size:12px;line-height:16px}.QewMRW_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.QewMRW_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.QewMRW_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.QewMRW_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.QewMRW_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.QewMRW_heatCellL0,.QewMRW_heatCellL1,.QewMRW_heatCellL2,.QewMRW_heatCellL3,.QewMRW_heatCellL4,.QewMRW_heatCellOff{border-radius:2px;min-width:0;min-height:0}.QewMRW_heatCellOff{background:0 0}.QewMRW_heatCellL0{background:var(--dsw-alias-border-l3)}.QewMRW_heatCellL1{background:var(--dsw-static-deepseek-100)}.QewMRW_heatCellL2{background:var(--dsw-static-deepseek-200)}.QewMRW_heatCellL3{background:var(--dsw-static-deepseek-300)}.QewMRW_heatCellL4{background:var(--dsw-static-deepseek-450)}.QewMRW_trendFrame{flex-direction:column;gap:10px;margin-inline:auto;display:flex}.QewMRW_trend{align-items:flex-end;gap:2px;height:160px;display:flex;position:relative}.QewMRW_trendColumn{border-radius:2px;flex-direction:column;flex:1;justify-content:flex-end;min-width:4px;max-width:110px;height:100%;display:flex}.QewMRW_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.QewMRW_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.QewMRW_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.QewMRW_tooltipTotal,.QewMRW_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.QewMRW_tooltipTotal .QewMRW_tooltipValue{font-weight:600}.QewMRW_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.QewMRW_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.QewMRW_trendBar{border-radius:2px;flex-direction:column;justify-content:flex-end;height:100%;display:flex;overflow:hidden}.QewMRW_trendSegment{flex:none;width:100%;display:block}.QewMRW_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.QewMRW_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.QewMRW_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.QewMRW_legendItem{align-items:center;gap:6px;display:inline-flex}.QewMRW_legendDot{border-radius:2px;flex:none;width:8px;height:8px}.QewMRW_shareLayout{align-items:center;gap:20px;display:flex}.QewMRW_donutWrap{flex:none;width:132px;height:132px;position:relative}.QewMRW_donut{width:100%;height:100%;display:block}.QewMRW_donut circle{transition:opacity .12s}.QewMRW_donutCenter{pointer-events:none;flex-direction:column;justify-content:center;align-items:center;gap:2px;display:flex;position:absolute;inset:0}.QewMRW_donutTotal{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:18px;font-weight:600;line-height:22px}.QewMRW_donutUnit{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px}.QewMRW_shareLegend{flex-direction:column;flex:1;gap:2px;min-width:0;margin:0;padding:0;list-style:none;display:flex}.QewMRW_shareRow{border-radius:6px;align-items:center;gap:8px;padding:3px 6px;font-size:12px;line-height:16px;display:flex}.QewMRW_shareRow:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.QewMRW_shareName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.QewMRW_shareValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-secondary);white-space:nowrap}.QewMRW_sharePct{text-align:right;font-variant-numeric:tabular-nums;width:44px;color:var(--dsw-alias-label-primary);white-space:nowrap;font-weight:500}";
+		//#region \0dsh-css:D:\Study\js\dsh-usage\dsh-usage-ledger\src\client\UsageSection.module.css.mjs
+		const css = ".Rk5X7G_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.Rk5X7G_trendTools{align-items:center;gap:8px;display:inline-flex}.Rk5X7G_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.Rk5X7G_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.Rk5X7G_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.Rk5X7G_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.Rk5X7G_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.Rk5X7G_status,.Rk5X7G_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.Rk5X7G_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.Rk5X7G_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.Rk5X7G_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.Rk5X7G_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.Rk5X7G_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.Rk5X7G_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.Rk5X7G_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.Rk5X7G_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.Rk5X7G_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.Rk5X7G_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.Rk5X7G_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.Rk5X7G_quotaMeta{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:11px;display:inline-flex}.Rk5X7G_quotaStale{border:1px solid var(--dsw-alias-border-l3);color:var(--dsw-alias-label-tertiary);border-radius:4px;padding:0 4px;font-size:10px;line-height:14px}.Rk5X7G_quotaGrid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;display:grid}.Rk5X7G_quotaCard{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.Rk5X7G_quotaHead{align-items:center;gap:6px;min-width:0;display:flex}.Rk5X7G_quotaTitle{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500;overflow:hidden}.Rk5X7G_quotaBadge{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);text-overflow:ellipsis;white-space:nowrap;border-radius:4px;flex:none;max-width:96px;padding:0 5px;font-size:10px;line-height:15px;overflow:hidden}.Rk5X7G_quotaRoute{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, monospace);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.Rk5X7G_quotaRow{flex-direction:column;gap:4px;display:flex}.Rk5X7G_quotaRowHead{justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;line-height:16px;display:flex}.Rk5X7G_quotaRowLabel{color:var(--dsw-alias-label-secondary)}.Rk5X7G_quotaValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-weight:600}.Rk5X7G_quotaBar{background:var(--dsw-alias-border-l3);border-radius:3px;height:6px;overflow:hidden}.Rk5X7G_quotaBarFill,.Rk5X7G_quotaBarFillLow{background:var(--dsw-static-deepseek-450);border-radius:3px;height:100%;display:block}.Rk5X7G_quotaBarFillLow{background:var(--dsw-alias-state-warn-primary,#f7ad31)}.Rk5X7G_quotaRowFoot{color:var(--dsw-alias-label-tertiary);justify-content:space-between;align-items:baseline;gap:8px;font-size:11px;line-height:14px;display:flex}.Rk5X7G_quotaBalance{flex-wrap:wrap;align-items:baseline;gap:8px;display:flex}.Rk5X7G_quotaBalanceValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:22px;font-weight:600;line-height:28px}.Rk5X7G_quotaOk,.Rk5X7G_quotaWarn{font-size:11px;line-height:16px}.Rk5X7G_quotaOk{color:var(--dsw-alias-state-success-primary,#22c55e)}.Rk5X7G_quotaWarn{color:var(--dsw-alias-state-warn-primary,#f7ad31)}.Rk5X7G_quotaSub{color:var(--dsw-alias-label-tertiary);text-overflow:ellipsis;font-size:11px;line-height:15px;overflow:hidden}.Rk5X7G_quotaError{color:var(--dsw-alias-state-error-primary);margin:0;font-size:12px;line-height:16px}.Rk5X7G_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.Rk5X7G_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.Rk5X7G_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.Rk5X7G_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.Rk5X7G_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.Rk5X7G_heatCellL0,.Rk5X7G_heatCellL1,.Rk5X7G_heatCellL2,.Rk5X7G_heatCellL3,.Rk5X7G_heatCellL4,.Rk5X7G_heatCellOff{border-radius:2px;min-width:0;min-height:0}.Rk5X7G_heatCellOff{background:0 0}.Rk5X7G_heatCellL0{background:var(--dsw-alias-border-l3)}.Rk5X7G_heatCellL1{background:var(--dsw-static-deepseek-100)}.Rk5X7G_heatCellL2{background:var(--dsw-static-deepseek-200)}.Rk5X7G_heatCellL3{background:var(--dsw-static-deepseek-300)}.Rk5X7G_heatCellL4{background:var(--dsw-static-deepseek-450)}.Rk5X7G_trendFrame{flex-direction:column;gap:10px;display:flex}.Rk5X7G_trend{height:160px;display:flex;position:relative}.Rk5X7G_trendColumn{border-radius:2px;flex:1;min-width:0;height:100%}.Rk5X7G_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.Rk5X7G_gridLine{border-top:1px dashed var(--dsw-alias-border-l2);pointer-events:none;position:absolute;left:0;right:0}.Rk5X7G_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.Rk5X7G_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.Rk5X7G_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.Rk5X7G_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.Rk5X7G_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.Rk5X7G_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.Rk5X7G_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.Rk5X7G_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.Rk5X7G_legendItem{align-items:center;gap:6px;display:inline-flex}.Rk5X7G_legendDot{border-radius:50%;flex:none;width:8px;height:8px}.Rk5X7G_legendLine{background:var(--dsw-alias-label-primary);border-radius:2px;flex:none;width:12px;height:3px}.Rk5X7G_trendOverlay{z-index:1;pointer-events:none;position:absolute;inset:0}.Rk5X7G_trendSvg{width:100%;height:100%;display:block;overflow:visible}.Rk5X7G_trendLine{fill:none;stroke:var(--dsw-alias-label-primary);stroke-width:2.5px;stroke-linecap:round;stroke-linejoin:round}.Rk5X7G_trendLineModel{fill:none;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round}.Rk5X7G_trendDot{background:var(--dsw-alias-label-primary);border-radius:50%;width:5px;height:5px;position:absolute;transform:translate(-50%,-50%)}.Rk5X7G_hoverDot,.Rk5X7G_hoverDotTotal{border-radius:50%;width:5px;height:5px;position:absolute;transform:translate(-50%,-50%)}.Rk5X7G_hoverDotTotal{background:var(--dsw-alias-label-primary);width:6px;height:6px}@media (prefers-reduced-motion:no-preference){.Rk5X7G_trendLine.Rk5X7G_anim,.Rk5X7G_trendLineModel.Rk5X7G_anim{stroke-dasharray:1;animation:.7s cubic-bezier(.33,0,.2,1) backwards Rk5X7G_trendLineDraw}.Rk5X7G_trendDot.Rk5X7G_anim{animation:.24s ease-out backwards Rk5X7G_trendDotPop}.Rk5X7G_heat>.Rk5X7G_anim{animation:.3s ease-out backwards Rk5X7G_heatFade}.Rk5X7G_donut .Rk5X7G_anim{animation:.6s cubic-bezier(.33,0,.2,1) backwards Rk5X7G_donutSweep}}@keyframes Rk5X7G_trendLineDraw{0%{stroke-dashoffset:1px}to{stroke-dashoffset:0}}@keyframes Rk5X7G_trendDotPop{0%{opacity:0;transform:translate(-50%,-50%)scale(.3)}to{opacity:1;transform:translate(-50%,-50%)scale(1)}}@keyframes Rk5X7G_heatFade{0%{opacity:0}}@keyframes Rk5X7G_donutSweep{0%{stroke-dasharray:0 var(--circ,251.2)}to{stroke-dasharray:var(--arc,0) var(--circ,251.2)}}.Rk5X7G_shareLayout{align-items:center;gap:20px;display:flex}.Rk5X7G_donutWrap{flex:none;width:132px;height:132px;position:relative}.Rk5X7G_donut{width:100%;height:100%;display:block}.Rk5X7G_donut circle{transition:opacity .12s}.Rk5X7G_donutCenter{pointer-events:none;flex-direction:column;justify-content:center;align-items:center;gap:2px;display:flex;position:absolute;inset:0}.Rk5X7G_donutTotal{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:18px;font-weight:600;line-height:22px}.Rk5X7G_donutUnit{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px}.Rk5X7G_shareLegend{flex-direction:column;flex:1;min-width:0;margin:0;padding:0;list-style:none;display:flex}.Rk5X7G_shareRow{border-radius:6px;align-items:center;gap:8px;padding:7px 6px;font-size:12px;line-height:16px;display:flex}.Rk5X7G_shareRow+.Rk5X7G_shareRow{border-top:1px solid var(--dsw-alias-border-l3);border-top-left-radius:0;border-top-right-radius:0}.Rk5X7G_shareRow:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.Rk5X7G_shareBody{flex-direction:column;flex:1;gap:1px;min-width:0;display:flex}.Rk5X7G_shareTop{justify-content:space-between;align-items:baseline;gap:8px;display:flex}.Rk5X7G_shareName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-primary);flex:1;overflow:hidden}.Rk5X7G_shareSub{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px}.Rk5X7G_sharePct{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);white-space:nowrap;font-weight:600}";
 		const tagId = "dsh-usage-ledger/UsageSection.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -89,82 +89,93 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var UsageSection_module_css_default = {
-			"block": "QewMRW_block",
-			"blockHead": "QewMRW_blockHead",
-			"blockTitle": "QewMRW_blockTitle",
-			"card": "QewMRW_card",
-			"cardLabel": "QewMRW_cardLabel",
-			"cardSub": "QewMRW_cardSub",
-			"cardValue": "QewMRW_cardValue",
-			"cardValueSmall": "QewMRW_cardValueSmall",
-			"cards": "QewMRW_cards",
-			"donut": "QewMRW_donut",
-			"donutCenter": "QewMRW_donutCenter",
-			"donutTotal": "QewMRW_donutTotal",
-			"donutUnit": "QewMRW_donutUnit",
-			"donutWrap": "QewMRW_donutWrap",
-			"failure": "QewMRW_failure",
-			"header": "QewMRW_header",
-			"headerActions": "QewMRW_headerActions",
-			"heat": "QewMRW_heat",
-			"heatCellL0": "QewMRW_heatCellL0",
-			"heatCellL1": "QewMRW_heatCellL1",
-			"heatCellL2": "QewMRW_heatCellL2",
-			"heatCellL3": "QewMRW_heatCellL3",
-			"heatCellL4": "QewMRW_heatCellL4",
-			"heatCellOff": "QewMRW_heatCellOff",
-			"heatLegend": "QewMRW_heatLegend",
-			"heatMonths": "QewMRW_heatMonths",
-			"legend": "QewMRW_legend",
-			"legendDot": "QewMRW_legendDot",
-			"legendItem": "QewMRW_legendItem",
-			"meta": "QewMRW_meta",
-			"quotaBadge": "QewMRW_quotaBadge",
-			"quotaBalance": "QewMRW_quotaBalance",
-			"quotaBalanceValue": "QewMRW_quotaBalanceValue",
-			"quotaBar": "QewMRW_quotaBar",
-			"quotaBarFill": "QewMRW_quotaBarFill",
-			"quotaBarFillLow": "QewMRW_quotaBarFillLow",
-			"quotaCard": "QewMRW_quotaCard",
-			"quotaError": "QewMRW_quotaError",
-			"quotaGrid": "QewMRW_quotaGrid",
-			"quotaHead": "QewMRW_quotaHead",
-			"quotaMeta": "QewMRW_quotaMeta",
-			"quotaOk": "QewMRW_quotaOk",
-			"quotaRoute": "QewMRW_quotaRoute",
-			"quotaRow": "QewMRW_quotaRow",
-			"quotaRowFoot": "QewMRW_quotaRowFoot",
-			"quotaRowHead": "QewMRW_quotaRowHead",
-			"quotaRowLabel": "QewMRW_quotaRowLabel",
-			"quotaStale": "QewMRW_quotaStale",
-			"quotaSub": "QewMRW_quotaSub",
-			"quotaTitle": "QewMRW_quotaTitle",
-			"quotaValue": "QewMRW_quotaValue",
-			"quotaWarn": "QewMRW_quotaWarn",
-			"rangeLabel": "QewMRW_rangeLabel",
-			"refresh": "QewMRW_refresh",
-			"section": "QewMRW_section",
-			"seg": "QewMRW_seg",
-			"segButton": "QewMRW_segButton",
-			"shareLayout": "QewMRW_shareLayout",
-			"shareLegend": "QewMRW_shareLegend",
-			"shareName": "QewMRW_shareName",
-			"sharePct": "QewMRW_sharePct",
-			"shareRow": "QewMRW_shareRow",
-			"shareValue": "QewMRW_shareValue",
-			"status": "QewMRW_status",
-			"ticks": "QewMRW_ticks",
-			"tooltip": "QewMRW_tooltip",
-			"tooltipDate": "QewMRW_tooltipDate",
-			"tooltipName": "QewMRW_tooltipName",
-			"tooltipRow": "QewMRW_tooltipRow",
-			"tooltipTotal": "QewMRW_tooltipTotal",
-			"tooltipValue": "QewMRW_tooltipValue",
-			"trend": "QewMRW_trend",
-			"trendBar": "QewMRW_trendBar",
-			"trendColumn": "QewMRW_trendColumn",
-			"trendFrame": "QewMRW_trendFrame",
-			"trendSegment": "QewMRW_trendSegment"
+			"anim": "Rk5X7G_anim",
+			"block": "Rk5X7G_block",
+			"blockHead": "Rk5X7G_blockHead",
+			"blockTitle": "Rk5X7G_blockTitle",
+			"card": "Rk5X7G_card",
+			"cardLabel": "Rk5X7G_cardLabel",
+			"cardSub": "Rk5X7G_cardSub",
+			"cardValue": "Rk5X7G_cardValue",
+			"cardValueSmall": "Rk5X7G_cardValueSmall",
+			"cards": "Rk5X7G_cards",
+			"donut": "Rk5X7G_donut",
+			"donutCenter": "Rk5X7G_donutCenter",
+			"donutSweep": "Rk5X7G_donutSweep",
+			"donutTotal": "Rk5X7G_donutTotal",
+			"donutUnit": "Rk5X7G_donutUnit",
+			"donutWrap": "Rk5X7G_donutWrap",
+			"failure": "Rk5X7G_failure",
+			"gridLine": "Rk5X7G_gridLine",
+			"heat": "Rk5X7G_heat",
+			"heatCellL0": "Rk5X7G_heatCellL0",
+			"heatCellL1": "Rk5X7G_heatCellL1",
+			"heatCellL2": "Rk5X7G_heatCellL2",
+			"heatCellL3": "Rk5X7G_heatCellL3",
+			"heatCellL4": "Rk5X7G_heatCellL4",
+			"heatCellOff": "Rk5X7G_heatCellOff",
+			"heatFade": "Rk5X7G_heatFade",
+			"heatLegend": "Rk5X7G_heatLegend",
+			"heatMonths": "Rk5X7G_heatMonths",
+			"hoverDot": "Rk5X7G_hoverDot",
+			"hoverDotTotal": "Rk5X7G_hoverDotTotal",
+			"legend": "Rk5X7G_legend",
+			"legendDot": "Rk5X7G_legendDot",
+			"legendItem": "Rk5X7G_legendItem",
+			"legendLine": "Rk5X7G_legendLine",
+			"meta": "Rk5X7G_meta",
+			"quotaBadge": "Rk5X7G_quotaBadge",
+			"quotaBalance": "Rk5X7G_quotaBalance",
+			"quotaBalanceValue": "Rk5X7G_quotaBalanceValue",
+			"quotaBar": "Rk5X7G_quotaBar",
+			"quotaBarFill": "Rk5X7G_quotaBarFill",
+			"quotaBarFillLow": "Rk5X7G_quotaBarFillLow",
+			"quotaCard": "Rk5X7G_quotaCard",
+			"quotaError": "Rk5X7G_quotaError",
+			"quotaGrid": "Rk5X7G_quotaGrid",
+			"quotaHead": "Rk5X7G_quotaHead",
+			"quotaMeta": "Rk5X7G_quotaMeta",
+			"quotaOk": "Rk5X7G_quotaOk",
+			"quotaRoute": "Rk5X7G_quotaRoute",
+			"quotaRow": "Rk5X7G_quotaRow",
+			"quotaRowFoot": "Rk5X7G_quotaRowFoot",
+			"quotaRowHead": "Rk5X7G_quotaRowHead",
+			"quotaRowLabel": "Rk5X7G_quotaRowLabel",
+			"quotaStale": "Rk5X7G_quotaStale",
+			"quotaSub": "Rk5X7G_quotaSub",
+			"quotaTitle": "Rk5X7G_quotaTitle",
+			"quotaValue": "Rk5X7G_quotaValue",
+			"quotaWarn": "Rk5X7G_quotaWarn",
+			"refresh": "Rk5X7G_refresh",
+			"section": "Rk5X7G_section",
+			"seg": "Rk5X7G_seg",
+			"segButton": "Rk5X7G_segButton",
+			"shareBody": "Rk5X7G_shareBody",
+			"shareLayout": "Rk5X7G_shareLayout",
+			"shareLegend": "Rk5X7G_shareLegend",
+			"shareName": "Rk5X7G_shareName",
+			"sharePct": "Rk5X7G_sharePct",
+			"shareRow": "Rk5X7G_shareRow",
+			"shareSub": "Rk5X7G_shareSub",
+			"shareTop": "Rk5X7G_shareTop",
+			"status": "Rk5X7G_status",
+			"ticks": "Rk5X7G_ticks",
+			"tooltip": "Rk5X7G_tooltip",
+			"tooltipDate": "Rk5X7G_tooltipDate",
+			"tooltipName": "Rk5X7G_tooltipName",
+			"tooltipRow": "Rk5X7G_tooltipRow",
+			"tooltipValue": "Rk5X7G_tooltipValue",
+			"trend": "Rk5X7G_trend",
+			"trendColumn": "Rk5X7G_trendColumn",
+			"trendDot": "Rk5X7G_trendDot",
+			"trendDotPop": "Rk5X7G_trendDotPop",
+			"trendFrame": "Rk5X7G_trendFrame",
+			"trendLine": "Rk5X7G_trendLine",
+			"trendLineDraw": "Rk5X7G_trendLineDraw",
+			"trendLineModel": "Rk5X7G_trendLineModel",
+			"trendOverlay": "Rk5X7G_trendOverlay",
+			"trendSvg": "Rk5X7G_trendSvg",
+			"trendTools": "Rk5X7G_trendTools"
 		};
 		//#endregion
 		//#region src/client/QuotaBlock.tsx
@@ -430,16 +441,56 @@ window.__ModuleLoader__.load({
 			return t("quota.resetsIn", { when: seconds < 3600 ? format.format(Math.max(1, Math.round(seconds / 60)), "minute") : seconds < 86400 ? format.format(Math.round(seconds / 3600), "hour") : format.format(Math.round(seconds / 86400), "day") });
 		}
 		//#endregion
+		//#region src/client/trend-points.ts
+		/** Build the visible window for one period. */
+		function buildTrendPoints(report, period, formatTick, formatTip) {
+			if (period === "today") {
+				const today = report.todayHours;
+				if (today === void 0) return [];
+				return today.hours.map((bucket) => ({
+					key: `h${bucket.hour}`,
+					tokens: bucket.tokens,
+					values: bucket.values,
+					tick: `${bucket.hour}:00`,
+					tip: `${formatTip(today.day)} ${bucket.hour}:00`
+				}));
+			}
+			return (period === "7d" ? report.series.slice(-7) : report.series).map((day) => ({
+				key: day.day,
+				tokens: day.tokens,
+				values: day.values,
+				tick: formatTick(day.day),
+				tip: formatTip(day.day)
+			}));
+		}
+		//#endregion
 		//#region src/client/UsageSection.tsx
 		/**
-		* The 数据与统计 settings section: dashboard layout — period toggle, six
-		* summary cards, the provider-allowance block, a GitHub-style activity
-		* heatmap, and the daily token trend stacked by model. Pure read surface;
-		* data arrives over the plugin's private RPC channel (the quota block over
-		* its own endpoint, so a slow vendor cannot delay the usage numbers).
+		* The 数据与统计 settings section: dashboard layout — six summary cards, the
+		* provider-allowance block, a GitHub-style activity heatmap, and the token
+		* trend as per-model colored lines under a neutral total line. Pure read
+		* surface; data arrives over the plugin's private RPC channel (the quota
+		* block over its own endpoint, so a slow vendor cannot delay the usage
+		* numbers).
+		*
+		* The report is always queried for 30 days; the 7-day view is a client-side
+		* slice of that series and 今日 draws the report's hourly buckets, so the
+		* period toggle swaps instantly with no second round-trip. The toggle lives
+		* in the trend block's header (the only charts it affects) and the cards
+		* stay fixed to the 30-day window.
 		*/
-		const PERIODS = ["7d", "30d"];
-		/** Categorical colors for the trend legend (mid-tone, legible on both themes). */
+		const PERIODS = [
+			"today",
+			"7d",
+			"30d"
+		];
+		/** The one and only period requested from the ledger; `period.30d` labels
+		* everything that comes straight from the report (cards, meta line). */
+		const QUERY_PERIOD = "30d";
+		/** How long the opening animation choreography runs before the one-shot
+		* animation classes are dropped (longest chain: model-line cascade ≈1.3s). */
+		const PLAY_ONCE_MS = 1400;
+		/** Categorical colors for the model lines (mid-tone, legible on both themes). */
 		const MODEL_COLORS = [
 			"#4d93f8",
 			"#22c55e",
@@ -452,10 +503,6 @@ window.__ModuleLoader__.load({
 		/** Heatmap grid: weeks shown, ending at the current week. A full year keeps
 		* the cells small when the grid stretches to the panel width. */
 		const HEAT_WEEKS = 53;
-		const TREND_GAP = 2;
-		/** Minimum gap (px) between adjacent tick centers: the 11px "M/D" date
-		* labels stay ~30px wide, so 44px keeps them from crowding. */
-		const TREND_TICK_GAP = 44;
 		/** Model-share donut geometry (SVG viewBox 120x120, center 60,60). */
 		const RING_RADIUS = 40;
 		const RING_STROKE = 14;
@@ -489,19 +536,54 @@ window.__ModuleLoader__.load({
 		function formatNumber(value) {
 			return new Intl.NumberFormat("en-US").format(value);
 		}
+		/** Catmull-Rom spline through the points, emitted as cubic Béziers. The
+		* curve interpolates every point (markers stay glued), and control points
+		* are clamped to the chart box so a spike never pulls the line past the
+		* baseline or above the frame. */
+		function smoothLinePath(points) {
+			if (points.length === 0) return "";
+			const fmt = (value) => value.toFixed(2);
+			const clampY = (value) => Math.min(100, Math.max(0, value));
+			let d = `M${fmt(points[0].x)} ${fmt(points[0].y)}`;
+			for (let index = 0; index < points.length - 1; index++) {
+				const p0 = points[index - 1] ?? points[index];
+				const p1 = points[index];
+				const p2 = points[index + 1];
+				const p3 = points[index + 2] ?? p2;
+				const c1x = p1.x + (p2.x - p0.x) / 6;
+				const c2x = p2.x - (p3.x - p1.x) / 6;
+				const c1y = clampY(p1.y + (p2.y - p0.y) / 6);
+				const c2y = clampY(p2.y - (p3.y - p1.y) / 6);
+				d += ` C${fmt(c1x)} ${fmt(c1y)} ${fmt(c2x)} ${fmt(c2y)} ${fmt(p2.x)} ${fmt(p2.y)}`;
+			}
+			return d;
+		}
+		/** Points of one series in the frame's percentage space: x sits on the
+		* column centers (same formula as the ticks), y maps value/trendMax to the
+		* chart height. */
+		function toGeometry(values, trendMax) {
+			const n = Math.max(1, values.length);
+			return values.map((value, index) => ({
+				x: (index + .5) / n * 100,
+				y: 100 - value / trendMax * 100
+			}));
+		}
 		/** Render the usage dashboard section. */
 		function UsageSection({ query, queryQuotas, localeId, t }) {
 			const [period, setPeriod] = (0, react.useState)("30d");
 			const [request, setRequest] = (0, react.useState)(0);
 			const [state, setState] = (0, react.useState)({ status: "loading" });
-			/** Trend column under the pointer; drives the floating tooltip. */
+			/** True until the opening choreography has played once (page open only:
+			* period switches and refreshes swap data in place, with no replay). */
+			const [playOnce, setPlayOnce] = (0, react.useState)(true);
+			/** Trend column under the pointer; drives the markers + floating tooltip. */
 			const [hovered, setHovered] = (0, react.useState)(null);
 			/** Model-share donut slice under the pointer (dims the others). */
 			const [shareHover, setShareHover] = (0, react.useState)(null);
 			(0, react.useEffect)(() => {
 				let current = true;
 				setState({ status: "loading" });
-				query({ period }).then((result) => {
+				query({ period: QUERY_PERIOD }).then((result) => {
 					if (!current) return;
 					if (result.ok) setState({
 						status: "ready",
@@ -514,13 +596,32 @@ window.__ModuleLoader__.load({
 				return () => {
 					current = false;
 				};
-			}, [
-				query,
-				period,
-				request
-			]);
+			}, [query, request]);
+			(0, react.useEffect)(() => {
+				if (state.status !== "ready" || !playOnce) return;
+				const timer = window.setTimeout(() => {
+					setPlayOnce(false);
+				}, PLAY_ONCE_MS);
+				return () => {
+					window.clearTimeout(timer);
+				};
+			}, [state.status, playOnce]);
 			const zh = localeId().startsWith("zh");
 			const report = state.status === "ready" ? state.report : void 0;
+			const dateLabel = (day) => {
+				const [year, month, date] = day.split("-").map(Number);
+				return new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", {
+					month: "numeric",
+					day: "numeric"
+				}).format(new Date(year, month - 1, date));
+			};
+			const heatLabel = (day) => {
+				const [year, month, date] = day.split("-").map(Number);
+				return new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", {
+					month: "short",
+					day: "numeric"
+				}).format(new Date(year, month - 1, date));
+			};
 			/** Full provider/model label -> legend display name. Several providers can
 			* serve the same model name, so we keep the bare model name only while it is
 			* unique across the report; on a collision the full provider/model key is
@@ -573,32 +674,61 @@ window.__ModuleLoader__.load({
 					})
 				};
 			}, [report, zh]);
-			const trendMax = (0, react.useMemo)(() => report === void 0 ? 1 : Math.max(1, ...report.series.map((day) => day.tokens)), [report]);
+			/** The window the trend chart and donut actually show: 7d is a tail slice
+			* of the 30-day series and 今日 draws the hourly buckets, so toggling
+			* never needs a round-trip. (The window math lives in trend-points.ts —
+			* pure, unit-tested, and tolerant of a stale host without `todayHours`.) */
+			const trendPoints = (0, react.useMemo)(() => report === void 0 ? [] : buildTrendPoints(report, period, dateLabel, heatLabel), [
+				report,
+				period,
+				zh
+			]);
+			const trendMax = (0, react.useMemo)(() => Math.max(1, ...trendPoints.map((point) => point.tokens)), [trendPoints]);
+			/** Models with any usage inside the visible window, in the report's
+			* legend order — a model whose line would sit flat on the baseline is
+			* noise, so neither its line nor its legend row is drawn. */
+			const windowModels = (0, react.useMemo)(() => {
+				return (report?.models ?? []).filter((model) => trendPoints.some((point) => (point.values[model] ?? 0) > 0));
+			}, [report, trendPoints]);
+			/** Per-model lines plus the neutral total line, all in percentage space. */
+			const modelLines = (0, react.useMemo)(() => {
+				const models = report?.models ?? [];
+				return windowModels.map((model) => ({
+					key: model,
+					color: MODEL_COLORS[models.indexOf(model) % MODEL_COLORS.length],
+					points: toGeometry(trendPoints.map((point) => point.values[model] ?? 0), trendMax)
+				}));
+			}, [
+				report,
+				windowModels,
+				trendPoints,
+				trendMax
+			]);
+			const totalPoints = (0, react.useMemo)(() => toGeometry(trendPoints.map((point) => point.tokens), trendMax), [trendPoints, trendMax]);
+			/** Tick indexes: at most 7, always including the last slot. */
 			const trendTicks = (0, react.useMemo)(() => {
-				if (report === void 0) return [];
-				const count = report.series.length;
-				if (count < 2) return [0];
-				const frame = Math.min(720, count * 112 - TREND_GAP);
-				const maxTicks = Math.min(7, Math.max(2, Math.floor(frame / TREND_TICK_GAP) + 1));
-				const step = Math.ceil((count - 1) / (maxTicks - 1));
+				const count = trendPoints.length;
+				if (count < 2) return count === 1 ? [0] : [];
+				const step = Math.ceil((count - 1) / 6);
 				const ticks = [];
 				for (let index = 0; index < count - 1; index += step) ticks.push(index);
 				ticks.push(count - 1);
 				return ticks;
-			}, [report]);
-			/** Period model shares for the donut, derived from the daily series
-			* (summing values[model] over the window == the period's per-model totals).
-			* Long tails collapse into a single Other row; always sorted descending. */
+			}, [trendPoints]);
+			/** Token total of the visible window (the donut's center number and the
+			* denominator of its shares). */
+			const windowTokens = (0, react.useMemo)(() => trendPoints.reduce((sum, point) => sum + point.tokens, 0), [trendPoints]);
+			/** Visible-window model shares for the donut, derived from the same
+			* points as the trend chart. Long tails collapse into a single Other row;
+			* sorted descending. */
 			const modelShares = (0, react.useMemo)(() => {
-				if (report === void 0) return [];
-				const total = report.totals.totalTokens;
-				const entries = report.models.map((model) => {
+				const entries = (report?.models ?? []).map((model) => {
 					let tokens = 0;
-					for (const day of report.series) tokens += day.values[model] ?? 0;
+					for (const point of trendPoints) tokens += point.values[model] ?? 0;
 					return {
 						label: model,
 						tokens,
-						share: total > 0 ? tokens / total : 0
+						share: windowTokens > 0 ? tokens / windowTokens : 0
 					};
 				}).filter((row) => row.tokens > 0);
 				if (entries.length <= SHARE_MAX_NAMED) return entries;
@@ -607,9 +737,14 @@ window.__ModuleLoader__.load({
 				return [...named, {
 					label: t("share.other"),
 					tokens: restTokens,
-					share: total > 0 ? restTokens / total : 0
+					share: windowTokens > 0 ? restTokens / windowTokens : 0
 				}];
-			}, [report, t]);
+			}, [
+				report,
+				trendPoints,
+				windowTokens,
+				t
+			]);
 			/** Donut slices with cumulative start angles (degrees, clockwise). */
 			const shareSlices = (0, react.useMemo)(() => {
 				let angle = 0;
@@ -622,64 +757,22 @@ window.__ModuleLoader__.load({
 					return slice;
 				});
 			}, [modelShares]);
-			const inRange = hovered !== null && report !== void 0 && hovered < report.series.length;
-			const hoveredDay = inRange ? report.series[hovered] : void 0;
-			const hoveredRows = inRange ? report.models.map((model, index) => ({
+			const inRange = hovered !== null && hovered < trendPoints.length;
+			const hoveredPoint = inRange ? trendPoints[hovered] : void 0;
+			const hoveredRows = inRange ? (report?.models ?? []).map((model, index) => ({
 				model,
 				color: MODEL_COLORS[index % MODEL_COLORS.length],
-				value: hoveredDay.values[model] ?? 0
+				value: hoveredPoint.values[model] ?? 0
 			})).filter((row) => row.value > 0).sort((a, b) => b.value - a.value) : [];
-			const hoveredLeft = inRange ? (hovered + .5) / report.series.length * 100 : 50;
+			const hoveredLeft = inRange ? (hovered + .5) / trendPoints.length * 100 : 50;
 			const hoveredShift = hoveredLeft < 12 ? "0%" : hoveredLeft > 88 ? "-100%" : "-50%";
-			const dateLabel = (day) => {
-				const [year, month, date] = day.split("-").map(Number);
-				return new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", {
-					month: "numeric",
-					day: "numeric"
-				}).format(new Date(year, month - 1, date));
-			};
-			const heatLabel = (day) => {
-				const [year, month, date] = day.split("-").map(Number);
-				return new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", {
-					month: "short",
-					day: "numeric"
-				}).format(new Date(year, month - 1, date));
-			};
+			/** One-shot animation class suffix; absent after the opening run (and for
+			* prefers-reduced-motion users, where the CSS media query ignores it). */
+			const anim = (base) => playOnce ? `${base} ${UsageSection_module_css_default.anim}` : base;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: UsageSection_module_css_default.section,
 				"aria-busy": state.status === "loading",
 				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: UsageSection_module_css_default.header,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: UsageSection_module_css_default.rangeLabel,
-							children: t("range")
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: UsageSection_module_css_default.headerActions,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: UsageSection_module_css_default.seg,
-								role: "group",
-								"aria-label": t("range"),
-								children: PERIODS.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									type: "button",
-									className: UsageSection_module_css_default.segButton,
-									"aria-pressed": period === value,
-									onClick: () => {
-										setPeriod(value);
-									},
-									children: t(`period.${value}`)
-								}, value))
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								type: "button",
-								className: UsageSection_module_css_default.refresh,
-								"aria-label": t("refresh"),
-								onClick: () => {
-									setRequest((value) => value + 1);
-								},
-								children: t("refresh")
-							})]
-						})]
-					}),
 					state.status === "loading" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 						className: UsageSection_module_css_default.status,
 						children: t("loading")
@@ -813,8 +906,9 @@ window.__ModuleLoader__.load({
 									role: "img",
 									"aria-label": t("heatmap"),
 									style: { aspectRatio: `${HEAT_WEEKS} / 7` },
-									children: heat.columns.map((column) => column.map((cell) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: cell.future ? UsageSection_module_css_default.heatCellOff : UsageSection_module_css_default[`heatCellL${cell.level}`],
+									children: heat.columns.map((column, weekIndex) => column.map((cell) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: `${cell.future ? UsageSection_module_css_default.heatCellOff : UsageSection_module_css_default[`heatCellL${cell.level}`]}${playOnce ? ` ${UsageSection_module_css_default.anim}` : ""}`,
+										style: playOnce ? { animationDelay: `${weekIndex * 4}ms` } : void 0,
 										title: cell.future ? void 0 : `${heatLabel(cell.key)} · ${formatTokens(cell.tokens, zh)}`
 									}, cell.key)))
 								})
@@ -823,98 +917,170 @@ window.__ModuleLoader__.load({
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: UsageSection_module_css_default.block,
 							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									className: UsageSection_module_css_default.blockHead,
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", {
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", {
 										className: UsageSection_module_css_default.blockTitle,
-										children: t("trend")
-									})
+										children: period === "today" ? t("trend.hourly") : t("trend")
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: UsageSection_module_css_default.trendTools,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: UsageSection_module_css_default.seg,
+											role: "group",
+											"aria-label": t("range"),
+											children: PERIODS.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												type: "button",
+												className: UsageSection_module_css_default.segButton,
+												"aria-pressed": period === value,
+												onClick: () => {
+													setPeriod(value);
+												},
+												children: t(`period.short.${value}`)
+											}, value))
+										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											type: "button",
+											className: UsageSection_module_css_default.refresh,
+											"aria-label": t("refresh"),
+											onClick: () => {
+												setRequest((value) => value + 1);
+											},
+											children: t("refresh")
+										})]
+									})]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									className: UsageSection_module_css_default.trendFrame,
-									style: { width: `min(100%, ${report.series.length * 112 - TREND_GAP}px)` },
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: UsageSection_module_css_default.trend,
-										onMouseLeave: () => setHovered(null),
-										children: [report.series.map((day, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-											className: UsageSection_module_css_default.trendColumn,
-											"aria-label": `${heatLabel(day.day)} · ${formatTokens(day.tokens, zh)}`,
-											onMouseEnter: () => setHovered(index),
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-												className: UsageSection_module_css_default.trendBar,
-												children: [...report.models].reverse().map((model) => {
-													const value = day.values[model] ?? 0;
-													if (value === 0) return null;
-													return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-														className: UsageSection_module_css_default.trendSegment,
-														style: {
-															height: `${Math.max(1.5, value / trendMax * 100)}%`,
-															background: MODEL_COLORS[report.models.indexOf(model) % MODEL_COLORS.length]
-														}
-													}, model);
-												})
-											})
-										}, day.day)), hoveredDay !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-											className: UsageSection_module_css_default.tooltip,
-											style: {
-												left: `${hoveredLeft}%`,
-												transform: `translateX(${hoveredShift})`
-											},
-											role: "status",
+									children: [
+										period === "today" && trendPoints.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+											className: UsageSection_module_css_default.status,
+											children: t("today.stale")
+										}) : null,
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: UsageSection_module_css_default.trend,
+											onMouseLeave: () => setHovered(null),
 											children: [
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-													className: UsageSection_module_css_default.tooltipDate,
-													children: heatLabel(hoveredDay.day)
-												}),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-													className: UsageSection_module_css_default.tooltipTotal,
-													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-														className: UsageSection_module_css_default.tooltipName,
-														children: t("tooltip.total")
-													}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-														className: UsageSection_module_css_default.tooltipValue,
-														children: formatTokens(hoveredDay.tokens, zh)
-													})]
-												}),
-												hoveredRows.map((row) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-													className: UsageSection_module_css_default.tooltipRow,
+												[
+													25,
+													50,
+													75
+												].map((y) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+													className: UsageSection_module_css_default.gridLine,
+													style: { top: `${y}%` },
+													"aria-hidden": "true"
+												}, y)),
+												trendPoints.map((point, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+													className: UsageSection_module_css_default.trendColumn,
+													"aria-label": `${point.tip} · ${formatTokens(point.tokens, zh)}`,
+													onMouseEnter: () => setHovered(index)
+												}, point.key)),
+												trendPoints.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: UsageSection_module_css_default.trendOverlay,
+													"aria-hidden": "true",
 													children: [
-														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-															className: UsageSection_module_css_default.legendDot,
-															style: { background: row.color }
-														}),
-														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-															className: UsageSection_module_css_default.tooltipName,
-															children: labelOf(row.model)
-														}),
-														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-															className: UsageSection_module_css_default.tooltipValue,
-															children: formatTokens(row.value, zh)
-														})
+														trendPoints.length > 1 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+															className: UsageSection_module_css_default.trendSvg,
+															viewBox: "0 0 100 100",
+															preserveAspectRatio: "none",
+															children: [modelLines.map((line, lineIndex) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", {
+																d: smoothLinePath(line.points),
+																pathLength: 1,
+																vectorEffect: "non-scaling-stroke",
+																stroke: line.color,
+																className: anim(UsageSection_module_css_default.trendLineModel),
+																style: playOnce ? { animationDelay: `${150 + lineIndex * 70}ms` } : void 0
+															}, line.key)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", {
+																d: smoothLinePath(totalPoints),
+																pathLength: 1,
+																vectorEffect: "non-scaling-stroke",
+																className: anim(UsageSection_module_css_default.trendLine)
+															})]
+														}) : null,
+														totalPoints.map((point, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															className: anim(UsageSection_module_css_default.trendDot),
+															style: {
+																left: `${point.x}%`,
+																top: `${point.y}%`,
+																animationDelay: playOnce ? `${Math.round(index / Math.max(1, totalPoints.length - 1) * 700)}ms` : void 0
+															}
+														}, trendPoints[index].key)),
+														hoveredPoint !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [modelLines.map((line) => {
+															const value = hoveredPoint.values[line.key] ?? 0;
+															if (value === 0) return null;
+															return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																className: UsageSection_module_css_default.hoverDot,
+																style: {
+																	left: `${hoveredLeft}%`,
+																	top: `${100 - value / trendMax * 100}%`,
+																	background: line.color
+																}
+															}, line.key);
+														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															className: UsageSection_module_css_default.hoverDotTotal,
+															style: {
+																left: `${hoveredLeft}%`,
+																top: `${100 - hoveredPoint.tokens / trendMax * 100}%`
+															}
+														})] }) : null
 													]
-												}, row.model))
+												}) : null,
+												hoveredPoint !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: UsageSection_module_css_default.tooltip,
+													style: {
+														left: `${hoveredLeft}%`,
+														transform: `translateX(${hoveredShift})`
+													},
+													role: "status",
+													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+														className: UsageSection_module_css_default.tooltipDate,
+														children: [
+															hoveredPoint.tip,
+															" · ",
+															formatTokens(hoveredPoint.tokens, zh)
+														]
+													}), hoveredRows.map((row) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+														className: UsageSection_module_css_default.tooltipRow,
+														children: [
+															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																className: UsageSection_module_css_default.legendDot,
+																style: { background: row.color }
+															}),
+															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																className: UsageSection_module_css_default.tooltipName,
+																children: labelOf(row.model)
+															}),
+															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																className: UsageSection_module_css_default.tooltipValue,
+																children: formatNumber(row.value)
+															})
+														]
+													}, row.model))]
+												}) : null
 											]
-										}) : null]
-									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-										className: UsageSection_module_css_default.ticks,
-										"aria-hidden": "true",
-										children: trendTicks.map((index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											style: { left: `${(index + .5) / report.series.length * 100}%` },
-											children: dateLabel(report.series[index].day)
-										}, index))
-									})]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: UsageSection_module_css_default.ticks,
+											"aria-hidden": "true",
+											children: trendTicks.map((index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												style: { left: `${(index + .5) / trendPoints.length * 100}%` },
+												children: trendPoints[index].tick
+											}, index))
+										})
+									]
 								}),
-								report.models.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									className: UsageSection_module_css_default.legend,
-									children: report.models.map((model, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+										className: UsageSection_module_css_default.legendItem,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: UsageSection_module_css_default.legendLine }), t("trend.total")]
+									}), windowModels.map((model) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 										className: UsageSection_module_css_default.legendItem,
 										title: model,
 										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											className: UsageSection_module_css_default.legendDot,
-											style: { background: MODEL_COLORS[index % MODEL_COLORS.length] }
+											style: { background: MODEL_COLORS[(report?.models.indexOf(model) ?? 0) % MODEL_COLORS.length] }
 										}), labelOf(model)]
-									}, model))
-								}) : null
+									}, model))]
+								})
 							]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -945,13 +1111,19 @@ window.__ModuleLoader__.load({
 											strokeDasharray: `${slice.share * RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`,
 											transform: `rotate(${slice.offset} 60 60)`,
 											opacity: shareHover === null || shareHover === index ? 1 : .35,
-											onMouseEnter: () => setShareHover(index)
+											onMouseEnter: () => setShareHover(index),
+											className: playOnce ? UsageSection_module_css_default.anim : void 0,
+											style: playOnce ? {
+												"--arc": `${slice.share * RING_CIRCUMFERENCE}`,
+												"--circ": `${RING_CIRCUMFERENCE}`,
+												animationDelay: `${index * 90}ms`
+											} : void 0
 										}, slice.label) : null)
 									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										className: UsageSection_module_css_default.donutCenter,
 										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											className: UsageSection_module_css_default.donutTotal,
-											children: formatTokens(report.totals.totalTokens, zh)
+											children: formatTokens(windowTokens, zh)
 										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											className: UsageSection_module_css_default.donutUnit,
 											children: t("unit.tokens")
@@ -963,36 +1135,37 @@ window.__ModuleLoader__.load({
 										className: UsageSection_module_css_default.shareRow,
 										onMouseEnter: () => setShareHover(index),
 										onMouseLeave: () => setShareHover(null),
-										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-												className: UsageSection_module_css_default.legendDot,
-												style: { background: MODEL_COLORS[index % MODEL_COLORS.length] }
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-												className: UsageSection_module_css_default.shareName,
-												title: slice.label,
-												children: labelOf(slice.label)
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-												className: UsageSection_module_css_default.shareValue,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: UsageSection_module_css_default.legendDot,
+											style: { background: MODEL_COLORS[index % MODEL_COLORS.length] }
+										}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+											className: UsageSection_module_css_default.shareBody,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												className: UsageSection_module_css_default.shareTop,
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+													className: UsageSection_module_css_default.shareName,
+													title: slice.label,
+													children: labelOf(slice.label)
+												}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+													className: UsageSection_module_css_default.sharePct,
+													children: [Math.round(slice.share * 100), "%"]
+												})]
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												className: UsageSection_module_css_default.shareSub,
 												children: [
 													formatTokens(slice.tokens, zh),
 													" ",
 													t("unit.tokens")
 												]
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-												className: UsageSection_module_css_default.sharePct,
-												children: [Math.round(slice.share * 100), "%"]
-											})
-										]
+											})]
+										})]
 									}, slice.label))
 								})]
 							})]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
 							className: UsageSection_module_css_default.meta,
-							children: [period === "7d" ? t("period.7d") : t("period.30d"), report.totals.reportedTokens !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+							children: [t(`period.${QUERY_PERIOD}`), report.totals.reportedTokens !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 								" · ",
 								formatTokens(report.totals.reportedTokens, zh),
 								" ",
@@ -1133,6 +1306,10 @@ window.__ModuleLoader__.load({
 			range: "时间范围",
 			"period.7d": "最近 7 天",
 			"period.30d": "最近 30 天",
+			"period.short.7d": "7 天",
+			"period.short.30d": "30 天",
+			"period.short.today": "今日",
+			"today.stale": "小时粒度数据将在重启应用后可用。",
 			"stat.tokens": "tokens 用量",
 			"stat.sessions": "会话数量",
 			"stat.calls": "调用次数",
@@ -1144,6 +1321,8 @@ window.__ModuleLoader__.load({
 			less: "较少",
 			more: "较多",
 			trend: "按天 Token 趋势",
+			"trend.hourly": "按小时 Token 趋势",
+			"trend.total": "总计",
 			share: "模型用量",
 			"share.other": "其他模型",
 			"unit.tokens": "tokens",
@@ -1187,6 +1366,10 @@ window.__ModuleLoader__.load({
 			range: "Time range",
 			"period.7d": "Last 7 days",
 			"period.30d": "Last 30 days",
+			"period.short.7d": "7 days",
+			"period.short.30d": "30 days",
+			"period.short.today": "Today",
+			"today.stale": "Hourly data becomes available after an app restart.",
 			"stat.tokens": "Tokens used",
 			"stat.sessions": "Sessions",
 			"stat.calls": "Calls",
@@ -1198,6 +1381,8 @@ window.__ModuleLoader__.load({
 			less: "Less",
 			more: "More",
 			trend: "Daily token trend",
+			"trend.hourly": "Hourly token trend",
+			"trend.total": "Total",
 			share: "Model usage",
 			"share.other": "Other models",
 			"unit.tokens": "tokens",

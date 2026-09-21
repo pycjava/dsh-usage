@@ -15,9 +15,16 @@ export interface DashboardTotals {
   estimatedTokens: number
 }
 
-/** One day of the stacked-by-model trend series. */
+/** One day of the per-model trend series. */
 export interface DashboardDay {
   day: string
+  tokens: number
+  values: Record<string, number>
+}
+
+/** One hour of today's per-model series (the 今日 view). */
+export interface DashboardHour {
+  hour: number
   tokens: number
   values: Record<string, number>
 }
@@ -35,6 +42,11 @@ export interface DashboardReport {
   series: DashboardDay[]
   /** All-time daily token totals (heatmap cells + streak evidence). */
   dailyTotals: Record<string, number>
+  /** Today's per-hour buckets, 00:00 through the current hour (the 今日
+   * line view; future hours are omitted). Optional on the wire: a host
+   * older than 0.6.0 does not send it, and the panel must degrade instead
+   * of crash. */
+  todayHours?: { day: string; hours: DashboardHour[] }
 }
 
 /** Envelope returned by Connection RPC calls. */

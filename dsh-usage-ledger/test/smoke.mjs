@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Standalone smoke test for the pure ledger modules (no harness needed):
  * entry construction, period parsing, aggregation, the text report, the
  * SQLite store round-trip, and the provider-quota probes (parsers, route
@@ -185,6 +185,15 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(dash.series[3].values['p2/mB'], 5_502)
   assert.equal(dash.series[0].tokens, 0)               // inactive day filled with zero
   assert.equal(dash.dailyTotals[dayKey(at(8, 1, 10))], 200)
+
+  // today's hourly buckets: 00:00..current hour, only today's entries
+  assert.equal(dash.todayHours.day, dayKey(now2))
+  assert.equal(dash.todayHours.hours.length, 16)        // 00:00..15:00 (now is 15:15)
+  assert.equal(dash.todayHours.hours[9].tokens, 5_500)  // d3 at 09:00
+  assert.equal(dash.todayHours.hours[9].values['p2/mB'], 5_500)
+  assert.equal(dash.todayHours.hours[12].tokens, 2)     // d4 at 12:00
+  assert.equal(dash.todayHours.hours[10].tokens, 0)     // d1 is Aug 13, not today
+  assert.equal(dash.todayHours.hours[15].tokens, 0)     // current hour, nothing yet
 
   // streak breaks when neither today nor yesterday is active
   const cold = buildDashboard(older, {

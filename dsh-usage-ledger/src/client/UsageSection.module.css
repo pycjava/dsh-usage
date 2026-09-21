@@ -7,21 +7,10 @@
   color: var(--dsw-alias-label-primary);
 }
 
-/* ---- header: range label + segmented control ---- */
+/* ---- trend header tools: period toggle + refresh live in the trend
+ * block's header (the only charts they affect) ---- */
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.rangeLabel {
-  font-size: 13px;
-  color: var(--dsw-alias-label-secondary);
-}
-
-.headerActions {
+.trendTools {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -406,38 +395,42 @@
 .heatCellL3 { background: var(--dsw-static-deepseek-300); }
 .heatCellL4 { background: var(--dsw-static-deepseek-450); }
 
-/* ---- stacked daily trend ---- */
+/* ---- per-model line trend ---- */
 
-/* Chart and tick strip share one capped, centered frame: the percentage-
- * positioned ticks always stay glued to the bars, whatever the frame width. */
+/* The chart always spans the full block width; bands, ticks, dots and line
+ * points all share the same percentage coordinate system. */
 .trendFrame {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-inline: auto;
 }
 
 .trend {
   position: relative;
   display: flex;
-  align-items: flex-end;
-  gap: 2px;
   height: 160px;
 }
 
+/* Transparent hover band (the chart itself is pure lines in the overlay):
+ * flex:1 keeps every band the same width, so (i+0.5)/n is its exact center. */
 .trendColumn {
   flex: 1;
-  min-width: 4px;
-  max-width: 110px;
+  min-width: 0;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
   border-radius: 2px;
 }
 
 .trendColumn:hover {
   background: color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent);
+}
+
+/* Dashed magnitude reference behind the lines (25/50/75% of the max). */
+.gridLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--dsw-alias-border-l2);
+  pointer-events: none;
 }
 
 /* Floating hover card: date header, total row, per-model rows. Anchored to
@@ -464,17 +457,12 @@
   line-height: 16px;
 }
 
-.tooltipTotal,
 .tooltipRow {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 12px;
   line-height: 16px;
-}
-
-.tooltipTotal .tooltipValue {
-  font-weight: 600;
 }
 
 .tooltipName {
@@ -489,21 +477,6 @@
 .tooltipValue {
   font-variant-numeric: tabular-nums;
   color: var(--dsw-alias-label-primary);
-}
-
-.trendBar {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  border-radius: 2px;
-  overflow: hidden;
-  height: 100%;
-}
-
-.trendSegment {
-  display: block;
-  width: 100%;
-  flex: none;
 }
 
 .ticks {
@@ -536,8 +509,124 @@
 .legendDot {
   width: 8px;
   height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* Swatch for the total line's legend row. */
+.legendLine {
+  width: 12px;
+  height: 3px;
   border-radius: 2px;
   flex: none;
+  background: var(--dsw-alias-label-primary);
+}
+
+/* ---- line overlay ---- */
+
+/* An SVG stretched over the bands (percentage viewBox) plus HTML dots on
+ * the band centers; `non-scaling-stroke` keeps every line's width uniform
+ * even though the viewBox stretches non-uniformly. */
+.trendOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.trendSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The neutral total line sits above the per-model lines. */
+.trendLine {
+  fill: none;
+  stroke: var(--dsw-alias-label-primary);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Per-model lines; each path's `stroke` comes from its MODEL_COLORS slot. */
+.trendLineModel {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trendDot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--dsw-alias-label-primary);
+  transform: translate(-50%, -50%);
+}
+
+/* Markers shown at the hovered x-slot: one per active model line (its own
+ * color) plus a slightly larger neutral one on the total line. */
+.hoverDot,
+.hoverDotTotal {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hoverDotTotal {
+  width: 6px;
+  height: 6px;
+  background: var(--dsw-alias-label-primary);
+}
+
+/* One-shot opening choreography (page open only; the component drops the
+ * shared `.anim` class once it has played). Inline animation-delay carries
+ * each element's stagger past the shorthand's reset. Reduced-motion users
+ * get the finished chart immediately. */
+@media (prefers-reduced-motion: no-preference) {
+  .trendLine.anim,
+  .trendLineModel.anim {
+    stroke-dasharray: 1;
+    animation: trendLineDraw 700ms cubic-bezier(0.33, 0, 0.2, 1) backwards;
+  }
+
+  .trendDot.anim {
+    animation: trendDotPop 240ms ease-out backwards;
+  }
+
+  .heat > .anim {
+    animation: heatFade 300ms ease-out backwards;
+  }
+
+  .donut .anim {
+    animation: donutSweep 600ms cubic-bezier(0.33, 0, 0.2, 1) backwards;
+  }
+}
+
+@keyframes trendLineDraw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes trendDotPop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes heatFade {
+  from { opacity: 0; }
+}
+
+/* Slices draw from zero arc to their inline dasharray (`--arc`); the static
+ * end state equals the presentation attribute, so nothing jumps on exit. */
+@keyframes donutSweep {
+  from { stroke-dasharray: 0 var(--circ, 251.2); }
+  to { stroke-dasharray: var(--arc, 0) var(--circ, 251.2); }
 }
 
 /* ---- model-share donut ---- */
@@ -598,21 +687,42 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
+/* ZCode-style ranked rows: hairline separators instead of row gaps. */
 .shareRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 3px 6px;
+  padding: 7px 6px;
   border-radius: 6px;
   font-size: 12px;
   line-height: 16px;
 }
 
+.shareRow + .shareRow {
+  border-top: 1px solid var(--dsw-alias-border-l3);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 .shareRow:hover {
   background: color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent);
+}
+
+.shareBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.shareTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .shareName {
@@ -621,20 +731,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--dsw-alias-label-secondary);
+  color: var(--dsw-alias-label-primary);
 }
 
-.shareValue {
+.shareSub {
+  font-size: 11px;
+  line-height: 14px;
   font-variant-numeric: tabular-nums;
-  color: var(--dsw-alias-label-secondary);
-  white-space: nowrap;
+  color: var(--dsw-alias-label-tertiary);
 }
 
 .sharePct {
-  width: 44px;
-  text-align: right;
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--dsw-alias-label-primary);
   white-space: nowrap;
 }
