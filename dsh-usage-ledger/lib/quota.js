@@ -296,8 +296,13 @@ function zhipuWindow(limit) {
 }
 
 /**
- * Parse `GET /api/monitor/usage/quota/limit`. Token-limit rows are ordered by
- * their reset time: the earlier one is the 5-hour window, the later the weekly.
+ * Parse `GET /api/monitor/usage/quota/limit`. Each TOKENS_LIMIT row names its
+ * own window size (`unit` 3 counts hours — the 5-hour window — and `unit` 6 is
+ * the weekly window; the community-decoded console enum also has 1 = days and
+ * 5 = minutes). Those names decide the labels; reset-time order is only the
+ * fallback for rows carrying no unit, because in the tail of a week the
+ * rolling weekly window resets sooner than the 5-hour one, and the 5-hour row
+ * sometimes arrives with no reset time at all (openusage issue #242).
  * @param raw - the response body.
  * @returns { plan, fiveHour, weekly, mcp? }.
  */
@@ -307,12 +312,23 @@ export function parseZhipu(raw) {
   }
   const limits = Array.isArray(raw?.data?.limits) ? raw.data.limits : []
   const tokenLimits = limits.filter((limit) => limit?.type === 'TOKENS_LIMIT')
-  const sorted = [...tokenLimits].sort((left, right) => zhipuResetToMillis(left.nextResetTime) - zhipuResetToMillis(right.nextResetTime))
+  const byUnit = new Map()
+  for (const limit of tokenLimits) {
+    const unit = toFiniteNumber(limit?.unit)
+    const kind = unit === 6 ? 'weekly' : unit === 3 ? 'fiveHour' : undefined
+    if (kind !== undefined && !byUnit.has(kind)) byUnit.set(kind, limit)
+  }
+  const claimed = new Set(byUnit.values())
+  const ordered = tokenLimits
+    .filter((limit) => !claimed.has(limit))
+    .sort((left, right) => zhipuResetToMillis(left.nextResetTime) - zhipuResetToMillis(right.nextResetTime))
+  let fallbackIndex = 0
+  const takeFallback = () => ordered[fallbackIndex++]
   const timeLimit = limits.find((limit) => limit?.type === 'TIME_LIMIT')
   const quota = {
     plan: raw?.data?.level ?? 'unknown',
-    fiveHour: zhipuWindow(sorted[0]),
-    weekly: zhipuWindow(sorted[1]),
+    fiveHour: zhipuWindow(byUnit.get('fiveHour') ?? takeFallback()),
+    weekly: zhipuWindow(byUnit.get('weekly') ?? takeFallback()),
   }
   if (timeLimit?.remaining !== undefined) quota.mcp = { remaining: timeLimit.remaining }
   return quota

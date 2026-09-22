@@ -416,6 +416,46 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(parseZhipu({ success: true, data: { level: 'max', limits: [{ type: 'TOKENS_LIMIT', percentage: 120 }] } }).fiveHour.remainingPercent, 0)
   assert.throws(() => parseZhipu({ success: false, code: 401, msg: 'token invalid' }), /token invalid/)
 
+  // Zhipu: the console API names each window's size itself (`unit` 3 counts
+  // hours, `unit` 6 is the weekly window); reset-time order is only a fallback.
+  // In the tail of a week the rolling weekly window resets sooner than the
+  // 5-hour one, and the 5-hour row sometimes arrives with no reset time at
+  // all (openusage issue #242 payload) — both shapes used to swap the windows.
+  const weekTail = parseZhipu({
+    code: 200,
+    success: true,
+    data: {
+      level: 'pro',
+      limits: [
+        { type: 'TIME_LIMIT', unit: 5, number: 1, usage: 1000, currentValue: 204, remaining: 796, percentage: 20 },
+        { type: 'TOKENS_LIMIT', unit: 3, number: 5, percentage: 40, nextResetTime: Date.now() + 4.5 * 3_600_000 },
+        { type: 'TOKENS_LIMIT', unit: 6, number: 1, percentage: 77, nextResetTime: Date.now() + 2 * 3_600_000 },
+      ],
+    },
+  })
+  assert.equal(weekTail.fiveHour.usedPercent, 40)
+  assert.equal(weekTail.weekly.usedPercent, 77)
+
+  const noResetOnFiveHour = parseZhipu({
+    success: true,
+    data: {
+      level: 'lite',
+      limits: [
+        { type: 'TOKENS_LIMIT', unit: 3, number: 5, percentage: 36 },
+        { type: 'TOKENS_LIMIT', unit: 6, number: 1, percentage: 77, nextResetTime: Date.now() + 3 * 86_400_000 },
+      ],
+    },
+  })
+  assert.equal(noResetOnFiveHour.fiveHour.usedPercent, 36)
+  assert.equal(noResetOnFiveHour.weekly.usedPercent, 77)
+
+  const weeklyOnly = parseZhipu({
+    success: true,
+    data: { level: 'pro', limits: [{ type: 'TOKENS_LIMIT', unit: 6, number: 1, percentage: 9 }] },
+  })
+  assert.equal(weeklyOnly.fiveHour.usedPercent, undefined)
+  assert.equal(weeklyOnly.weekly.remainingPercent, 91)
+
   // display math: remaining share, reset horizon, compact phrasing
   assert.equal(remainingPercentOf({ limit: 200, remaining: 50 }), 25)
   assert.equal(remainingPercentOf({ usedPercent: 30 }), 70)
