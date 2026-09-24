@@ -4,7 +4,8 @@
  * Loaded by the harness client module system (this package declares
  * `dsh.client` and ships a prebuilt `lib/client.js`). Registers one entry
  * into the open `settings.section` list slot; the panel pulls aggregates
- * from the host ledger over the plugin's private loopback RPC channel.
+ * from the host ledger over exact Fetch routes under the shared `/api`
+ * channel (`/api/usage-ledger/*`, inside the connection auth fence).
  *
  * @module dsh-usage-ledger/client
  */
@@ -51,11 +52,11 @@ export function apply(ctx: ClientContext): void {
 
   const t = ctx.locale.bind(NS)
   const query = (payload: { period: string }) =>
-    ctx.connection.rpc.call<DashboardReport>('/usage-ledger', 'dashboard', payload)
+    ctx.connection.rpc.call<DashboardReport>('/api', 'usage-ledger/dashboard', payload)
   // Quotas are their own endpoint, so a vendor that is slow or down cannot
   // delay (or fail) the usage dashboard rendered beside it.
   const queryQuotas = (payload: { force?: boolean } = {}) =>
-    ctx.connection.rpc.call<QuotaReport>('/usage-ledger', 'quotas', payload)
+    ctx.connection.rpc.call<QuotaReport>('/api', 'usage-ledger/quotas', payload)
   const localeId = (): string => ctx.locale.getSnapshot().active
 
   ctx.slots.inject('settings.section', () => ctx.slots.register({

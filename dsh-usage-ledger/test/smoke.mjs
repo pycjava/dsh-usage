@@ -15,10 +15,10 @@ import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
 import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
 import { heatLevel } from '../lib/heat-level.js'
-import { createQuotaCache, detectProbe, discoverTargets, parseDeepseek, parseKimi, parseZhipu, probeTarget } from '../lib/quota.js'
+import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseDeepseek, parseKimi, parseZhipu, probeTarget } from '../lib/quota.js'
 import { formatCompactDuration, horizonSeconds, remainingPercentOf } from '../lib/quota-view.js'
 import { formatCompact, formatNumber, renderQuotaSection, renderTextReport } from '../lib/report.js'
-import { runDashboardQuery, runQuotaQuery } from '../lib/rpc.js'
+import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from '../lib/rpc.js'
 import { openLedgerStore } from '../lib/store.js'
 import { consumeInner, markDelegated } from '../lib/nesting.js'
 
@@ -573,6 +573,41 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(rpcBad.ok, false)
   assert.equal(rpcBad.error.code, 'bad-request')
   assert.match(rpcBad.error.message, /boom/)
+
+  // envelope fetch handler: unwraps client-request envelopes, replies in kind
+  const post = (body) => new Request('http://x/api/usage-ledger/dashboard', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  })
+  const echo = envelopeFetchHandler(async (payload) => ({ ok: true, value: { echoed: payload } }))
+  const goodWire = await echo(post({ type: 'client-request', rpcId: 'r1', method: 'usage-ledger/dashboard', payload: { period: '7d' } }))
+  assert.equal(goodWire.status, 200)
+  assert.deepEqual(await goodWire.json(), { type: 'server-response', rpcId: 'r1', result: { ok: true, value: { echoed: { period: '7d' } } } })
+  const notEnvelope = await (await echo(post({ hello: 1 }))).json()
+  assert.equal(notEnvelope.rpcId, 'invalid-request')
+  assert.equal(notEnvelope.result.ok, false)
+  assert.equal((await echo(post('not json'))).status, 400)
+  const throwing = envelopeFetchHandler(async () => { throw new Error('kaput') })
+  assert.equal((await throwing(post({ type: 'client-request', rpcId: 'r2', method: 'm', payload: null }))).status, 500)
+
+  // fetchJson: a gzipped body with no Content-Encoding (proxy-egress shape)
+  // still parses, via the gzip magic sniff.
+  {
+    const { gzipSync } = await import('node:zlib')
+    const { createServer } = await import('node:http')
+    const server = createServer((req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end(gzipSync(JSON.stringify({ ok: true, via: req.url })))
+    })
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+    try {
+      const parsed = await fetchJson(`http://127.0.0.1:${server.address().port}/quota`, { timeoutMs: 5000 })
+      assert.deepEqual(parsed, { ok: true, via: '/quota' })
+    } finally {
+      server.close()
+    }
+  }
 }
 
 // ---- quota report section ---------------------------------------------------

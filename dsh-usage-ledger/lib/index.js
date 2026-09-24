@@ -17,7 +17,7 @@
  *
  * Surfaces:
  *   - `usageLedger` service: query API (the `usage_stats` tool consumes it)
- *   - `/usage-ledger` RPC channel: aggregates for the browser half (the
+ *   - `/api/usage-ledger/*` Fetch routes: aggregates for the browser half (the
  *     数据与统计 settings section, served from lib/client.js) plus live
  *     provider quotas (`quotas`), read from the routes the deployment
  *     configures and reported as the vendors themselves state them
@@ -35,7 +35,7 @@ import z from '@deepseek-ai/schemastery'
 import { DAY_MS, aggregate, entryFromCall, parsePeriod, requeueUnwritten } from './ledger.js'
 import { createQuotaCache, discoverTargets } from './quota.js'
 import { openLedgerStore } from './store.js'
-import { badRequest, runDashboardQuery, runQuotaQuery } from './rpc.js'
+import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from './rpc.js'
 import { consumeInner, markDelegated } from './nesting.js'
 
 export const name = 'usage-ledger'
@@ -164,20 +164,26 @@ export class UsageLedgerService extends Service {
 
     this.ctx.logger.info('usage-ledger: recording all llm/stream calls')
 
-    // The browser half (the 数据与统计 settings section) pulls aggregates over
-    // a private loopback RPC channel — the open plugin path over connection.
-    // Profiles without a connection service (headless, TUI) never fire this
-    // optional injection, and the ledger keeps working unchanged.
+    // The browser half (the 数据与统计 settings section) pulls aggregates
+    // through exact Fetch routes under the shared `/api` channel — inside
+    // Connection's authentication fence, and the one registration style this
+    // runtime resolves from a plugin fiber (rpc.handle reaches for webServer
+    // through the caller's context, which a third-party plugin cannot
+    // satisfy). Profiles without a connection service (headless, TUI) never
+    // fire this optional injection, and the ledger keeps working unchanged.
     this.ctx.inject(['connection'], (connCtx) => {
-      connCtx.effect(() => connCtx.connection.rpc.handle('/usage-ledger', (endpoint, payload) => {
-        if (endpoint === 'dashboard') {
-          return runDashboardQuery(payload, (options) => this.query(options))
-        }
-        if (endpoint === 'quotas') {
-          return runQuotaQuery(payload, (options) => this.quotas(options))
-        }
-        return badRequest(`unknown endpoint ${endpoint}`)
-      }, { authority: 'loopback' }), 'usage-ledger: /usage-ledger rpc channel')
+      const endpoints = {
+        '/api/usage-ledger/dashboard': (payload) => runDashboardQuery(payload, (options) => this.query(options)),
+        '/api/usage-ledger/quotas': (payload) => runQuotaQuery(payload, (options) => this.quotas(options)),
+      }
+      for (const [path, run] of Object.entries(endpoints)) {
+        connCtx.connection.fetch.register({
+          path,
+          methods: ['POST'],
+          requestBody: 'buffered',
+          fetch: envelopeFetchHandler(run),
+        })
+      }
     })
   }
 

@@ -21,6 +21,8 @@
  * @module dsh-usage-ledger/quota
  */
 
+import { gunzipSync } from 'node:zlib'
+
 /** Per-request network timeout for one probe. */
 export const DEFAULT_TIMEOUT_MS = 15_000
 
@@ -58,8 +60,26 @@ export class HttpError extends Error {
 }
 
 /**
+ * Decode one response body to text. Gzip is recognized by its magic bytes,
+ * not the Content-Encoding header: a proxy egress can deliver a gzipped
+ * body with the header stripped, and undici then serves the raw bytes
+ * (observed through an undici ProxyAgent tunnel to open.bigmodel.cn).
+ * @param body - the raw response bytes.
+ * @returns the decoded text.
+ */
+function decodeBody(body) {
+  const buffer = Buffer.from(body)
+  if (buffer.length > 2 && buffer[0] === 0x1f && buffer[1] === 0x8b) {
+    return gunzipSync(buffer).toString('utf8')
+  }
+  return buffer.toString('utf8')
+}
+
+/**
  * Bounded JSON fetch: aborts after `timeoutMs`, rejects non-2xx with the
- * status and a short body excerpt, and rejects non-JSON bodies.
+ * status and a short body excerpt, and rejects non-JSON bodies. Asks for
+ * identity encoding first (no compression to mis-handle in transit); a
+ * middlebox that compresses anyway is caught by decodeBody's magic sniff.
  * @param url - absolute request URL.
  * @param init - fetch init plus { timeoutMs }.
  * @returns the parsed JSON body.
@@ -69,8 +89,9 @@ export async function fetchJson(url, init = {}) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
-    const response = await fetch(url, { ...rest, signal: controller.signal })
-    const text = await response.text()
+    const headers = { 'accept-encoding': 'identity', ...(rest.headers ?? {}) }
+    const response = await fetch(url, { ...rest, headers, signal: controller.signal })
+    const text = decodeBody(await response.arrayBuffer())
     if (!response.ok) throw new HttpError(response.status, text.slice(0, 300))
     try {
       return JSON.parse(text)

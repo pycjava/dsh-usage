@@ -1,6 +1,11 @@
 /**
- * Pure payload handling for the /usage-ledger RPC channel (the browser
- * panel's data path). No harness imports — testable standalone.
+ * Pure payload handling for the panel's data path (the browser 数据与统计
+ * section). No harness imports — testable standalone.
+ *
+ * The browser calls arrive as Connection RPC envelopes over exact Fetch
+ * routes under `/api/usage-ledger/*` (inside the shared channel's
+ * authentication fence); `envelopeFetchHandler` adapts one payload handler
+ * to that wire shape.
  *
  * @module dsh-usage-ledger/rpc
  */
@@ -36,6 +41,36 @@ export function runDashboardQuery(payload, query, now = Date.now()) {
     ...buildDashboard(periodEntries, { from: period.from, to: period.to, now, allTimeEntries }),
   }
   return { ok: true, value }
+}
+
+/**
+ * Adapt one payload handler to a Connection exact-Fetch-route handler: the
+ * browser's `rpc.call('/api', endpoint)` POSTs a client-request envelope to
+ * the route path, so the route must unwrap the envelope, run the handler,
+ * and reply with the matching server-response envelope (HTTP stays 200;
+ * business failures ride the envelope, mirroring rpcFetchHandler).
+ * @param run - (payload) => result envelope or a promise of one.
+ * @returns Fetch handler for `connection.fetch.register`.
+ */
+export function envelopeFetchHandler(run) {
+  return async (request) => {
+    let message
+    try {
+      message = await request.json()
+    } catch {
+      return new Response('body is not JSON', { status: 400 })
+    }
+    const rpcId = typeof message?.rpcId === 'string' ? message.rpcId : 'invalid-request'
+    const reply = (result) => Response.json({ type: 'server-response', rpcId, result })
+    if (message?.type !== 'client-request') {
+      return reply({ ok: false, error: { code: 'bad-request', message: 'invalid client-request message', details: { issues: [] } } })
+    }
+    try {
+      return reply(await run(message.payload))
+    } catch (error) {
+      return new Response(`handler failure: ${String(error)}`, { status: 500 })
+    }
+  }
 }
 
 /**

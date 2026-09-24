@@ -1424,7 +1424,8 @@ window.__ModuleLoader__.load({
 		* Loaded by the harness client module system (this package declares
 		* `dsh.client` and ships a prebuilt `lib/client.js`). Registers one entry
 		* into the open `settings.section` list slot; the panel pulls aggregates
-		* from the host ledger over the plugin's private loopback RPC channel.
+		* from the host ledger over exact Fetch routes under the shared `/api`
+		* channel (`/api/usage-ledger/*`, inside the connection auth fence).
 		*
 		* @module dsh-usage-ledger/client
 		*/
@@ -1448,8 +1449,8 @@ window.__ModuleLoader__.load({
 				en
 			}), "usage-ledger: dictionaries");
 			const t = ctx.locale.bind(NS);
-			const query = (payload) => ctx.connection.rpc.call("/usage-ledger", "dashboard", payload);
-			const queryQuotas = (payload = {}) => ctx.connection.rpc.call("/usage-ledger", "quotas", payload);
+			const query = (payload) => ctx.connection.rpc.call("/api", "usage-ledger/dashboard", payload);
+			const queryQuotas = (payload = {}) => ctx.connection.rpc.call("/api", "usage-ledger/quotas", payload);
 			const localeId = () => ctx.locale.getSnapshot().active;
 			ctx.slots.inject("settings.section", () => ctx.slots.register({
 				name: "settings.section",
