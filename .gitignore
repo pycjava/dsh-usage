@@ -11,5 +11,8 @@ node_modules/
 # ZCode session-local plans
 .zcode/
 
+# Local debug scaffolding (probe scripts, screenshots, headless-browser profiles)
+.debug/
+
 # npm cache
 .npm-cache/
