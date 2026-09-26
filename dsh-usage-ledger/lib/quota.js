@@ -2,11 +2,11 @@
  * Provider quota probes: how much allowance the configured LLM routes have
  * left, as the providers themselves report it.
  *
- * Three probe families, ported from the standalone TokenMeter CLI (its
- * parsers are pure and were fixture-tested against real responses):
+ * Four probe families, normalized behind one small wire shape:
  *
  *   - `zhipu`     智谱 GLM Coding Plan — 5-hour and weekly windows, plan, MCP
  *   - `kimi`      Kimi Coding Plan — 5-hour and weekly windows, membership
+ *   - `codex`     OpenAI Codex — ChatGPT OAuth windows, credits, reset credits
  *   - `deepseek`  pay-as-you-go balance — currency, granted, topped up
  *
  * The routes to probe are NOT hard-coded: `index.js` reads whichever provider
@@ -21,6 +21,7 @@
  * @module dsh-usage-ledger/quota
  */
 
+import { createHash } from 'node:crypto'
 import { gunzipSync } from 'node:zlib'
 
 /** Per-request network timeout for one probe. */
@@ -33,16 +34,18 @@ export const DEFAULT_TTL_MS = 300_000
 export const PROBE_URLS = {
   zhipu: 'https://open.bigmodel.cn/api/monitor/usage/quota/limit',
   kimi: 'https://api.kimi.com/coding/v1/usages',
+  codex: 'https://chatgpt.com/backend-api/wham/usage',
   deepseek: 'https://api.deepseek.com/user/balance',
 }
 
 /** Probe families this plugin knows how to read. */
-export const PROBE_IDS = ['zhipu', 'kimi', 'deepseek']
+export const PROBE_IDS = ['zhipu', 'kimi', 'codex', 'deepseek']
 
 /** Human labels per probe (the panel localizes; these serve logs/tools). */
 export const PROBE_LABELS = {
   zhipu: '智谱 GLM',
   kimi: 'Kimi',
+  codex: 'OpenAI Codex',
   deepseek: 'DeepSeek',
 }
 
@@ -161,10 +164,12 @@ async function probeDeepseek(apiKey, url, timeoutMs) {
   return { kind: 'balance', ...parseDeepseek(raw) }
 }
 
-// ---- Kimi: Coding Plan windows --------------------------------------------
+// ---- OpenAI Codex: ChatGPT subscription windows ----------------------------
 
 const FIVE_HOURS_SECONDS = 5 * 3600
 const WEEK_SECONDS = 7 * 86400
+const MONTH_MIN_SECONDS = 28 * 86400
+const MONTH_MAX_SECONDS = 31 * 86400
 
 function toFiniteNumber(value) {
   if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
@@ -174,6 +179,125 @@ function toFiniteNumber(value) {
   }
   return undefined
 }
+
+/** Classify Codex windows by their own duration, never by primary/secondary. */
+function codexWindowKind(value) {
+  const seconds = toFiniteNumber(value?.limit_window_seconds ?? value?.limitWindowSeconds)
+  if (seconds === undefined) return undefined
+  if (Math.abs(seconds - FIVE_HOURS_SECONDS) <= 60) return 'fiveHour'
+  if (Math.abs(seconds - WEEK_SECONDS) <= 60) return 'weekly'
+  if (seconds >= MONTH_MIN_SECONDS && seconds <= MONTH_MAX_SECONDS) return 'monthly'
+  return undefined
+}
+
+function codexWindow(value) {
+  if (value === undefined || value === null) return undefined
+  const used = toFiniteNumber(value.used_percent ?? value.usedPercent)
+  if (used === undefined) return undefined
+  const usedPercent = clampPercent(used)
+  const window = { usedPercent, remainingPercent: clampPercent(100 - usedPercent) }
+  const resetAt = normalizeResetAt(value.reset_at ?? value.resetAt)
+  if (resetAt !== undefined) window.resetAt = resetAt
+  else {
+    // Some payloads carry a relative countdown instead of an absolute stamp.
+    const resetAfter = toFiniteNumber(value.reset_after_seconds)
+    if (resetAfter !== undefined && resetAfter >= 0) window.resetIn = resetAfter
+  }
+  return window
+}
+
+function codexWindows(raw) {
+  const found = new Map()
+  for (const value of [raw?.primary_window, raw?.secondary_window, raw?.primary, raw?.secondary]) {
+    const kind = codexWindowKind(value)
+    const window = codexWindow(value)
+    if (kind !== undefined && window !== undefined && !found.has(kind)) found.set(kind, window)
+  }
+  return found
+}
+
+/**
+ * Parse `GET /backend-api/wham/usage`. The slot names are transport details:
+ * their reported durations decide whether a window is 5-hour, weekly, or
+ * monthly, so a provider-side reorder can never silently swap the labels.
+ *
+ * Besides the main `rate_limit`, the payload may carry named per-model
+ * budgets (`additional_rate_limits`, each with its own two windows), a
+ * separate 7-day `code_review_rate_limit`, purchased credits, and on-demand
+ * rate-limit resets.
+ */
+export function parseCodex(raw) {
+  const windows = codexWindows(raw?.rate_limit)
+  const codeReview = codexWindows(raw?.code_review_rate_limit)
+  const data = {}
+  const fiveHour = windows.get('fiveHour')
+  if (fiveHour !== undefined) data.fiveHour = fiveHour
+  const weekly = windows.get('weekly')
+  if (weekly !== undefined) data.weekly = weekly
+  const monthly = windows.get('monthly')
+  if (monthly !== undefined) data.monthly = monthly
+  const codeReviewWeekly = codeReview.get('weekly')
+  if (codeReviewWeekly !== undefined) data.codeReviewWeekly = codeReviewWeekly
+  if (Array.isArray(raw?.additional_rate_limits)) {
+    const additional = []
+    for (const entry of raw.additional_rate_limits) {
+      if (entry === null || typeof entry !== 'object') continue
+      const entryWindows = codexWindows(entry.rate_limit)
+      if (entryWindows.size === 0) continue
+      const limit = {
+        name: typeof entry.limit_name === 'string' ? entry.limit_name : '',
+      }
+      for (const [kind, window] of entryWindows) limit[kind] = window
+      additional.push(limit)
+    }
+    if (additional.length > 0) data.additionalLimits = additional
+  }
+  if (typeof raw?.plan_type === 'string' && raw.plan_type !== '') data.plan = raw.plan_type
+
+  const credits = raw?.credits
+  if (credits !== undefined && credits !== null && typeof credits === 'object') {
+    const balance = toFiniteNumber(credits.balance)
+    data.credits = {
+      hasCredits: credits.has_credits === true,
+      unlimited: credits.unlimited === true,
+      ...(balance === undefined ? {} : { balance }),
+    }
+  }
+  const resets = toFiniteNumber(raw?.rate_limit_reset_credits?.available_count)
+  if (resets !== undefined) data.rateLimitResets = resets
+
+  const windowCount = [...windows.values(), ...codeReview.values()].length
+    + (data.additionalLimits ?? []).length
+  if (windowCount === 0 && data.credits === undefined && data.rateLimitResets === undefined) {
+    throw new Error('Codex returned no quota information')
+  }
+  return data
+}
+
+async function probeCodex(accessToken, url, timeoutMs, target) {
+  const headers = { Authorization: `Bearer ${accessToken}`, Accept: 'application/json', originator: 'pi' }
+  if (typeof target?.accountId === 'string' && target.accountId !== '') {
+    headers['ChatGPT-Account-Id'] = target.accountId
+  }
+  const raw = await fetchJson(url, { headers, timeoutMs })
+  return { kind: 'windows', ...parseCodex(raw) }
+}
+
+/** Extract the ChatGPT account id from the OpenAI access-token claim. */
+function codexAccountId(accessToken) {
+  if (typeof accessToken !== 'string') return undefined
+  try {
+    const parts = accessToken.split('.')
+    if (parts.length !== 3) return undefined
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'))
+    const accountId = payload?.['https://api.openai.com/auth']?.chatgpt_account_id
+    return typeof accountId === 'string' && accountId !== '' ? accountId : undefined
+  } catch {
+    return undefined
+  }
+}
+
+// ---- Kimi: Coding Plan windows --------------------------------------------
 
 function timeUnitToSeconds(unit) {
   // Live responses spell this as an enum ("TIME_UNIT_MINUTE"); bare forms too.
@@ -373,6 +497,7 @@ async function probeZhipu(apiKey, url, timeoutMs) {
 export const PROBES = {
   zhipu: { url: PROBE_URLS.zhipu, fetch: probeZhipu },
   kimi: { url: PROBE_URLS.kimi, fetch: probeKimi },
+  codex: { url: PROBE_URLS.codex, fetch: probeCodex },
   deepseek: { url: PROBE_URLS.deepseek, fetch: probeDeepseek },
 }
 
@@ -382,6 +507,7 @@ export const PROBES = {
 const HOST_RULES = [
   { probe: 'zhipu', hosts: ['bigmodel.cn', 'z.ai'] },
   { probe: 'kimi', hosts: ['kimi.com'] },
+  { probe: 'codex', hosts: ['chatgpt.com'] },
   { probe: 'deepseek', hosts: ['deepseek.com'] },
 ]
 
@@ -391,6 +517,9 @@ const ID_RULES = [
   { probe: 'kimi', words: ['kimi'] },
   { probe: 'deepseek', words: ['deepseek'] },
 ]
+
+/** Hosts whose API-key traffic must never fall through to Codex by route name. */
+const OPENAI_API_HOSTS = ['openai.com', 'openai.azure.com']
 
 function hostOf(url) {
   if (typeof url !== 'string' || url === '') return ''
@@ -406,6 +535,13 @@ function hostOf(url) {
  * The endpoint host decides first (a route id is free-form), then the id's
  * keywords — so `zai-coding-cn` with a `bigmodel.cn` baseURL and a gateway
  * aliased `glm-proxy` both land on the Zhipu probe.
+ *
+ * Codex is deliberately narrower: `chatgpt.com` hosts, or the exact pi-ai
+ * catalog route id `openai-codex`. An OpenAI API-key endpoint is denied
+ * outright before the id fallback runs — a route named `openai-codex` pointed
+ * at `api.openai.com` carries a platform API key, and shipping that to the
+ * ChatGPT console endpoint would leak it cross-service. Custom routes can
+ * still force the probe through `quota.providers` overrides.
  * @param route - provider route id from the settings tree.
  * @param baseURL - the route's configured endpoint, when it has one.
  * @returns probe id, or undefined when no probe fits (route is then skipped).
@@ -416,8 +552,10 @@ export function detectProbe(route, baseURL) {
     for (const rule of HOST_RULES) {
       if (rule.hosts.some((candidate) => host === candidate || host.endsWith(`.${candidate}`))) return rule.probe
     }
+    if (OPENAI_API_HOSTS.some((candidate) => host === candidate || host.endsWith(`.${candidate}`))) return undefined
   }
   const id = String(route ?? '').toLowerCase()
+  if (id === 'openai-codex') return 'codex'
   for (const rule of ID_RULES) {
     if (rule.words.some((word) => id.includes(word))) return rule.probe
   }
@@ -429,8 +567,8 @@ export function detectProbe(route, baseURL) {
  * @param sources - { piAi, deepseek, overrides }: the resolved `llm-pi-ai`
  *   settings section (its `providers` dict), the resolved `llm-deepseek`
  *   section, and per-route config overrides.
- * @returns [{ route, probe, credentialRef?, label? }] — routes no probe can
- *   answer for, and routes already covered, are omitted.
+ * @returns [{ route, probe, credentialRef?, credentialKey?, label? }] — routes
+ *   no probe can answer for, and routes already covered, are omitted.
  */
 export function discoverTargets(sources = {}) {
   const overrides = sources.overrides ?? {}
@@ -446,10 +584,19 @@ export function discoverTargets(sources = {}) {
     const credentialRef = typeof override.credentialRef === 'string' && override.credentialRef !== ''
       ? override.credentialRef
       : profile?.apiKeyEnv
+    // Native Codex authentication is an OAuth grant owned by llm-pi-ai, not
+    // an environment-style credential ref. Only infer the record when no
+    // explicit ref overrides it; custom bearer-token routes still work.
+    const credentialKey = probe === 'codex'
+      && !(typeof credentialRef === 'string' && credentialRef !== '')
+      && /^[a-z][a-z0-9-]*$/.test(route)
+      ? `llm-pi-ai/${route}`
+      : undefined
     targets.push({
       route,
       probe,
       ...(typeof credentialRef === 'string' && credentialRef !== '' ? { credentialRef } : {}),
+      ...(credentialKey === undefined ? {} : { credentialKey }),
       ...(label === undefined ? {} : { label }),
       ...(typeof override.url === 'string' && override.url !== '' ? { url: override.url } : {}),
     })
@@ -460,6 +607,44 @@ export function discoverTargets(sources = {}) {
   // that adapter shows no card for it rather than an unconfigured one.
   if (sources.deepseek !== undefined) add(DEEPSEEK_ROUTE, sources.deepseek)
   return targets
+}
+
+/**
+ * Resolve a target's secret host-side. API-key routes use the credential-ref
+ * namespace; native OpenAI Codex uses llm-pi-ai's opaque OAuth record. This
+ * helper deliberately does not refresh that foreign grant — llm-pi-ai owns
+ * its format and refresh lifecycle — but gives an expired record an actionable
+ * per-route error instead of letting it break every quota card.
+ */
+export async function resolveTargetAuth(target, credentials, now = Date.now()) {
+  if (credentials === undefined) return { ...target, authError: 'credentials service is unavailable' }
+  try {
+    if (target.credentialRef !== undefined) {
+      const apiKey = (await credentials.resolve(target.credentialRef))?.value
+      return { ...target, ...(typeof apiKey === 'string' && apiKey !== '' ? { apiKey } : {}) }
+    }
+    if (target.credentialKey !== undefined) {
+      const record = await credentials.readRecord(target.credentialKey)
+      const grant = record?.kind === 'grant' ? record.payload : undefined
+      if (grant?.type !== 'oauth' || typeof grant.access !== 'string' || grant.access === '') {
+        return { ...target, authError: `no OAuth grant for ${target.credentialKey}` }
+      }
+      if (Number.isFinite(grant.expires) && grant.expires <= now + 30_000) {
+        return { ...target, authError: 'stored Codex OAuth grant is expired; use the Codex route once to refresh it' }
+      }
+      const accountId = typeof grant.accountId === 'string' && grant.accountId !== ''
+        ? grant.accountId
+        : codexAccountId(grant.access)
+      return {
+        ...target,
+        apiKey: grant.access,
+        ...(accountId === undefined ? {} : { accountId }),
+      }
+    }
+    return target
+  } catch (error) {
+    return { ...target, authError: error instanceof Error ? error.message : String(error) }
+  }
 }
 
 // ---- probing + TTL cache ---------------------------------------------------
@@ -487,11 +672,16 @@ export async function probeTarget(target, timeoutMs = DEFAULT_TIMEOUT_MS) {
       ...base,
       ok: false,
       reason: 'unconfigured',
-      error: target.credentialRef === undefined ? 'no credential reference on this route' : `no value for ${target.credentialRef}`,
+      error: target.authError
+        ?? (target.credentialRef !== undefined
+          ? `no value for ${target.credentialRef}`
+          : target.credentialKey !== undefined
+            ? `no OAuth grant for ${target.credentialKey}`
+            : 'no credential reference on this route'),
     }
   }
   try {
-    const data = await probe.fetch(target.apiKey, target.url ?? probe.url, timeoutMs)
+    const data = await probe.fetch(target.apiKey, target.url ?? probe.url, timeoutMs, target)
     return { ...base, ok: true, fetchedAt: Date.now(), stale: false, data }
   } catch (error) {
     return { ...base, ok: false, reason: 'error', error: error instanceof Error ? error.message : String(error) }
@@ -515,6 +705,11 @@ function degradeToStale(result, previous) {
  * so a burst of readers costs one network round per route. `force` skips the
  * TTL (the panel's refresh button); a forced refresh that fails degrades to
  * the last good reading rather than an error card.
+ *
+ * The key is the route plus a non-reversible credential identity (account id,
+ * or a truncated key digest) and the probe target: switching the ChatGPT
+ * account or a vendor key on the same route must never serve — nor degrade
+ * to — the previous credential's numbers.
  * @param options - { ttlMs, timeoutMs, now, probe } (the last two injectable).
  * @returns { load(targets, { force }), clear() }.
  */
@@ -525,10 +720,25 @@ export function createQuotaCache(options = {}) {
   const probe = typeof options.probe === 'function' ? options.probe : probeTarget
   const cached = new Map()
 
+  const cacheKeyOf = (target) => {
+    const keyFingerprint = typeof target.apiKey === 'string' && target.apiKey !== ''
+      ? createHash('sha256').update(target.apiKey).digest('hex').slice(0, 16)
+      : ''
+    return [
+      target.route,
+      target.probe,
+      target.url ?? '',
+      target.accountId ?? '',
+      target.credentialKey ?? '',
+      keyFingerprint,
+    ].join('|')
+  }
+
   const refresh = async (target) => {
-    const previous = cached.get(target.route)
+    const cacheKey = cacheKeyOf(target)
+    const previous = cached.get(cacheKey)
     const result = await probe(target, timeoutMs)
-    cached.set(target.route, { at: now(), result: degradeToStale(result, previous?.result) })
+    cached.set(cacheKey, { at: now(), result: degradeToStale(result, previous?.result) })
   }
 
   return {
@@ -542,13 +752,13 @@ export function createQuotaCache(options = {}) {
       const force = loadOptions.force === true
       const due = targets.filter((target) => {
         if (force) return true
-        const entry = cached.get(target.route)
+        const entry = cached.get(cacheKeyOf(target))
         return entry === undefined || now() - entry.at >= ttlMs
       })
       await Promise.all(due.map(refresh))
       const quotas = []
       for (const target of targets) {
-        const entry = cached.get(target.route)
+        const entry = cached.get(cacheKeyOf(target))
         if (entry !== undefined) quotas.push(entry.result)
       }
       return { quotas, ttlMs, forced: force }

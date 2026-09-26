@@ -73,8 +73,19 @@ export type QuotaData =
     membership?: string
     parallelLimit?: number
     mcp?: { remaining?: number }
+    credits?: { hasCredits: boolean; unlimited: boolean; balance?: number }
+    rateLimitResets?: number
     fiveHour?: QuotaWindow
     weekly?: QuotaWindow
+    monthly?: QuotaWindow
+    codeReviewWeekly?: QuotaWindow
+    /** Codex named per-model budgets, each with its own windows. */
+    additionalLimits?: Array<{
+      name?: string
+      fiveHour?: QuotaWindow
+      weekly?: QuotaWindow
+      monthly?: QuotaWindow
+    }>
   }
   | {
     kind: 'balance'
@@ -89,7 +100,7 @@ export type QuotaData =
 export interface QuotaReading {
   /** Provider route id from the settings tree (e.g. `zai-coding-cn`). */
   route: string
-  /** Probe family that answered: `zhipu` | `kimi` | `deepseek`. */
+  /** Probe family that answered: `zhipu` | `kimi` | `codex` | `deepseek`. */
   probe: string
   /** The route's configured display name, when it has one. */
   label?: string

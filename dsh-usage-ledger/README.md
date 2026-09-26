@@ -17,10 +17,11 @@ beside the allowance each provider reports for itself.
   `reasoningTokens`), stamped with provider, model, session id, and purpose.
 - **Reports live provider allowance** (供应商额度): for every provider route
   the deployment has configured, the panel shows what that vendor says is
-  left — 智谱 GLM and Kimi Coding Plan 5-hour/weekly windows with reset
-  countdowns, and DeepSeek's pay-as-you-go balance in its own currency. Zero
-  configuration: routes come from the settings tree and keys from the
-  credentials store the Models page writes. Quotas are live reads — never
+  left — 智谱 GLM, Kimi, and OpenAI Codex Coding Plan windows with reset
+  countdowns (plus Codex credits/reset credits), and DeepSeek's pay-as-you-go
+  balance in its own currency. Zero configuration: routes come from the
+  settings tree and credentials from the store the Models page writes. Quotas
+  are live reads — never
   ledger entries, never aggregated, never converted into money.
 - **Reported first, estimates flagged**: provider-reported usage is recorded
   as-is. With `estimateFallback` enabled (off by default), usage-less calls
@@ -181,7 +182,7 @@ From a conversation, the `usage_stats` agent tool answers questions directly:
 "这个月用了多少 token?"          → this-month totals + by-model report
 "最近 7 天按天看看用量"           → last 7 days, daily rows
 "按提供方统计一下"                → by-provider breakdown
-"智谱和 Kimi 的额度还剩多少?"     → the same report + includeQuotas: true
+"智谱、Kimi 和 Codex 额度还剩多少?" → the same report + includeQuotas: true
 ```
 
 Tool parameters: `period` (this-month | today | 7d | 30d | Nd | YYYY-MM |
@@ -194,24 +195,31 @@ question asks for it, because that read crosses the network).
 Which routes are probed is **discovered, never configured**: the plugin reads
 the resolved settings tree — the `llm-pi-ai` provider profiles plus the
 built-in `llm-deepseek` route — and probes each route whose family it knows.
-The API key comes from the route's own `apiKeyEnv` reference through the
-credentials seam, so a key the Models page stores for model calls is the same
-key the quota read uses. Add a provider on the Models page and its card
-appears; remove it and the card goes.
+API-key routes use their own `apiKeyEnv` reference through the credentials
+seam. The native `openai-codex` route instead reads the OAuth grant that the
+Models page stores at `llm-pi-ai/openai-codex`; its access token and account id
+stay host-side. Add a provider on the Models page and its card appears; remove
+it and the card goes.
 
 | Probe | What it reports | Source |
 | --- | --- | --- |
 | `zhipu` | Coding Plan 5-hour / weekly windows, plan, MCP calls left | `open.bigmodel.cn/api/monitor/usage/quota/limit` (console API, not a public contract) |
 | `kimi` | Coding Plan 5-hour / weekly windows, membership, parallel limit | `api.kimi.com/coding/v1/usages` (needs a Kimi Code `sk-kimi-` key) |
+| `codex` | ChatGPT Coding Plan 5-hour / weekly / monthly windows, plan, code review, named per-model limits, credits and reset credits | `chatgpt.com/backend-api/wham/usage` (ChatGPT OAuth; not an OpenAI API-key balance) |
 | `deepseek` | Pay-as-you-go balance: available, granted, topped up, sufficiency | `api.deepseek.com/user/balance` (official) |
 
 A route is matched to a family by its endpoint host first (`*.bigmodel.cn` /
-`*.z.ai`, `*.kimi.com`, `*.deepseek.com`), then by keywords in the route id
-(`zai`, `zhipu`, `glm`, `bigmodel`, `kimi`, `deepseek`). Routes matching
-neither are skipped silently — a local llama.cpp route shows no quota card
-rather than a broken one. The 智谱 and Kimi endpoints are community-verified
-console APIs, not public contracts: if a vendor changes its response shape,
-that one card reports "读取失败" and everything else keeps working.
+`*.z.ai`, `*.kimi.com`, `chatgpt.com`, `*.deepseek.com`), then by keywords in
+the route id (`zai`, `zhipu`, `glm`, `bigmodel`, `kimi`, `deepseek`). Codex is
+narrower on purpose: only a `chatgpt.com` endpoint or the exact route id
+`openai-codex` auto-selects it, and OpenAI API endpoints (`api.openai.com`)
+are explicitly excluded before any id matching — a platform API key must never
+travel to the ChatGPT console endpoint. Other routes can still force the probe
+through `quota.providers`. Routes
+matching nothing are skipped silently — a local llama.cpp route shows no quota
+card rather than a broken one. The 智谱, Kimi, and Codex endpoints are
+community-verified console APIs, not public contracts: if a vendor changes its
+response shape, that one card reports "读取失败" and everything else keeps working.
 
 Readings are cached host-side for `ttlMs` (5 minutes by default) and shared
 between the panel and the tool, so opening the settings page repeatedly does
@@ -312,9 +320,12 @@ node scripts/dedupe-modlens.mjs             # 实际清理(建议先退出 DSH)
   totals always agree on what is billable.
 - Estimates are heuristics (chars/4 density), never provider numbers; they
   stay marked `estimated` in every surface.
-- Allowance probes speak the vendors' **console** APIs for 智谱 and Kimi.
-  Those are not public contracts: a shape change or an endpoint move shows up
-  as one failed card (repairable per route through `quota.providers`). A route
+- Allowance probes speak the vendors' **console** APIs for 智谱, Kimi, and
+  OpenAI Codex. Those are not public contracts: a shape change or an endpoint
+  move shows up as one failed card (repairable per route through
+  `quota.providers`). The ledger reads Codex's current OAuth grant but does not
+  own or refresh it; if it has expired, make one Codex model call (which lets
+  `llm-pi-ai` refresh its grant) and refresh the panel. A route
   whose key has no quota API — a plain pay-as-you-go Moonshot key, a local
   gateway — is skipped rather than guessed at.
 - Allowance numbers are **live vendor readings**, not ledger aggregates: they

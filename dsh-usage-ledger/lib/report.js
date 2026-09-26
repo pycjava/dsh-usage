@@ -135,8 +135,27 @@ export function renderQuotaSection(quotas, now = Date.now()) {
     lines.push(`  ${name} (${quota.route})${badge === '' ? '' : `  ${badge}`}${stale}`)
     if (data.fiveHour !== undefined) lines.push(windowLine('5h window', data.fiveHour, now))
     if (data.weekly !== undefined) lines.push(windowLine('weekly', data.weekly, now))
+    if (data.monthly !== undefined) lines.push(windowLine('monthly', data.monthly, now))
+    if (data.codeReviewWeekly !== undefined) lines.push(windowLine('code review', data.codeReviewWeekly, now))
+    for (const limit of data.additionalLimits ?? []) {
+      const name = (limit.name === undefined || limit.name === '' ? 'extra' : limit.name).slice(0, 12)
+      if (limit.fiveHour !== undefined) lines.push(windowLine(`${name} 5h`, limit.fiveHour, now))
+      if (limit.weekly !== undefined) lines.push(windowLine(`${name} wk`, limit.weekly, now))
+      if (limit.monthly !== undefined) lines.push(windowLine(`${name} mo`, limit.monthly, now))
+    }
     if (data.mcp?.remaining !== undefined) lines.push(`    ${'MCP calls'.padEnd(14)}${formatNumber(data.mcp.remaining)} left`)
     if (data.parallelLimit !== undefined) lines.push(`    ${'parallel'.padEnd(14)}${formatNumber(data.parallelLimit)} requests`)
+    if (data.credits !== undefined) {
+      const value = data.credits.unlimited
+        ? 'unlimited'
+        : data.credits.hasCredits === false
+          ? 'none'
+          : data.credits.balance === undefined
+            ? 'unavailable'
+            : `${formatNumber(data.credits.balance)} left`
+      lines.push(`    ${'Codex credits'.padEnd(14)}${value}`)
+    }
+    if (data.rateLimitResets !== undefined) lines.push(`    ${'quota resets'.padEnd(14)}${formatNumber(data.rateLimitResets)} available`)
   }
   return lines.join('\n')
 }

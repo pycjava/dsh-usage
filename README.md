@@ -1,4 +1,4 @@
-﻿# dsh-usage
+# dsh-usage
 
 > 跨会话、跨模型/提供方聚合的 DSH 用量记账插件——「我这个月用了多少 token、按模型分布如何、各供应商额度还剩多少」,设置面板一眼可见、agent 一问即答。**只做 token 与供应商实报额度,不做计价换算。**
 
@@ -27,8 +27,8 @@ DSH 拥有完整的会话事件基础设施,但**没有一张「账」**——�
 - **实报优先,估算兜底**:提供方实报的 usage 直接入账;失败调用(无 usage chunk 或全零)不入账,不虚增;`estimateFallback`(**默认关**)开启后,无实报的调用用与 token-meter 同一套启发式(chars/4)入账并打 `estimated` 标记——实报与估算永远分开展示;
 - **幂等**:每次调用一条记录(uuid 键,`INSERT OR REPLACE`),重试不会重复记账;`finish.replayState` 刻意忽略——它是 pi-ai 的溯源元数据,不是「缓存重放」信号,不能作为排除依据;
 - **持久**:自带 `node:sqlite` 数据库(WAL),账本在 `$DSH_HOME/storages/usage-ledger.sqlite`,不依赖 storage hub,web / tui / headless 通用,跨 profile 共享同一本账;条目先进内存缓冲、批量落盘(定时 5s / 满 32 条 / 关停),单写者链串行化,失败整批保留并重试,不静默丢数据;
-- **双展示面,同一本账**:`usage_stats` agent 工具返回 monospace 报表(带 `includeQuotas: true` 时追加供应商额度段);设置页「数据与统计」dashboard——时间范围切换(7 天 / 30 天)+ 手动刷新、六张统计卡(tokens 用量、会话数、调用次数、活跃天数、连续天数、最常用模型)、GitHub 风格活跃热力图(近 53 周)、按天 Token 趋势堆叠柱状图 + 模型用量占比环形图、**供应商额度区块**(每个已配置的模型路由一张卡:智谱 GLM / Kimi 的 Coding Plan 5 小时与每周窗口进度条 + 重置倒计时 + 套餐标签,DeepSeek 按量余额);数字按语言本地化(zh 万/亿,en K/M/G),样式走客户端主题 token,深浅色自适应;
-- **零配置的供应商额度实报**:要探测哪些路由**不写配置**——从 settings 树里已解析的 `llm-pi-ai` provider profiles 与内置 `llm-deepseek` 路由发现,key 走同一条 credentials 通道(模型页存的那把);按 endpoint host(`*.bigmodel.cn`/`*.z.ai`、`*.kimi.com`、`*.deepseek.com`)再按路由 id 关键词匹配探针,匹配不上的路由静默跳过。额度是**实时外网读取**:TTL 5 分钟缓存(面板刷新按钮可强制跳过)、失败时降级展示上一次好数据并标 `cached`、逐供应商隔离(一家挂了不拖累其他)、key 永不出宿主进程(载荷只有数字);
+- **双展示面,同一本账**:`usage_stats` agent 工具返回 monospace 报表(带 `includeQuotas: true` 时追加供应商额度段);设置页「数据与统计」dashboard——时间范围切换(7 天 / 30 天)+ 手动刷新、六张统计卡(tokens 用量、会话数、调用次数、活跃天数、连续天数、最常用模型)、GitHub 风格活跃热力图(近 53 周)、按天 Token 趋势堆叠柱状图 + 模型用量占比环形图、**供应商额度区块**(每个已配置的模型路由一张卡:智谱 GLM / Kimi 的 Coding Plan 窗口、OpenAI Codex 的 5 小时/每周/每月与 credits/额度重置、DeepSeek 按量余额);数字按语言本地化(zh 万/亿,en K/M/G),样式走客户端主题 token,深浅色自适应;
+- **零配置的供应商额度实报**:要探测哪些路由**不写配置**——从 settings 树里已解析的 `llm-pi-ai` provider profiles 与内置 `llm-deepseek` 路由发现;API key 走同一条 credentials 引用通道,`openai-codex` 则读取模型页登录后保存的 OAuth grant(令牌不出宿主)。按 endpoint host(`*.bigmodel.cn`/`*.z.ai`、`*.kimi.com`、`chatgpt.com`、`*.deepseek.com`)再按路由 id 关键词匹配探针,匹配不上的路由静默跳过。支持智谱 GLM/Kimi 的 Coding Plan 窗口、OpenAI Codex 的 5 小时/每周/每月窗口与 credits/额度重置、DeepSeek 按量余额。额度是**实时外网读取**:TTL 5 分钟缓存(面板刷新按钮可强制跳过)、失败时降级展示上一次好数据并标 `cached`、逐供应商隔离(一家挂了不拖累其他)、凭证永不出宿主进程(载荷只有数字);
 - **全本地**:数据不出机器,与遥测(OTLP)无关;RPC 通道 `authority: loopback`,仅本机页面可查;额度探测只向供应商官方/控制台端点发请求,不经过任何第三方;
 - **降级不崩溃**:存储打不开时自动退化为内存账本(带上限、丢最旧并计数、打日志);无 connection 服务的 profile(headless/TUI)只是不注册 RPC 通道,记账照常。
 
@@ -63,7 +63,7 @@ bundle 补丁:usage-ledger(双面)· usage-ledger-tool(usage_stats 工具)· con
                                           │ 路由 → 探针匹配(baseURL host → id 关键词)
                                           ▼
                           ┌───────────────────────┐   key ← credentials 服务(apiKeyEnv 引用)
-                          │  QuotaCache (TTL 5min) │ ──────────────▶ 智谱 / Kimi / DeepSeek 额度接口
+                          │  QuotaCache (TTL 5min) │ ──────────────▶ 智谱 / Kimi / Codex / DeepSeek 额度接口
                           └───────────────────────┘ ◀── 解析后的数字(逐家隔离,失败降级 last-good)
 ```
 
@@ -75,10 +75,10 @@ bundle 补丁:usage-ledger(双面)· usage-ledger-tool(usage_stats 工具)· con
 # 构建(浏览器半边源码 src/client/,产物 lib/client.js 必须预构建后进包):
 cd dsh-usage-ledger
 npm run build        # tsdown → lib/client.js(+ map)
-npm pack             # → dsh-usage-ledger-0.5.0.tgz
+npm pack             # → dsh-usage-ledger-0.7.0.tgz
 
 # 安装(装完重启 App 客户端——宿主插件与客户端模块都只在启动时加载):
-dsh plugin --profile web add /path/to/dsh-usage-ledger-0.5.0.tgz
+dsh plugin --profile web add /path/to/dsh-usage-ledger-0.7.0.tgz
 
 # 验证:
 dsh --profile web --dump-config      # 应看到 # == dsh-usage-ledger 层(两行)
@@ -105,7 +105,7 @@ usage_stats 工具          # 对话中让 agent 查询(如「这个月用了多
 | `quota.timeoutMs` | `15000` | 单个路由探测的网络超时 |
 | `quota.providers` | `{}` | 按路由 id 的逃生门:`{ probe, url, credentialRef }`——强制探针家族、指向迁移后的端点、或改用别的凭证引用 |
 
-额度探测哪些路由**不需要配置**:从 settings 树(模型页写的 `llm-pi-ai` profiles + 内置 `llm-deepseek` 路由)自动发现,key 经 credentials 服务按路由的 `apiKeyEnv` 解析。匹配规则:先看 endpoint host(`*.bigmodel.cn`/`*.z.ai` → 智谱,`*.kimi.com` → Kimi,`*.deepseek.com` → DeepSeek),再看路由 id 关键词(`zai`/`zhipu`/`glm`/`bigmodel`、`kimi`、`deepseek`);都不匹配的路由静默跳过(本地网关不会出现一张坏卡)。
+额度探测哪些路由**不需要配置**:从 settings 树(模型页写的 `llm-pi-ai` profiles + 内置 `llm-deepseek` 路由)自动发现。API key 经 credentials 服务按路由的 `apiKeyEnv` 解析;原生 `openai-codex` 从 `llm-pi-ai/openai-codex` OAuth record 读取当前 access token/account id。匹配规则:先看 endpoint host(`*.bigmodel.cn`/`*.z.ai` → 智谱,`*.kimi.com` → Kimi,`chatgpt.com` → Codex,`*.deepseek.com` → DeepSeek),再看路由 id 关键词(`zai`/`zhipu`/`glm`/`bigmodel`、`kimi`、`deepseek`);Codex 刻意收窄——仅 `chatgpt.com` 端点或精确路由 id `openai-codex` 自动命中,且 `api.openai.com` 等 OpenAI API 端点在任何 id 匹配之前就被明确排除,平台 API key 绝不会发往 ChatGPT 控制台端点(自定义路由可经 `quota.providers` 强制)。都不匹配的路由静默跳过(本地网关不会出现一张坏卡)。额度缓存按「路由 + 凭证身份」键控:同路由换账号/换 key 立即重新探测,绝不复用、也绝不在跨凭证间降级旧读数。
 
 ## 开发与限制
 
@@ -114,7 +114,7 @@ usage_stats 工具          # 对话中让 agent 查询(如「这个月用了多
 - 限制一:worker 线程或独立进程里的调用(如 workflow worker、其他 dsh 实例)不经过本进程的 waterfall——一个宿主进程 = 一本账,多实例请分开 `$DSH_HOME`;
 - 限制二:估算永远是启发式(chars/4),不是提供方数字;所有展示面都会带 `estimated` 标记;
 - 限制三:usage 全零的调用(错误路径完成)不入账,查询时同样过滤历史遗留的全零条目,次数与 token 口径一致;
-- 限制四:智谱/Kimi 的额度接口是社区验证的**控制台**接口,不是公开契约——响应形状变了只有那一张卡显示读取失败,可用 `quota.providers` 按路由修;
+- 限制四:智谱/Kimi/OpenAI Codex 的额度接口是社区验证的**控制台**接口,不是公开契约——响应形状变了只有那一张卡显示读取失败,可用 `quota.providers` 按路由修;插件只读取 Codex 当前 OAuth grant、不替 `llm-pi-ai` 刷新,若过期先发起一次 Codex 模型调用再刷新面板;
 - 限制五:额度是供应商账户口径的实时数字(可能包含本机之外的消耗),与账本统计无关,也绝不参与 token 汇总;
 - 限制六:插件集变更(装 / 卸 / 升级)需重启客户端生效——本插件是**第一个第三方 `dsh.client` 包**,机制已在宿主源码逐行核实。
 
@@ -124,7 +124,7 @@ usage_stats 工具          # 对话中让 agent 查询(如「这个月用了多
 - [x] **M1 聚合与报表**:按时间/模型/提供方/天/会话聚合、monospace 报表(usage_stats 工具返回)
 - [x] **M2 agent 工具**:`usage_stats` 工具(两行架构,工具行可独立摘除)
 - [x] **M3 客户端 UI**:设置页「数据与统计」section(双面包 + 私有 loopback RPC,零宿主改动)
-- [x] **M4 供应商额度**:从模型配置自动发现路由 + credentials 复用 key + 三家探针(智谱/Kimi 窗口、DeepSeek 余额)+ TTL 缓存/last-good 降级 + 额度区块与工具 `includeQuotas`(额度不入账本、不做计价换算)
+- [x] **M4 供应商额度**:从模型配置自动发现路由 + credentials 复用 API key/OAuth grant + 四家探针(智谱/Kimi/Codex 窗口与 credits、DeepSeek 余额)+ TTL 缓存/last-good 降级 + 额度区块与工具 `includeQuotas`(额度不入账本、不做计价换算)
 - [ ] **M5 增强**(可选):面板数据导出(JSON/CSV)、纯 token 阈值预警、多机合并、OTLP 导出(自选)
 
 ## 非目标

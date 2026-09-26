@@ -2,8 +2,8 @@
  * The 供应商额度 (provider allowance) block of the 数据与统计 settings section.
  *
  * It renders what each configured provider route reports about its own
- * remaining allowance: Coding Plan 5-hour/weekly windows with reset
- * countdowns (智谱 GLM, Kimi), and DeepSeek's pay-as-you-go balance in its own
+ * remaining allowance: Coding Plan windows with reset countdowns (智谱 GLM,
+ * Kimi, OpenAI Codex), and DeepSeek's pay-as-you-go balance in its own
  * currency. Nothing here is computed from token counts — these are live
  * vendor numbers, kept deliberately separate from the ledger above.
  *
@@ -38,6 +38,7 @@ const LOW_PERCENT = 20
 const PROBE_KEYS: Record<string, string> = {
   zhipu: 'quota.probe.zhipu',
   kimi: 'quota.probe.kimi',
+  codex: 'quota.probe.codex',
   deepseek: 'quota.probe.deepseek',
 }
 
@@ -165,13 +166,49 @@ function QuotaBody({ data, zh, t }: { data: QuotaData | undefined; zh: boolean; 
   }
   return (
     <>
-      <WindowRow label={t('quota.fiveHour')} window={data.fiveHour} zh={zh} now={now} t={t} />
-      <WindowRow label={t('quota.weekly')} window={data.weekly} zh={zh} now={now} t={t} />
+      {data.fiveHour === undefined ? null : (
+        <WindowRow label={t('quota.fiveHour')} window={data.fiveHour} zh={zh} now={now} t={t} />
+      )}
+      {data.weekly === undefined ? null : (
+        <WindowRow label={t('quota.weekly')} window={data.weekly} zh={zh} now={now} t={t} />
+      )}
+      {data.monthly === undefined ? null : (
+        <WindowRow label={t('quota.monthly')} window={data.monthly} zh={zh} now={now} t={t} />
+      )}
+      {data.codeReviewWeekly === undefined ? null : (
+        <WindowRow label={t('quota.codeReviewWeekly')} window={data.codeReviewWeekly} zh={zh} now={now} t={t} />
+      )}
+      {(data.additionalLimits ?? []).flatMap((limit) => {
+        const name = limit.name !== undefined && limit.name !== '' ? limit.name : t('quota.additional')
+        return [
+          ...(limit.fiveHour === undefined ? [] : [{ label: `${name} · ${t('quota.fiveHour')}`, window: limit.fiveHour }]),
+          ...(limit.weekly === undefined ? [] : [{ label: `${name} · ${t('quota.weekly')}`, window: limit.weekly }]),
+          ...(limit.monthly === undefined ? [] : [{ label: `${name} · ${t('quota.monthly')}`, window: limit.monthly }]),
+        ]
+      }).map((row) => (
+        <WindowRow key={row.label} label={row.label} window={row.window} zh={zh} now={now} t={t} />
+      ))}
       {data.mcp?.remaining === undefined ? null : (
         <span className={css.quotaSub}>{t('quota.mcp', { n: String(data.mcp.remaining) })}</span>
       )}
       {data.parallelLimit === undefined ? null : (
         <span className={css.quotaSub}>{t('quota.parallel', { n: String(data.parallelLimit) })}</span>
+      )}
+      {data.credits === undefined ? null : (
+        <span className={css.quotaSub}>
+          {data.credits.unlimited
+            ? t('quota.creditsUnlimited')
+            : !data.credits.hasCredits
+              ? t('quota.creditsNone')
+              : data.credits.balance === undefined
+                ? t('quota.creditsUnknown')
+                : t('quota.credits', {
+                  n: new Intl.NumberFormat(zh ? 'zh-CN' : 'en-US', { maximumFractionDigits: 2 }).format(data.credits.balance),
+                })}
+        </span>
+      )}
+      {data.rateLimitResets === undefined ? null : (
+        <span className={css.quotaSub}>{t('quota.resets', { n: String(data.rateLimitResets) })}</span>
       )}
     </>
   )

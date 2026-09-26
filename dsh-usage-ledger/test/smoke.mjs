@@ -15,7 +15,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
 import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
 import { heatLevel } from '../lib/heat-level.js'
-import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseDeepseek, parseKimi, parseZhipu, probeTarget } from '../lib/quota.js'
+import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseCodex, parseDeepseek, parseKimi, parseZhipu, probeTarget, resolveTargetAuth } from '../lib/quota.js'
 import { formatCompactDuration, horizonSeconds, remainingPercentOf } from '../lib/quota-view.js'
 import { formatCompact, formatNumber, renderQuotaSection, renderTextReport } from '../lib/report.js'
 import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from '../lib/rpc.js'
@@ -456,6 +456,55 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(weeklyOnly.fiveHour.usedPercent, undefined)
   assert.equal(weeklyOnly.weekly.remainingPercent, 91)
 
+  // OpenAI Codex: classify by each window's duration rather than relying on
+  // primary/secondary order; retain plan, credits, resets, and code review.
+  const codex = parseCodex({
+    plan_type: 'plus',
+    rate_limit: {
+      primary_window: { used_percent: 23, limit_window_seconds: 604_800, reset_at: 1_800_000_000 },
+      secondary_window: { used_percent: '6', limit_window_seconds: '18000', reset_at: '1800000100' },
+    },
+    code_review_rate_limit: {
+      primary_window: { used_percent: 2, limit_window_seconds: 604_800, reset_at: 1_800_000_200 },
+    },
+    credits: { has_credits: true, unlimited: false, balance: '820.6969' },
+    rate_limit_reset_credits: { available_count: 1 },
+  })
+  assert.equal(codex.plan, 'plus')
+  assert.equal(codex.fiveHour.usedPercent, 6)
+  assert.equal(codex.fiveHour.remainingPercent, 94)
+  assert.equal(codex.weekly.usedPercent, 23)
+  assert.equal(codex.weekly.resetAt, new Date(1_800_000_000_000).toISOString())
+  assert.equal(codex.codeReviewWeekly.remainingPercent, 98)
+  assert.deepEqual(codex.credits, { hasCredits: true, unlimited: false, balance: 820.6969 })
+  assert.equal(codex.rateLimitResets, 1)
+  const codexMonthly = parseCodex({ rate_limit: { primary_window: {
+    used_percent: 120, limit_window_seconds: 30 * 86_400, reset_at: 1_800_000_000,
+  } } })
+  assert.equal(codexMonthly.monthly.remainingPercent, 0)
+  // Named per-model budgets ride in additional_rate_limits; windows may use a
+  // relative countdown (reset_after_seconds) and null slots.
+  const codexAdditional = parseCodex({
+    rate_limit: { primary_window: { used_percent: 5, limit_window_seconds: 18_000, reset_after_seconds: 7_200 } },
+    additional_rate_limits: [
+      { limit_name: 'GPT-5.2-Codex-Sonic', rate_limit: {
+        primary_window: { used_percent: 41, limit_window_seconds: 18_000, reset_after_seconds: 900 },
+        secondary_window: { used_percent: '13', limit_window_seconds: 604_800, reset_at: 1_800_000_300 },
+      } },
+      { limit_name: 'broken', rate_limit: { primary_window: null, secondary_window: {} } },
+      'not-an-object',
+    ],
+  })
+  assert.equal(codexAdditional.fiveHour.resetIn, 7_200)
+  assert.equal(codexAdditional.additionalLimits.length, 1)
+  assert.equal(codexAdditional.additionalLimits[0].name, 'GPT-5.2-Codex-Sonic')
+  assert.equal(codexAdditional.additionalLimits[0].fiveHour.usedPercent, 41)
+  assert.equal(codexAdditional.additionalLimits[0].weekly.remainingPercent, 87)
+  assert.equal(parseCodex({ additional_rate_limits: [{ limit_name: 'x', rate_limit: {
+    primary_window: { used_percent: 1, limit_window_seconds: 18_000 },
+  } }] }).additionalLimits[0].fiveHour.usedPercent, 1)
+  assert.throws(() => parseCodex({ plan_type: 'plus' }), /no quota information/)
+
   // display math: remaining share, reset horizon, compact phrasing
   assert.equal(remainingPercentOf({ limit: 200, remaining: 50 }), 25)
   assert.equal(remainingPercentOf({ usedPercent: 30 }), 70)
@@ -475,6 +524,13 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(detectProbe('glm-proxy', undefined), 'zhipu')                       // id fallback: no baseURL
   assert.equal(detectProbe('glm-proxy', 'https://gateway.example/v1'), 'zhipu')    // id fallback: unknown host
   assert.equal(detectProbe('kimi-coding', 'https://api.kimi.com/coding/v1'), 'kimi')
+  assert.equal(detectProbe('openai-codex', 'https://chatgpt.com/backend-api'), 'codex')
+  assert.equal(detectProbe('openai-codex', ''), 'codex') // exact pi-ai catalog route id
+  // An OpenAI API-key endpoint is denied before the id fallback: whatever the
+  // route is named, its platform key must never travel to the ChatGPT console.
+  assert.equal(detectProbe('openai-codex', 'https://api.openai.com/v1'), undefined)
+  assert.equal(detectProbe('codex-proxy', 'https://gateway.example/v1'), undefined) // override-only
+  assert.equal(detectProbe('openai', 'https://api.openai.com/v1'), undefined) // API key PAYG is not ChatGPT Coding Plan
   assert.equal(detectProbe('deepseek-official', 'https://api.deepseek.com'), 'deepseek')
   assert.equal(detectProbe('some-local-llama', 'http://127.0.0.1:11434/v1'), undefined)
 
@@ -483,6 +539,7 @@ assert.equal(heatLevel(1, 1), 4)
       providers: {
         'zai-coding-cn': { apiKeyEnv: 'ZAI_CODING_CN_API_KEY' },
         'kimi-coding': { apiKeyEnv: 'KIMI_CODING_API_KEY', baseURL: 'https://api.kimi.com/coding/v1' },
+        'openai-codex': { baseURL: 'https://chatgpt.com/backend-api' },
         'local-proxy': { apiKeyEnv: 'LOCAL_KEY', baseURL: 'http://127.0.0.1:11434/v1' },
       },
     },
@@ -491,9 +548,11 @@ assert.equal(heatLevel(1, 1), 4)
   assert.deepEqual(targets.map((target) => [target.route, target.probe]), [
     ['zai-coding-cn', 'zhipu'],
     ['kimi-coding', 'kimi'],
+    ['openai-codex', 'codex'],
     ['deepseek-official', 'deepseek'],
   ])
   assert.equal(targets[0].credentialRef, 'ZAI_CODING_CN_API_KEY')
+  assert.equal(targets[2].credentialKey, 'llm-pi-ai/openai-codex')
 
   // an override can force a family, move the endpoint, or rename the credential
   const overridden = discoverTargets({
@@ -501,7 +560,33 @@ assert.equal(heatLevel(1, 1), 4)
     overrides: { 'local-proxy': { probe: 'zhipu', url: 'https://open.bigmodel.cn/x', credentialRef: 'OTHER_KEY' } },
   })
   assert.deepEqual(overridden, [{ route: 'local-proxy', probe: 'zhipu', credentialRef: 'OTHER_KEY', url: 'https://open.bigmodel.cn/x' }])
+  // An API-key route named like the catalog Codex provider yields no target:
+  // nothing is probed and no key is sent anywhere.
+  assert.deepEqual(discoverTargets({ piAi: { providers: {
+    'openai-codex': { apiKeyEnv: 'OPENAI_API_KEY', baseURL: 'https://api.openai.com/v1' },
+  } } }), [])
   assert.deepEqual(discoverTargets({}), [])
+
+  // OAuth records live in a separate credentials keyspace from API-key refs.
+  const jwt = `x.${Buffer.from(JSON.stringify({
+    'https://api.openai.com/auth': { chatgpt_account_id: 'acct-from-jwt' },
+  })).toString('base64url')}.x`
+  const credentials = {
+    resolve: async (ref) => ({ value: ref === 'KIMI_KEY' ? 'kimi-secret' : undefined }),
+    readRecord: async (key) => key === 'llm-pi-ai/openai-codex'
+      ? { kind: 'grant', payload: { type: 'oauth', access: jwt, expires: 2_000_000 } }
+      : undefined,
+  }
+  const refAuth = await resolveTargetAuth({ route: 'kimi', probe: 'kimi', credentialRef: 'KIMI_KEY' }, credentials, 1_000_000)
+  assert.equal(refAuth.apiKey, 'kimi-secret')
+  const oauthAuth = await resolveTargetAuth({ route: 'openai-codex', probe: 'codex', credentialKey: 'llm-pi-ai/openai-codex' }, credentials, 1_000_000)
+  assert.equal(oauthAuth.apiKey, jwt)
+  assert.equal(oauthAuth.accountId, 'acct-from-jwt')
+  const expired = await resolveTargetAuth({ route: 'openai-codex', probe: 'codex', credentialKey: 'llm-pi-ai/openai-codex' }, credentials, 3_000_000)
+  assert.match(expired.authError, /expired/)
+  assert.equal(expired.apiKey, undefined)
+  const missing = await resolveTargetAuth({ route: 'other-codex', probe: 'codex', credentialKey: 'llm-pi-ai/other-codex' }, credentials, 1_000_000)
+  assert.match(missing.authError, /no OAuth grant/)
 }
 
 // ---- quota probing + TTL cache ---------------------------------------------
@@ -566,6 +651,25 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(stale.quotas[0].error, 'HTTP 503')
   degraded.clear()
 
+  // the cache is keyed by credential identity too: switching the account or
+  // key on the same route re-probes, never serves the old credential's
+  // numbers, and never degrades across identities.
+  const idSeen = []
+  const identityCache = createQuotaCache({
+    now: () => clock,
+    probe: async (target) => {
+      idSeen.push(target.apiKey)
+      if (target.apiKey === 'key-b') return { route: target.route, probe: 'codex', ok: false, reason: 'error', error: 'HTTP 503' }
+      return { route: target.route, probe: 'codex', ok: true, fetchedAt: clock, stale: false, data: { kind: 'windows', weekly: { remainingPercent: 10 } } }
+    },
+  })
+  const keyA = await identityCache.load([{ route: 'openai-codex', probe: 'codex', apiKey: 'key-a' }])
+  assert.equal(keyA.quotas[0].data.weekly.remainingPercent, 10)
+  const keyB = await identityCache.load([{ route: 'openai-codex', probe: 'codex', apiKey: 'key-b' }])
+  assert.deepEqual(idSeen, ['key-a', 'key-b']) // same route, new identity: probed
+  assert.equal(keyB.quotas[0].ok, false) // first failure under this identity: no stale fallback to key-a
+  assert.equal(keyB.quotas[0].data, undefined)
+
   // rpc envelope: a successful read and a thrown loader both answer cleanly
   const rpcOk = await runQuotaQuery({ force: true }, async (options) => ({ quotas: [], forced: options.force }))
   assert.deepEqual(rpcOk, { ok: true, value: { quotas: [], forced: true } })
@@ -608,6 +712,32 @@ assert.equal(heatLevel(1, 1), 4)
       server.close()
     }
   }
+
+  // Codex probe sends the OAuth bearer and account id only from the host.
+  {
+    const { createServer } = await import('node:http')
+    let received
+    const server = createServer((req, res) => {
+      received = { authorization: req.headers.authorization, accountId: req.headers['chatgpt-account-id'], originator: req.headers.originator }
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({
+        plan_type: 'pro',
+        rate_limit: { primary_window: { used_percent: 10, limit_window_seconds: 18_000 } },
+      }))
+    })
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+    try {
+      const reading = await probeTarget({
+        route: 'openai-codex', probe: 'codex', apiKey: 'oauth-access', accountId: 'acct-123',
+        url: `http://127.0.0.1:${server.address().port}/usage`,
+      }, 5000)
+      assert.equal(reading.ok, true)
+      assert.equal(reading.data.fiveHour.remainingPercent, 90)
+      assert.deepEqual(received, { authorization: 'Bearer oauth-access', accountId: 'acct-123', originator: 'pi' })
+    } finally {
+      server.close()
+    }
+  }
 }
 
 // ---- quota report section ---------------------------------------------------
@@ -615,6 +745,7 @@ assert.equal(heatLevel(1, 1), 4)
   const section = renderQuotaSection([
     { route: 'zai-coding-cn', probe: 'zhipu', ok: true, fetchedAt: 0, stale: false, data: { kind: 'windows', plan: 'pro', fiveHour: { remainingPercent: 81.5, resetIn: 7_800 }, weekly: { remainingPercent: 95.8, resetAt: new Date(Date.now() + 3 * 86_400_000).toISOString() }, mcp: { remaining: 870 } } },
     { route: 'kimi-coding', probe: 'kimi', ok: false, reason: 'unconfigured', error: 'no value for KIMI_CODING_API_KEY' },
+    { route: 'openai-codex', probe: 'codex', ok: true, data: { kind: 'windows', plan: 'plus', fiveHour: { remainingPercent: 94 }, weekly: { remainingPercent: 77 }, codeReviewWeekly: { remainingPercent: 98 }, additionalLimits: [{ name: 'Sonic', fiveHour: { remainingPercent: 59 } }], credits: { hasCredits: true, unlimited: false, balance: 820.7 }, rateLimitResets: 1 } },
     { route: 'deepseek-official', probe: 'deepseek', ok: true, stale: true, data: { kind: 'balance', currency: 'CNY', available: 110, granted: 10, toppedUp: 100, sufficient: true } },
   ], Date.now())
   assert.match(section, /provider quotas/)
@@ -622,6 +753,11 @@ assert.equal(heatLevel(1, 1), 4)
   assert.match(section, /82% left {3}resets in 2h 10m/)
   assert.match(section, /MCP calls {5}870 left/)
   assert.match(section, /Kimi \(kimi-coding\) — no credential configured/)
+  assert.match(section, /OpenAI Codex \(openai-codex\) {2}plan plus/)
+  assert.match(section, /code review\s+98% left/)
+  assert.match(section, /Sonic 5h\s+59% left/)
+  assert.match(section, /Codex credits\s+820\.7 left/)
+  assert.match(section, /quota resets\s+1 available/)
   assert.match(section, /balance\s+¥110\.00, granted ¥10\.00, topped up ¥100\.00/)
   assert.match(section, /\[cached\]/)
   assert.equal(renderQuotaSection([]), '')

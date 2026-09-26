@@ -33,7 +33,7 @@
 import { Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { DAY_MS, aggregate, entryFromCall, parsePeriod, requeueUnwritten } from './ledger.js'
-import { createQuotaCache, discoverTargets } from './quota.js'
+import { createQuotaCache, discoverTargets, resolveTargetAuth } from './quota.js'
 import { openLedgerStore } from './store.js'
 import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from './rpc.js'
 import { consumeInner, markDelegated } from './nesting.js'
@@ -355,7 +355,7 @@ export class UsageLedgerService extends Service {
    * Zero-config on purpose: the settings tree already declares every route and
    * the credential reference its key lives under, so a provider added (or
    * removed) on the Models page changes this list with no plugin config.
-   * @returns [{ route, probe, credentialRef?, label? }].
+   * @returns [{ route, probe, credentialRef?, credentialKey?, label? }].
    */
   quotaTargets() {
     const quota = this.config.quota ?? {}
@@ -373,25 +373,20 @@ export class UsageLedgerService extends Service {
   }
 
   /**
-   * Resolve each target's API key through the harness credentials seam (the
-   * same store the Models page writes), so quota reads and model calls share
-   * one credential source. Keys stay host-side: only readings cross the wire.
+   * Resolve each target's API key or OAuth grant through the harness
+   * credentials seam (the same store the Models page writes), so quota reads
+   * and model calls share one source. Secrets stay host-side: only readings
+   * cross the wire.
    */
   async resolveQuotaKeys(targets) {
-    const credentials = this.credentials
-    const resolved = []
-    for (const target of targets) {
-      let apiKey
-      if (credentials !== undefined && target.credentialRef !== undefined) {
-        try {
-          apiKey = (await credentials.resolve(target.credentialRef))?.value
-        } catch (error) {
-          this.ctx.logger.warn(`usage-ledger: cannot resolve ${target.credentialRef}: ${error instanceof Error ? error.message : String(error)}`)
-        }
+    return Promise.all(targets.map(async (target) => {
+      const resolved = await resolveTargetAuth(target, this.credentials)
+      if (resolved.authError !== undefined) {
+        const credential = target.credentialRef ?? target.credentialKey ?? target.route
+        this.ctx.logger.warn(`usage-ledger: cannot resolve quota credential ${credential}: ${resolved.authError}`)
       }
-      resolved.push({ ...target, apiKey })
-    }
-    return resolved
+      return resolved
+    }))
   }
 
   /**
