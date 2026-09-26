@@ -363,8 +363,16 @@ export class UsageLedgerService extends Service {
     let piAi
     let deepseek
     try {
-      piAi = this.settings.get('llm-pi-ai')
-      deepseek = this.settings.get('llm-deepseek')
+      // dsh-settings 0.1.7 dropped the plain section getter, leaving
+      // `describe()` as the section-read seam; keep `get()` for older hosts.
+      if (typeof this.settings.describe === 'function') {
+        const byNs = new Map(this.settings.describe().map((form) => [form.ns, form.value]))
+        piAi = byNs.get('llm-pi-ai')
+        deepseek = byNs.get('llm-deepseek')
+      } else {
+        piAi = this.settings.get('llm-pi-ai')
+        deepseek = this.settings.get('llm-deepseek')
+      }
     } catch (error) {
       this.ctx.logger.warn(`usage-ledger: cannot read the settings tree for quota routes: ${error instanceof Error ? error.message : String(error)}`)
       return []
