@@ -208,12 +208,13 @@ it and the card goes.
 | `codex` | ChatGPT Coding Plan 5-hour / weekly / monthly windows, plan, code review, named per-model limits, credits and reset credits | `chatgpt.com/backend-api/wham/usage` (ChatGPT OAuth; not an OpenAI API-key balance) |
 | `deepseek` | Pay-as-you-go balance: available, granted, topped up, sufficiency | `api.deepseek.com/user/balance` (official) |
 | `moonshot` | Open-platform pay-as-you-go balance: available, voucher, topped up | `api.moonshot.cn/v1/users/me/balance` (CNY, official); the international `moonshotai` route or `*.moonshot.ai` endpoints read `api.moonshot.ai/v1/users/me/balance` in USD |
+| `openrouter` | Marketplace credit: purchased credits, spend, money left (USD) | `openrouter.ai/api/v1/credits` (official) |
 
 A route is matched to a family by its endpoint host first (`*.bigmodel.cn` /
 `*.z.ai`, `*.kimi.com`, `chatgpt.com`, `*.deepseek.com`, `*.moonshot.cn`,
-`*.moonshot.ai`), then by keywords in
+`*.moonshot.ai`, `openrouter.ai`), then by keywords in
 the route id (`zai`, `zhipu`, `glm`, `bigmodel`, `kimi`, `deepseek`,
-`moonshot`). Codex is
+`moonshot`, `openrouter`). Codex is
 narrower on purpose: only a `chatgpt.com` endpoint or the exact route id
 `openai-codex` auto-selects it, and OpenAI API endpoints (`api.openai.com`)
 are explicitly excluded before any id matching — a platform API key must never
@@ -223,6 +224,16 @@ matching nothing are skipped silently — a local llama.cpp route shows no quota
 card rather than a broken one. The 智谱, Kimi, and Codex endpoints are
 community-verified console APIs, not public contracts: if a vendor changes its
 response shape, that one card reports "读取失败" and everything else keeps working.
+
+Not every catalog route can have a card. The remaining pi-ai providers
+(groq, together, fireworks, mistral, cerebras, nvidia, huggingface, baseten,
+xai, github-copilot, anthropic, google, the qwen/xiaomi/minimax/ant-ling
+token plans, …) expose **no public quota or balance API** their API keys can
+read — their allowances live behind dashboard sessions. Sending a key to a
+guessed endpoint would violate the plugin's no-unverified-endpoints stance,
+so those routes stay silently skipped. If a vendor ships a documented quota
+endpoint, add it here; a deployment that finds one first can still force a
+probe family and endpoint through `quota.providers`.
 
 Readings are cached host-side for `ttlMs` (5 minutes by default) and shared
 between the panel and the tool, so opening the settings page repeatedly does

@@ -15,7 +15,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
 import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
 import { heatLevel } from '../lib/heat-level.js'
-import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseCodex, parseDeepseek, parseKimi, parseMoonshot, parseZhipu, probeTarget, resolveTargetAuth } from '../lib/quota.js'
+import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseCodex, parseDeepseek, parseKimi, parseMoonshot, parseOpenRouter, parseZhipu, probeTarget, resolveTargetAuth } from '../lib/quota.js'
 import { formatCompactDuration, horizonSeconds, remainingPercentOf } from '../lib/quota-view.js'
 import { formatCompact, formatNumber, renderQuotaSection, renderTextReport } from '../lib/report.js'
 import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from '../lib/rpc.js'
@@ -535,6 +535,8 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(detectProbe('moonshotai-cn', ''), 'moonshot') // id fallback: the catalog CN route names no baseURL in the settings tree
   assert.equal(detectProbe('my-gw', 'https://api.moonshot.cn/v1'), 'moonshot')
   assert.equal(detectProbe('my-gw', 'https://api.moonshot.ai/v1'), 'moonshot')
+  assert.equal(detectProbe('openrouter', ''), 'openrouter')
+  assert.equal(detectProbe('my-gw', 'https://openrouter.ai/api/v1'), 'openrouter')
   assert.equal(detectProbe('some-local-llama', 'http://127.0.0.1:11434/v1'), undefined)
 
   const targets = discoverTargets({
@@ -579,6 +581,12 @@ assert.equal(heatLevel(1, 1), 4)
   )
   assert.throws(() => parseMoonshot({ code: 401, smsg: 'Invalid Authentication' }), /Invalid Authentication/)
   assert.throws(() => parseMoonshot({ code: 0 }), /no balance/)
+  // OpenRouter marketplace credits: available is total minus usage, in USD
+  assert.deepEqual(parseOpenRouter({ data: { total_credits: '10', total_usage: '3.25' } }), {
+    currency: 'USD', available: 6.75, granted: 0, toppedUp: 10, sufficient: true,
+  })
+  assert.equal(parseOpenRouter({ data: { total_credits: '5', total_usage: '9' } }).available, 0)
+  assert.throws(() => parseOpenRouter({ data: null }), /no credit/)
 
   // an override can force a family, move the endpoint, or rename the credential
   const overridden = discoverTargets({

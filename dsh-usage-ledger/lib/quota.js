@@ -2,13 +2,14 @@
  * Provider quota probes: how much allowance the configured LLM routes have
  * left, as the providers themselves report it.
  *
- * Five probe families, normalized behind one small wire shape:
+ * Six probe families, normalized behind one small wire shape:
  *
  *   - `zhipu`     智谱 GLM Coding Plan — 5-hour and weekly windows, plan, MCP
  *   - `kimi`      Kimi Coding Plan — 5-hour and weekly windows, membership
  *   - `codex`     OpenAI Codex — ChatGPT OAuth windows, credits, reset credits
  *   - `deepseek`  pay-as-you-go balance — currency, granted, topped up
  *   - `moonshot`  Moonshot AI open platform — pay-as-you-go balance (CNY/USD)
+ *   - `openrouter` marketplace credit — total credits and usage (USD)
  *
  * The routes to probe are NOT hard-coded: `index.js` reads whichever provider
  * routes the deployment configures (the settings tree's `llm-pi-ai` profiles
@@ -38,13 +39,14 @@ export const PROBE_URLS = {
   codex: 'https://chatgpt.com/backend-api/wham/usage',
   deepseek: 'https://api.deepseek.com/user/balance',
   moonshot: 'https://api.moonshot.cn/v1/users/me/balance',
+  openrouter: 'https://openrouter.ai/api/v1/credits',
 }
 
 /** The international open platform spells its balance in USD. */
 export const MOONSHOT_INTL_URL = 'https://api.moonshot.ai/v1/users/me/balance'
 
 /** Probe families this plugin knows how to read. */
-export const PROBE_IDS = ['zhipu', 'kimi', 'codex', 'deepseek', 'moonshot']
+export const PROBE_IDS = ['zhipu', 'kimi', 'codex', 'deepseek', 'moonshot', 'openrouter']
 
 /** Human labels per probe (the panel localizes; these serve logs/tools). */
 export const PROBE_LABELS = {
@@ -53,6 +55,7 @@ export const PROBE_LABELS = {
   codex: 'OpenAI Codex',
   deepseek: 'DeepSeek',
   moonshot: 'Moonshot',
+  openrouter: 'OpenRouter',
 }
 
 /** Route id the base layer mounts the official DeepSeek adapter under. */
@@ -199,6 +202,35 @@ async function probeMoonshot(apiKey, url, timeoutMs) {
   const raw = await fetchJson(url, { headers: { Authorization: `Bearer ${apiKey}` }, timeoutMs })
   const currency = new URL(url).host.endsWith('.moonshot.ai') ? 'USD' : 'CNY'
   return { kind: 'balance', ...parseMoonshot(raw, currency) }
+}
+
+// ---- OpenRouter marketplace: credits --------------------------------------
+
+/**
+ * Parse `GET /api/v1/credits` (documented): `{ data: { total_credits,
+ * total_usage } }`, decimal USD — credits purchased on the account versus
+ * what model spend has consumed. The card shows the difference as the money
+ * left.
+ * @param raw - the response body.
+ * @returns { currency, available, granted, toppedUp }.
+ */
+export function parseOpenRouter(raw) {
+  const data = raw?.data
+  if (data === null || typeof data !== 'object') throw new Error('OpenRouter returned no credit information')
+  const total = toNumber(data.total_credits)
+  const usage = toNumber(data.total_usage)
+  return {
+    currency: 'USD',
+    available: Math.max(0, total - usage),
+    granted: 0,
+    toppedUp: total,
+    sufficient: total - usage > 0,
+  }
+}
+
+async function probeOpenRouter(apiKey, url, timeoutMs) {
+  const raw = await fetchJson(url, { headers: { Authorization: `Bearer ${apiKey}` }, timeoutMs })
+  return { kind: 'balance', ...parseOpenRouter(raw) }
 }
 
 // ---- OpenAI Codex: ChatGPT subscription windows ----------------------------
@@ -537,6 +569,7 @@ export const PROBES = {
   codex: { url: PROBE_URLS.codex, fetch: probeCodex },
   deepseek: { url: PROBE_URLS.deepseek, fetch: probeDeepseek },
   moonshot: { url: PROBE_URLS.moonshot, fetch: probeMoonshot },
+  openrouter: { url: PROBE_URLS.openrouter, fetch: probeOpenRouter },
 }
 
 // ---- route classification --------------------------------------------------
@@ -548,6 +581,7 @@ const HOST_RULES = [
   { probe: 'codex', hosts: ['chatgpt.com'] },
   { probe: 'deepseek', hosts: ['deepseek.com'] },
   { probe: 'moonshot', hosts: ['moonshot.cn', 'moonshot.ai'] },
+  { probe: 'openrouter', hosts: ['openrouter.ai'] },
 ]
 
 /** Route-id keywords, for a route whose baseURL names no known host. */
@@ -556,6 +590,7 @@ const ID_RULES = [
   { probe: 'kimi', words: ['kimi'] },
   { probe: 'deepseek', words: ['deepseek'] },
   { probe: 'moonshot', words: ['moonshot'] },
+  { probe: 'openrouter', words: ['openrouter'] },
 ]
 
 /** Hosts whose API-key traffic must never fall through to Codex by route name. */
