@@ -2,7 +2,7 @@
  * Provider quota probes: how much allowance the configured LLM routes have
  * left, as the providers themselves report it.
  *
- * Six probe families, normalized behind one small wire shape:
+ * Nine probe families, normalized behind one small wire shape:
  *
  *   - `zhipu`     智谱 GLM Coding Plan — 5-hour and weekly windows, plan, MCP
  *   - `kimi`      Kimi Coding Plan — 5-hour and weekly windows, membership
@@ -10,6 +10,9 @@
  *   - `deepseek`  pay-as-you-go balance — currency, granted, topped up
  *   - `moonshot`  Moonshot AI open platform — pay-as-you-go balance (CNY/USD)
  *   - `openrouter` marketplace credit — total credits and usage (USD)
+ *   - `minimax`   MiniMax Coding Plan — interval and weekly windows (global/CN)
+ *   - `baseten`   month-to-date credit spend (no remaining is published)
+ *   - `anthropic` Claude Pro/Max OAuth — 5-hour and weekly windows
  *
  * The routes to probe are NOT hard-coded: `index.js` reads whichever provider
  * routes the deployment configures (the settings tree's `llm-pi-ai` profiles
@@ -40,13 +43,18 @@ export const PROBE_URLS = {
   deepseek: 'https://api.deepseek.com/user/balance',
   moonshot: 'https://api.moonshot.cn/v1/users/me/balance',
   openrouter: 'https://openrouter.ai/api/v1/credits',
+  minimax: 'https://api.minimax.io/v1/token_plan/remains',
+  baseten: 'https://api.baseten.co/v1/billing/usage_summary',
+  anthropic: 'https://api.anthropic.com/api/oauth/usage',
 }
 
-/** The international open platform spells its balance in USD. */
+/** Region/international variants derived per route (override.url always wins). */
 export const MOONSHOT_INTL_URL = 'https://api.moonshot.ai/v1/users/me/balance'
+export const ZHIPU_INTL_URL = 'https://api.z.ai/api/monitor/usage/quota/limit'
+export const MINIMAX_CN_URL = 'https://api.minimaxi.com/v1/token_plan/remains'
 
 /** Probe families this plugin knows how to read. */
-export const PROBE_IDS = ['zhipu', 'kimi', 'codex', 'deepseek', 'moonshot', 'openrouter']
+export const PROBE_IDS = ['zhipu', 'kimi', 'codex', 'deepseek', 'moonshot', 'openrouter', 'minimax', 'baseten', 'anthropic']
 
 /** Human labels per probe (the panel localizes; these serve logs/tools). */
 export const PROBE_LABELS = {
@@ -56,6 +64,9 @@ export const PROBE_LABELS = {
   deepseek: 'DeepSeek',
   moonshot: 'Moonshot',
   openrouter: 'OpenRouter',
+  minimax: 'MiniMax',
+  baseten: 'Baseten',
+  anthropic: 'Anthropic',
 }
 
 /** Route id the base layer mounts the official DeepSeek adapter under. */
@@ -231,6 +242,186 @@ export function parseOpenRouter(raw) {
 async function probeOpenRouter(apiKey, url, timeoutMs) {
   const raw = await fetchJson(url, { headers: { Authorization: `Bearer ${apiKey}` }, timeoutMs })
   return { kind: 'balance', ...parseOpenRouter(raw) }
+}
+
+// ---- Anthropic: Claude Pro/Max OAuth windows --------------------------------
+
+/**
+ * Normalize a utilization fraction-or-percent into a used percentage.
+ * Claude's OAuth usage endpoint reports `utilization` as a 0–1 fraction.
+ */
+function anthropicPercent(value) {
+  const parsed = toFiniteNumber(value)
+  if (parsed === undefined) return undefined
+  return parsed >= 0 && parsed <= 1 ? parsed * 100 : parsed
+}
+
+/**
+ * Parse `GET /api/oauth/usage` (Claude Pro/Max subscription, OAuth bearer):
+ * `{ five_hour: { utilization, resets_at }, seven_day: { … }, extra_usage? }`.
+ * @param raw - the response body.
+ * @returns { fiveHour, weekly } windows with used percentages and resets.
+ */
+export function parseAnthropic(raw) {
+  if (raw?.error !== undefined) throw new Error(`Anthropic API error: ${raw?.error?.message ?? 'unknown'}`)
+  const fiveHourPercent = anthropicPercent(raw?.five_hour?.utilization)
+  const weeklyPercent = anthropicPercent(raw?.seven_day?.utilization)
+  if (fiveHourPercent === undefined && weeklyPercent === undefined) {
+    throw new Error('Anthropic returned no usage windows')
+  }
+  const resetOf = (window) => (typeof window?.resets_at === 'string' && window.resets_at !== ''
+    ? { resetAt: new Date(window.resets_at).toISOString() }
+    : {})
+  return {
+    fiveHour: fiveHourPercent === undefined ? {} : { usedPercent: fiveHourPercent, ...resetOf(raw?.five_hour) },
+    weekly: weeklyPercent === undefined ? {} : { usedPercent: weeklyPercent, ...resetOf(raw?.seven_day) },
+  }
+}
+
+async function probeAnthropic(token, url, timeoutMs) {
+  const raw = await fetchJson(url, {
+    headers: { Authorization: `Bearer ${token}`, 'anthropic-beta': 'oauth-2025-04-20' },
+    timeoutMs,
+  })
+  return { kind: 'windows', ...parseAnthropic(raw) }
+}
+
+// ---- MiniMax Coding Plan: interval and weekly windows -----------------------
+
+/** Epoch seconds/millis, ISO string, or countdown seconds → ISO timestamp. */
+function isoFromEpochLike(value, now = Date.now()) {
+  const parsed = toFiniteNumber(value)
+  if (parsed !== undefined) {
+    if (parsed < 1e9) return new Date(now + parsed * 1000).toISOString() // countdown seconds
+    return new Date(parsed < 1e12 ? parsed * 1000 : parsed).toISOString()
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const time = Date.parse(value)
+    if (!Number.isNaN(time)) return new Date(time).toISOString()
+  }
+  return undefined
+}
+
+/** Remaining-percent (0–100, integer 100 means 100%) → used percent. */
+function usedFromRemainingPercent(value) {
+  const parsed = toFiniteNumber(value)
+  return parsed === undefined ? undefined : 100 - Math.min(100, Math.max(0, parsed))
+}
+
+/**
+ * Parse `GET /v1/token_plan/remains` (MiniMax Coding Plan, API-key bearer).
+ * Windows come from `services[]` (percent + window_type) and/or
+ * `model_remains[]` (per-model interval and weekly counts); the interval
+ * window plays the five-hour slot. A payload status of 2062 means the key has
+ * no active Token Plan (credits-only accounts) — surfaced as an error card
+ * instead of a fabricated percentage.
+ * @param raw - the response body.
+ * @returns { fiveHour, weekly } with used percentages and reset timestamps.
+ */
+export function parseMiniMax(raw) {
+  const data = raw?.data ?? raw
+  const baseResponse = data?.base_resp ?? data?.baseResp ?? raw?.base_resp ?? raw?.baseResp
+  const status = toFiniteNumber(baseResponse?.status_code ?? baseResponse?.statusCode)
+  if (status !== undefined && status !== 0) {
+    const message = baseResponse?.status_msg ?? baseResponse?.statusMessage
+    throw new Error(status === 2062
+      ? 'no active MiniMax Token Plan (credits-only account; see the console)'
+      : `MiniMax API error: ${typeof message === 'string' && message !== '' ? message : `code=${status}`}`)
+  }
+  if (data === null || typeof data !== 'object') throw new Error('MiniMax returned no usage information')
+  const interval = []
+  const weekly = []
+  const pushWindow = (bucket, percent, resetAt) => {
+    if (percent !== undefined) bucket.push({ percent, ...(resetAt === undefined ? {} : { resetAt }) })
+  }
+  if (Array.isArray(data.services)) {
+    for (const service of data.services) {
+      const percent = toFiniteNumber(service?.percent)
+      if (percent === undefined) continue
+      const weeklyWindow = String(service?.window_type ?? '').toLowerCase().includes('week')
+      const resetAt = isoFromEpochLike(service?.resets_at ?? service?.reset_time ?? service?.end_time)
+      pushWindow(weeklyWindow ? weekly : interval, percent, resetAt)
+    }
+  }
+  if (Array.isArray(data.model_remains ?? data.modelRemains)) {
+    for (const model of data.model_remains ?? data.modelRemains) {
+      const intervalUsed = usedFromRemainingPercent(
+        model?.current_interval_remaining_percent ?? model?.currentIntervalRemainingPercent)
+        ?? (() => {
+          const total = toFiniteNumber(model?.current_interval_total_count ?? model?.currentIntervalTotalCount)
+          const used = toFiniteNumber(model?.current_interval_usage_count ?? model?.currentIntervalUsageCount)
+          return total !== undefined && total > 0 && used !== undefined ? (used / total) * 100 : undefined
+        })()
+      if (intervalUsed !== undefined) {
+        pushWindow(interval, intervalUsed, isoFromEpochLike(
+          model?.current_resets_at ?? model?.end_time ?? model?.endTime ?? model?.remains_time ?? model?.remainsTime))
+      }
+      const weeklyUsed = usedFromRemainingPercent(
+        model?.current_weekly_remaining_percent ?? model?.currentWeeklyRemainingPercent)
+        ?? (() => {
+          const total = toFiniteNumber(model?.current_weekly_total_count ?? model?.currentWeeklyTotalCount)
+          const used = toFiniteNumber(model?.current_weekly_usage_count ?? model?.currentWeeklyUsageCount)
+          return total !== undefined && total > 0 && used !== undefined ? (used / total) * 100 : undefined
+        })()
+      if (weeklyUsed !== undefined) {
+        pushWindow(weekly, weeklyUsed, isoFromEpochLike(
+          model?.weekly_resets_at ?? model?.weekly_end_time ?? model?.weeklyEndTime ?? model?.weekly_remains_time ?? model?.weeklyRemainsTime))
+      }
+    }
+  }
+  const highest = (windows) => windows.reduce((left, right) => (left === undefined || right.percent > left.percent ? right : left), undefined)
+  const fiveHour = highest(interval)
+  const week = highest(weekly)
+  if (fiveHour === undefined && week === undefined) {
+    throw new Error('MiniMax returned no usage windows (credits-only account; see the console)')
+  }
+  return {
+    ...(fiveHour === undefined ? {} : { fiveHour: { usedPercent: fiveHour.percent, ...(fiveHour.resetAt === undefined ? {} : { resetAt: fiveHour.resetAt }) } }),
+    ...(week === undefined ? {} : { weekly: { usedPercent: week.percent, ...(week.resetAt === undefined ? {} : { resetAt: week.resetAt }) } }),
+  }
+}
+
+async function probeMiniMax(apiKey, url, timeoutMs) {
+  // The modern endpoint first, then the legacy path it replaced.
+  const legacy = url.replace('/v1/token_plan/remains', '/v1/api/openplatform/coding_plan/remains')
+  let lastError
+  for (const candidate of legacy === url ? [url] : [url, legacy]) {
+    try {
+      const raw = await fetchJson(candidate, { headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' }, timeoutMs })
+      return { kind: 'windows', ...parseMiniMax(raw) }
+    } catch (error) {
+      lastError = error
+    }
+  }
+  throw lastError
+}
+
+// ---- Baseten: month-to-date credit spend ------------------------------------
+
+/**
+ * Parse `GET /v1/billing/usage_summary` (documented): `{ dedicated_usage,
+ * training_usage, model_apis_usage }`, each carrying `credits_used`. Baseten
+ * publishes no remaining balance, so the card reports spend honestly.
+ * @param raw - the response body.
+ * @returns { unit, used } — credits consumed in the queried month.
+ */
+export function parseBaseten(raw) {
+  if (raw === null || typeof raw !== 'object') throw new Error('Baseten returned no usage information')
+  const sections = [raw.dedicated_usage, raw.training_usage, raw.model_apis_usage]
+  const used = sections.map((section) => toFiniteNumber(section?.credits_used)).filter((value) => value !== undefined)
+  if (used.length === 0) throw new Error('Baseten returned no credit usage')
+  return { unit: 'credits', used: used.reduce((sum, value) => sum + value, 0) }
+}
+
+async function probeBaseten(apiKey, url, timeoutMs) {
+  // The summary requires a UTC date range (≤31 days); the card shows the
+  // current calendar month to date.
+  const now = new Date()
+  const range = new URL(url)
+  range.searchParams.set('start_date', new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString())
+  range.searchParams.set('end_date', now.toISOString())
+  const raw = await fetchJson(range.toString(), { headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' }, timeoutMs })
+  return { kind: 'spend', ...parseBaseten(raw) }
 }
 
 // ---- OpenAI Codex: ChatGPT subscription windows ----------------------------
@@ -525,7 +716,9 @@ export function parseZhipu(raw) {
     throw new Error(`Zhipu API error: ${raw?.msg ?? `code=${raw?.code}`}`)
   }
   const limits = Array.isArray(raw?.data?.limits) ? raw.data.limits : []
-  const tokenLimits = limits.filter((limit) => limit?.type === 'TOKENS_LIMIT')
+  // CREDIT_LIMIT (the Coding Plan's credit-based lite tiers) reports the same
+  // unit/percentage/nextResetTime shape as TOKENS_LIMIT; both name the windows.
+  const tokenLimits = limits.filter((limit) => limit?.type === 'TOKENS_LIMIT' || limit?.type === 'CREDIT_LIMIT')
   const byUnit = new Map()
   for (const limit of tokenLimits) {
     const unit = toFiniteNumber(limit?.unit)
@@ -570,6 +763,9 @@ export const PROBES = {
   deepseek: { url: PROBE_URLS.deepseek, fetch: probeDeepseek },
   moonshot: { url: PROBE_URLS.moonshot, fetch: probeMoonshot },
   openrouter: { url: PROBE_URLS.openrouter, fetch: probeOpenRouter },
+  minimax: { url: PROBE_URLS.minimax, fetch: probeMiniMax },
+  baseten: { url: PROBE_URLS.baseten, fetch: probeBaseten },
+  anthropic: { url: PROBE_URLS.anthropic, fetch: probeAnthropic },
 }
 
 // ---- route classification --------------------------------------------------
@@ -582,6 +778,8 @@ const HOST_RULES = [
   { probe: 'deepseek', hosts: ['deepseek.com'] },
   { probe: 'moonshot', hosts: ['moonshot.cn', 'moonshot.ai'] },
   { probe: 'openrouter', hosts: ['openrouter.ai'] },
+  { probe: 'minimax', hosts: ['minimax.io', 'minimaxi.com'] },
+  { probe: 'baseten', hosts: ['baseten.co'] },
 ]
 
 /** Route-id keywords, for a route whose baseURL names no known host. */
@@ -591,6 +789,8 @@ const ID_RULES = [
   { probe: 'deepseek', words: ['deepseek'] },
   { probe: 'moonshot', words: ['moonshot'] },
   { probe: 'openrouter', words: ['openrouter'] },
+  { probe: 'minimax', words: ['minimax'] },
+  { probe: 'baseten', words: ['baseten'] },
 ]
 
 /** Hosts whose API-key traffic must never fall through to Codex by route name. */
@@ -631,6 +831,9 @@ export function detectProbe(route, baseURL) {
   }
   const id = String(route ?? '').toLowerCase()
   if (id === 'openai-codex') return 'codex'
+  // The Claude OAuth usage endpoint answers a Pro/Max subscription grant, not
+  // a console API key — like Codex, only the catalog route id auto-selects it.
+  if (id === 'anthropic') return 'anthropic'
   for (const rule of ID_RULES) {
     if (rule.words.some((word) => id.includes(word))) return rule.probe
   }
@@ -662,18 +865,30 @@ export function discoverTargets(sources = {}) {
     // Native Codex authentication is an OAuth grant owned by llm-pi-ai, not
     // an environment-style credential ref. Only infer the record when no
     // explicit ref overrides it; custom bearer-token routes still work.
-    const credentialKey = probe === 'codex'
+    // Native Codex, Claude, and Kimi-Code subscription logins are OAuth grants
+    // owned by llm-pi-ai, not environment-style credential refs. Only infer the
+    // record when no explicit ref overrides it; custom routes keep working.
+    const oauthGrants = {
+      codex: 'openai-codex',
+      anthropic: 'anthropic',
+      kimi: 'kimi-coding',
+    }
+    const grantRoute = probe === 'codex' && /^[a-z][a-z0-9-]*$/.test(route) ? route : oauthGrants[probe]
+    const credentialKey = grantRoute !== undefined
       && !(typeof credentialRef === 'string' && credentialRef !== '')
-      && /^[a-z][a-z0-9-]*$/.test(route)
-      ? `llm-pi-ai/${route}`
+      ? `llm-pi-ai/${grantRoute}`
       : undefined
-    // The Moonshot open platform serves two domains with two currencies:
-    // follow the route's own endpoint when it names the international one,
-    // else the catalog's bare `moonshotai` id (the CN route is `moonshotai-cn`).
-    // An explicit override.url always wins over this derived default.
-    const moonshotIntl = probe === 'moonshot'
-      && (hostOf(profile?.baseURL).endsWith('.moonshot.ai') || route === 'moonshotai')
-    const derivedUrl = moonshotIntl ? MOONSHOT_INTL_URL : undefined
+    // Region routing for families that serve two domains: follow the route's
+    // own endpoint when it names one, else the catalog's route id (the CN
+    // flavor carries a `-cn` suffix). An explicit override.url always wins.
+    const host = hostOf(profile?.baseURL)
+    const derivedUrl = probe === 'moonshot' && (host.endsWith('.moonshot.ai') || route === 'moonshotai')
+      ? MOONSHOT_INTL_URL
+      : probe === 'zhipu' && (host === 'z.ai' || host.endsWith('.z.ai') || route === 'zai')
+        ? ZHIPU_INTL_URL
+        : probe === 'minimax' && (host.endsWith('.minimaxi.com') || route === 'minimax-cn')
+          ? MINIMAX_CN_URL
+          : undefined
     const url = typeof override.url === 'string' && override.url !== '' ? override.url : derivedUrl
     targets.push({
       route,
@@ -713,7 +928,7 @@ export async function resolveTargetAuth(target, credentials, now = Date.now()) {
         return { ...target, authError: `no OAuth grant for ${target.credentialKey}` }
       }
       if (Number.isFinite(grant.expires) && grant.expires <= now + 30_000) {
-        return { ...target, authError: 'stored Codex OAuth grant is expired; use the Codex route once to refresh it' }
+        return { ...target, authError: 'stored OAuth grant is expired; use the route once to refresh it' }
       }
       const accountId = typeof grant.accountId === 'string' && grant.accountId !== ''
         ? grant.accountId

@@ -95,12 +95,18 @@ export type QuotaData =
     toppedUp: number
     sufficient: boolean
   }
+  | {
+    /** Baseten-style: the vendor publishes month-to-date consumption only. */
+    kind: 'spend'
+    unit: string
+    used: number
+  }
 
 /** One configured provider route's quota reading (failures included). */
 export interface QuotaReading {
   /** Provider route id from the settings tree (e.g. `zai-coding-cn`). */
   route: string
-  /** Probe family that answered: `zhipu` | `kimi` | `codex` | `deepseek`. */
+  /** Probe family that answered: `zhipu` | `kimi` | `codex` | `deepseek` | `moonshot` | `openrouter` | `minimax` | `baseten` | `anthropic`. */
   probe: string
   /** The route's configured display name, when it has one. */
   label?: string

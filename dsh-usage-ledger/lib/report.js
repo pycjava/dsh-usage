@@ -129,6 +129,13 @@ export function renderQuotaSection(quotas, now = Date.now()) {
       lines.push(`    balance         ${currencySymbol(data.currency)}${formatAmount(data.available)}${granted}${toppedUp}${data.sufficient === false ? '   (insufficient)' : ''}`)
       continue
     }
+    if (data.kind === 'spend') {
+      // Baseten-style: the vendor publishes consumption only — report the
+      // month-to-date spend without inventing a remaining figure.
+      lines.push(`  ${name} (${quota.route})${stale}`)
+      lines.push(`    used this month ${data.unit} ${formatAmount(data.used)}`)
+      continue
+    }
     const badge = [data.plan === undefined || data.plan === 'unknown' ? undefined : `plan ${data.plan}`, data.membership]
       .filter((part) => part !== undefined)
       .join(' · ')

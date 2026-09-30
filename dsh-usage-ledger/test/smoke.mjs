@@ -15,7 +15,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
 import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
 import { heatLevel } from '../lib/heat-level.js'
-import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseCodex, parseDeepseek, parseKimi, parseMoonshot, parseOpenRouter, parseZhipu, probeTarget, resolveTargetAuth } from '../lib/quota.js'
+import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseAnthropic, parseBaseten, parseCodex, parseDeepseek, parseKimi, parseMiniMax, parseMoonshot, parseOpenRouter, parseZhipu, probeTarget, resolveTargetAuth } from '../lib/quota.js'
 import { formatCompactDuration, horizonSeconds, remainingPercentOf } from '../lib/quota-view.js'
 import { formatCompact, formatNumber, renderQuotaSection, renderTextReport } from '../lib/report.js'
 import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from '../lib/rpc.js'
@@ -537,6 +537,10 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(detectProbe('my-gw', 'https://api.moonshot.ai/v1'), 'moonshot')
   assert.equal(detectProbe('openrouter', ''), 'openrouter')
   assert.equal(detectProbe('my-gw', 'https://openrouter.ai/api/v1'), 'openrouter')
+  assert.equal(detectProbe('minimax-cn', ''), 'minimax')
+  assert.equal(detectProbe('baseten', 'https://api.baseten.co/v1'), 'baseten')
+  assert.equal(detectProbe('anthropic', ''), 'anthropic') // exact catalog route only (OAuth, not console keys)
+  assert.equal(detectProbe('claude-gw', 'https://api.anthropic.com'), undefined) // API-key routes are not the subscription
   assert.equal(detectProbe('some-local-llama', 'http://127.0.0.1:11434/v1'), undefined)
 
   const targets = discoverTargets({
@@ -587,6 +591,59 @@ assert.equal(heatLevel(1, 1), 4)
   })
   assert.equal(parseOpenRouter({ data: { total_credits: '5', total_usage: '9' } }).available, 0)
   assert.throws(() => parseOpenRouter({ data: null }), /no credit/)
+
+  // region routing: the zai catalog route and z.ai hosts read the
+  // international monitor; minimax-cn reads the CN remains endpoint; the
+  // anthropic and kimi-coding catalog routes fall back to their OAuth grants
+  // when no apiKeyEnv names a credential ref.
+  assert.deepEqual(discoverTargets({ piAi: { providers: {
+    zai: { apiKeyEnv: 'Z' },
+    minimax: { apiKeyEnv: 'MM' },
+    'minimax-cn': { apiKeyEnv: 'MMC' },
+    anthropic: {},
+    'kimi-coding': {},
+  } } }).map((target) => [target.route, target.url ?? target.credentialKey ?? 'default']), [
+    ['zai', 'https://api.z.ai/api/monitor/usage/quota/limit'],
+    ['minimax', 'default'],
+    ['minimax-cn', 'https://api.minimaxi.com/v1/token_plan/remains'],
+    ['anthropic', 'llm-pi-ai/anthropic'],
+    ['kimi-coding', 'llm-pi-ai/kimi-coding'],
+  ])
+  // Claude OAuth windows: utilization is a 0-1 fraction
+  assert.deepEqual(parseAnthropic({
+    five_hour: { utilization: 0.23, resets_at: '2026-10-01T06:00:00Z' },
+    seven_day: { utilization: 0.61, resets_at: '2026-10-03T00:00:00Z' },
+  }), {
+    fiveHour: { usedPercent: 23, resetAt: '2026-10-01T06:00:00.000Z' },
+    weekly: { usedPercent: 61, resetAt: '2026-10-03T00:00:00.000Z' },
+  })
+  // MiniMax: remaining-percent flips to used; highest window per class wins;
+  // status 2062 names the credits-only case instead of a fake percentage
+  assert.deepEqual(parseMiniMax({ data: {
+    services: [{ percent: 41.5, window_type: 'week' }],
+    model_remains: [{
+      current_interval_remaining_percent: 72,
+      current_weekly_remaining_percent: 55,
+    }],
+  } }), {
+    fiveHour: { usedPercent: 28 },
+    weekly: { usedPercent: 45 },
+  })
+  assert.throws(() => parseMiniMax({ data: { base_resp: { status_code: 2062, status_msg: 'no token plan' } } }), /no active MiniMax Token Plan/)
+  // Baseten: month-to-date spend summed across billing categories
+  assert.deepEqual(parseBaseten({
+    dedicated_usage: { credits_used: 1.25 },
+    training_usage: { credits_used: 0.5 },
+    model_apis_usage: { credits_used: 2 },
+  }), { unit: 'credits', used: 3.75 })
+  // Zhipu lite tiers report CREDIT_LIMIT rows in the TOKENS_LIMIT shape
+  assert.deepEqual((() => {
+    const parsed = parseZhipu({ data: { limits: [
+      { type: 'CREDIT_LIMIT', unit: 3, percentage: 30 },
+      { type: 'CREDIT_LIMIT', unit: 6, percentage: 70 },
+    ] } })
+    return [parsed.fiveHour.usedPercent, parsed.weekly.usedPercent]
+  })(), [30, 70])
 
   // an override can force a family, move the endpoint, or rename the credential
   const overridden = discoverTargets({

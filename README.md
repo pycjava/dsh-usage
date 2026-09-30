@@ -28,7 +28,7 @@ DSH 拥有完整的会话事件基础设施,但**没有一张「账」**——�
 - **幂等**:每次调用一条记录(uuid 键,`INSERT OR REPLACE`),重试不会重复记账;`finish.replayState` 刻意忽略——它是 pi-ai 的溯源元数据,不是「缓存重放」信号,不能作为排除依据;
 - **持久**:自带 `node:sqlite` 数据库(WAL),账本在 `$DSH_HOME/storages/usage-ledger.sqlite`,不依赖 storage hub,web / tui / headless 通用,跨 profile 共享同一本账;条目先进内存缓冲、批量落盘(定时 5s / 满 32 条 / 关停),单写者链串行化,失败整批保留并重试,不静默丢数据;
 - **双展示面,同一本账**:`usage_stats` agent 工具返回 monospace 报表(带 `includeQuotas: true` 时追加供应商额度段);设置页「数据与统计」dashboard——时间范围切换(7 天 / 30 天)+ 手动刷新、六张统计卡(tokens 用量、会话数、调用次数、活跃天数、连续天数、最常用模型)、GitHub 风格活跃热力图(近 53 周)、按天 Token 趋势堆叠柱状图 + 模型用量占比环形图、**供应商额度区块**(每个已配置的模型路由一张卡:智谱 GLM / Kimi 的 Coding Plan 窗口、OpenAI Codex 的 5 小时/每周/每月与 credits/额度重置、DeepSeek 按量余额);数字按语言本地化(zh 万/亿,en K/M/G),样式走客户端主题 token,深浅色自适应;
-- **零配置的供应商额度实报**:要探测哪些路由**不写配置**——从 settings 树里已解析的 `llm-pi-ai` provider profiles 与内置 `llm-deepseek` 路由发现;API key 走同一条 credentials 引用通道,`openai-codex` 则读取模型页登录后保存的 OAuth grant(令牌不出宿主)。按 endpoint host(`*.bigmodel.cn`/`*.z.ai`、`*.kimi.com`、`chatgpt.com`、`*.deepseek.com`、`*.moonshot.cn`/`*.moonshot.ai`、`openrouter.ai`)再按路由 id 关键词匹配探针,匹配不上的路由静默跳过。支持智谱 GLM/Kimi 的 Coding Plan 窗口、OpenAI Codex 的 5 小时/每周/每月窗口与 credits/额度重置、DeepSeek/Moonshot 开放平台与 OpenRouter 市场的按量余额(剩余多少钱,分币种);其余预制供应商(groq/together/mistral/xai/Qwen 与小米的 Token 包等)无公开额度 API,刻意不猜端点。额度是**实时外网读取**:TTL 5 分钟缓存(面板刷新按钮可强制跳过)、失败时降级展示上一次好数据并标 `cached`、逐供应商隔离(一家挂了不拖累其他)、凭证永不出宿主进程(载荷只有数字);
+- **零配置的供应商额度实报**:要探测哪些路由**不写配置**——从 settings 树里已解析的 `llm-pi-ai` provider profiles 与内置 `llm-deepseek` 路由发现;API key 走同一条 credentials 引用通道,`openai-codex` 则读取模型页登录后保存的 OAuth grant(令牌不出宿主)。按 endpoint host(`*.bigmodel.cn`/`*.z.ai`、`*.kimi.com`、`chatgpt.com`、`*.deepseek.com`、`*.moonshot.cn`/`*.moonshot.ai`、`openrouter.ai`、`*.minimax.io`/`*.minimaxi.com`、`*.baseten.co`)再按路由 id 关键词匹配探针,匹配不上的路由静默跳过。支持智谱 GLM/Kimi/MiniMax 的 Coding Plan 窗口、Claude Pro/Max(OAuth)与 OpenAI Codex 的窗口与 credits、DeepSeek/Moonshot/OpenRouter 的按量余额、Baseten 的月度用量;其余预制供应商(groq/together/mistral/xai/Qwen 与小米的 Token 包等)无公开额度 API,刻意不猜端点。额度是**实时外网读取**:TTL 5 分钟缓存(面板刷新按钮可强制跳过)、失败时降级展示上一次好数据并标 `cached`、逐供应商隔离(一家挂了不拖累其他)、凭证永不出宿主进程(载荷只有数字);
 - **全本地**:数据不出机器,与遥测(OTLP)无关;RPC 通道 `authority: loopback`,仅本机页面可查;额度探测只向供应商官方/控制台端点发请求,不经过任何第三方;
 - **降级不崩溃**:存储打不开时自动退化为内存账本(带上限、丢最旧并计数、打日志);无 connection 服务的 profile(headless/TUI)只是不注册 RPC 通道,记账照常。
 
@@ -124,7 +124,7 @@ usage_stats 工具          # 对话中让 agent 查询(如「这个月用了多
 - [x] **M1 聚合与报表**:按时间/模型/提供方/天/会话聚合、monospace 报表(usage_stats 工具返回)
 - [x] **M2 agent 工具**:`usage_stats` 工具(两行架构,工具行可独立摘除)
 - [x] **M3 客户端 UI**:设置页「数据与统计」section(双面包 + 私有 loopback RPC,零宿主改动)
-- [x] **M4 供应商额度**:从模型配置自动发现路由 + credentials 复用 API key/OAuth grant + 六家探针(智谱/Kimi/Codex 窗口与 credits、DeepSeek/Moonshot/OpenRouter 余额)+ TTL 缓存/last-good 降级 + 额度区块与工具 `includeQuotas`(额度不入账本、不做计价换算)
+- [x] **M4 供应商额度**:从模型配置自动发现路由 + credentials 复用 API key/OAuth grant + 九家探针(智谱/Kimi/MiniMax/Claude/Codex 窗口、DeepSeek/Moonshot/OpenRouter 余额、Baseten 月度用量)+ TTL 缓存/last-good 降级 + 额度区块与工具 `includeQuotas`(额度不入账本、不做计价换算)
 - [ ] **M5 增强**(可选):面板数据导出(JSON/CSV)、纯 token 阈值预警、多机合并、OTLP 导出(自选)
 
 ## 非目标

@@ -164,6 +164,17 @@ function QuotaBody({ data, zh, t }: { data: QuotaData | undefined; zh: boolean; 
       </>
     )
   }
+  if (data.kind === 'spend') {
+    return (
+      <>
+        <div className={css.quotaBalance}>
+          <span className={css.quotaBalanceValue}>{formatAmount(data.used)}</span>
+          <span className={css.quotaSub}>{data.unit}</span>
+        </div>
+        <span className={css.quotaSub}>{t('quota.spendMonth')}</span>
+      </>
+    )
+  }
   return (
     <>
       {data.fiveHour === undefined ? null : (

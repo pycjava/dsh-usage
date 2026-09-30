@@ -209,12 +209,16 @@ it and the card goes.
 | `deepseek` | Pay-as-you-go balance: available, granted, topped up, sufficiency | `api.deepseek.com/user/balance` (official) |
 | `moonshot` | Open-platform pay-as-you-go balance: available, voucher, topped up | `api.moonshot.cn/v1/users/me/balance` (CNY, official); the international `moonshotai` route or `*.moonshot.ai` endpoints read `api.moonshot.ai/v1/users/me/balance` in USD |
 | `openrouter` | Marketplace credit: purchased credits, spend, money left (USD) | `openrouter.ai/api/v1/credits` (official) |
+| `minimax` | Coding Plan interval and weekly windows | `api.minimax.io/v1/token_plan/remains` (global) / `api.minimaxi.com/...` (CN), with the legacy `coding_plan/remains` path as fallback; status 2062 surfaces as "no active Token Plan" |
+| `baseten` | Month-to-date credit spend (no remaining is published) | `api.baseten.co/v1/billing/usage_summary` (official; current UTC month range) |
+| `anthropic` | Claude Pro/Max 5-hour and weekly windows | `api.anthropic.com/api/oauth/usage` (subscription OAuth grant read host-side; console API keys never auto-select this probe — exact route id `anthropic` only) |
 
-A route is matched to a family by its endpoint host first (`*.bigmodel.cn` /
+A route is matched to a family by its endpoint host first (`*.bigmodel.cn`,
 `*.z.ai`, `*.kimi.com`, `chatgpt.com`, `*.deepseek.com`, `*.moonshot.cn`,
-`*.moonshot.ai`, `openrouter.ai`), then by keywords in
+`*.moonshot.ai`, `openrouter.ai`, `*.minimax.io`, `*.minimaxi.com`,
+`*.baseten.co`), then by keywords in
 the route id (`zai`, `zhipu`, `glm`, `bigmodel`, `kimi`, `deepseek`,
-`moonshot`, `openrouter`). Codex is
+`moonshot`, `openrouter`, `minimax`, `baseten`). Codex is
 narrower on purpose: only a `chatgpt.com` endpoint or the exact route id
 `openai-codex` auto-selects it, and OpenAI API endpoints (`api.openai.com`)
 are explicitly excluded before any id matching — a platform API key must never
@@ -226,9 +230,9 @@ community-verified console APIs, not public contracts: if a vendor changes its
 response shape, that one card reports "读取失败" and everything else keeps working.
 
 Not every catalog route can have a card. The remaining pi-ai providers
-(groq, together, fireworks, mistral, cerebras, nvidia, huggingface, baseten,
-xai, github-copilot, anthropic, google, the qwen/xiaomi/minimax/ant-ling
-token plans, …) expose **no public quota or balance API** their API keys can
+(groq, together, fireworks, mistral, cerebras, nvidia, huggingface, xai,
+github-copilot, google, the qwen/xiaomi/ant-ling token plans, …) expose
+**no public quota or balance API** their API keys can
 read — their allowances live behind dashboard sessions. Sending a key to a
 guessed endpoint would violate the plugin's no-unverified-endpoints stance,
 so those routes stay silently skipped. If a vendor ships a documented quota
