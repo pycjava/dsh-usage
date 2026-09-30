@@ -14,14 +14,13 @@ import { transform } from 'lightningcss'
 /** The plugin id stamped into the module-loader handoff and style tags. */
 const ID = 'dsh-usage-ledger'
 
-/** The module specifiers the shell shares into the frozen module table. */
+/** The module specifiers the shell shares into the frozen module table
+ * (dsh 0.2.0-rc.x static seeds; unused names here would only risk a silent
+ * drift from the real table, so keep this pinned to what the shell serves). */
 const PLATFORM_MODULES = [
   'react', 'react/jsx-runtime', 'react-dom', 'react-dom/client', '@deepseek-ai/cordis',
   '@deepseek-ai/dsh-client-ui-slots',
-  '@deepseek-ai/dsh-client-web-react',
   '@deepseek-ai/dsh-client-ui-primitives',
-  '@deepseek-ai/dsh-client-ui-attachment',
-  '@deepseek-ai/dsh-client-schema-form',
 ] as const
 
 const CLIENT_EXTERNALS: readonly string[] = [...PLATFORM_MODULES]
