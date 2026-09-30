@@ -15,7 +15,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
 import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
 import { heatLevel } from '../lib/heat-level.js'
-import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseCodex, parseDeepseek, parseKimi, parseZhipu, probeTarget, resolveTargetAuth } from '../lib/quota.js'
+import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseCodex, parseDeepseek, parseKimi, parseMoonshot, parseZhipu, probeTarget, resolveTargetAuth } from '../lib/quota.js'
 import { formatCompactDuration, horizonSeconds, remainingPercentOf } from '../lib/quota-view.js'
 import { formatCompact, formatNumber, renderQuotaSection, renderTextReport } from '../lib/report.js'
 import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from '../lib/rpc.js'
@@ -532,6 +532,9 @@ assert.equal(heatLevel(1, 1), 4)
   assert.equal(detectProbe('codex-proxy', 'https://gateway.example/v1'), undefined) // override-only
   assert.equal(detectProbe('openai', 'https://api.openai.com/v1'), undefined) // API key PAYG is not ChatGPT Coding Plan
   assert.equal(detectProbe('deepseek-official', 'https://api.deepseek.com'), 'deepseek')
+  assert.equal(detectProbe('moonshotai-cn', ''), 'moonshot') // id fallback: the catalog CN route names no baseURL in the settings tree
+  assert.equal(detectProbe('my-gw', 'https://api.moonshot.cn/v1'), 'moonshot')
+  assert.equal(detectProbe('my-gw', 'https://api.moonshot.ai/v1'), 'moonshot')
   assert.equal(detectProbe('some-local-llama', 'http://127.0.0.1:11434/v1'), undefined)
 
   const targets = discoverTargets({
@@ -553,6 +556,29 @@ assert.equal(heatLevel(1, 1), 4)
   ])
   assert.equal(targets[0].credentialRef, 'ZAI_CODING_CN_API_KEY')
   assert.equal(targets[2].credentialKey, 'llm-pi-ai/openai-codex')
+
+  // Moonshot open-platform routes: the CN catalog route carries no baseURL in
+  // the settings tree (the catalog default lives inside pi-ai), so it probes
+  // the default CNY endpoint; the international route id and any *.moonshot.ai
+  // endpoint derive the USD balance URL. An explicit override still wins.
+  assert.deepEqual(discoverTargets({ piAi: { providers: {
+    'moonshotai-cn': { apiKeyEnv: 'MOONSHOTAI_CN_API_KEY' },
+    moonshotai: { apiKeyEnv: 'MOONSHOTAI_API_KEY' },
+    'moonshot-gw': { apiKeyEnv: 'M', baseURL: 'https://api.moonshot.ai/v1' },
+  } } }).map((target) => [target.route, target.url ?? 'default-cn']), [
+    ['moonshotai-cn', 'default-cn'],
+    ['moonshotai', 'https://api.moonshot.ai/v1/users/me/balance'],
+    ['moonshot-gw', 'https://api.moonshot.ai/v1/users/me/balance'],
+  ])
+  // balance parsing: available/voucher/cash map onto the shared balance shape
+  const moonshotBal = parseMoonshot({ code: 0, data: { available_balance: '87.50', voucher_balance: '7.50', cash_balance: '80.00' } })
+  assert.equal(moonshotBal.currency, 'CNY')
+  assert.deepEqual(
+    [moonshotBal.available, moonshotBal.granted, moonshotBal.toppedUp],
+    [87.5, 7.5, 80],
+  )
+  assert.throws(() => parseMoonshot({ code: 401, smsg: 'Invalid Authentication' }), /Invalid Authentication/)
+  assert.throws(() => parseMoonshot({ code: 0 }), /no balance/)
 
   // an override can force a family, move the endpoint, or rename the credential
   const overridden = discoverTargets({

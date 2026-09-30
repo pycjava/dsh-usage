@@ -2,12 +2,13 @@
  * Provider quota probes: how much allowance the configured LLM routes have
  * left, as the providers themselves report it.
  *
- * Four probe families, normalized behind one small wire shape:
+ * Five probe families, normalized behind one small wire shape:
  *
  *   - `zhipu`     智谱 GLM Coding Plan — 5-hour and weekly windows, plan, MCP
  *   - `kimi`      Kimi Coding Plan — 5-hour and weekly windows, membership
  *   - `codex`     OpenAI Codex — ChatGPT OAuth windows, credits, reset credits
  *   - `deepseek`  pay-as-you-go balance — currency, granted, topped up
+ *   - `moonshot`  Moonshot AI open platform — pay-as-you-go balance (CNY/USD)
  *
  * The routes to probe are NOT hard-coded: `index.js` reads whichever provider
  * routes the deployment configures (the settings tree's `llm-pi-ai` profiles
@@ -36,10 +37,14 @@ export const PROBE_URLS = {
   kimi: 'https://api.kimi.com/coding/v1/usages',
   codex: 'https://chatgpt.com/backend-api/wham/usage',
   deepseek: 'https://api.deepseek.com/user/balance',
+  moonshot: 'https://api.moonshot.cn/v1/users/me/balance',
 }
 
+/** The international open platform spells its balance in USD. */
+export const MOONSHOT_INTL_URL = 'https://api.moonshot.ai/v1/users/me/balance'
+
 /** Probe families this plugin knows how to read. */
-export const PROBE_IDS = ['zhipu', 'kimi', 'codex', 'deepseek']
+export const PROBE_IDS = ['zhipu', 'kimi', 'codex', 'deepseek', 'moonshot']
 
 /** Human labels per probe (the panel localizes; these serve logs/tools). */
 export const PROBE_LABELS = {
@@ -47,6 +52,7 @@ export const PROBE_LABELS = {
   kimi: 'Kimi',
   codex: 'OpenAI Codex',
   deepseek: 'DeepSeek',
+  moonshot: 'Moonshot',
 }
 
 /** Route id the base layer mounts the official DeepSeek adapter under. */
@@ -162,6 +168,37 @@ export function parseDeepseek(raw) {
 async function probeDeepseek(apiKey, url, timeoutMs) {
   const raw = await fetchJson(url, { headers: { Authorization: `Bearer ${apiKey}` }, timeoutMs })
   return { kind: 'balance', ...parseDeepseek(raw) }
+}
+
+// ---- Moonshot AI open platform: pay-as-you-go balance ---------------------
+
+/**
+ * Parse `GET /v1/users/me/balance`. The open platform answers with
+ * `{ code, smsg, data: { available_balance, cash_balance, voucher_balance } }`;
+ * the balance is decimal money in the endpoint's own currency (CNY on
+ * api.moonshot.cn, USD on api.moonshot.ai — the response itself names no
+ * currency, so the probe derives it from the URL it read).
+ * @param raw - the response body.
+ * @param currency - 'CNY' | 'USD', derived from the probed endpoint.
+ * @returns { currency, available, granted, toppedUp }.
+ */
+export function parseMoonshot(raw, currency = 'CNY') {
+  if (raw?.code !== 0) throw new Error(`Moonshot API error: ${raw?.smsg ?? `code=${raw?.code}`}`)
+  const data = raw?.data
+  if (data === null || typeof data !== 'object') throw new Error('Moonshot returned no balance information')
+  return {
+    currency,
+    available: toNumber(data.available_balance),
+    granted: toNumber(data.voucher_balance),
+    toppedUp: toNumber(data.cash_balance),
+    sufficient: toNumber(data.available_balance) > 0,
+  }
+}
+
+async function probeMoonshot(apiKey, url, timeoutMs) {
+  const raw = await fetchJson(url, { headers: { Authorization: `Bearer ${apiKey}` }, timeoutMs })
+  const currency = new URL(url).host.endsWith('.moonshot.ai') ? 'USD' : 'CNY'
+  return { kind: 'balance', ...parseMoonshot(raw, currency) }
 }
 
 // ---- OpenAI Codex: ChatGPT subscription windows ----------------------------
@@ -499,6 +536,7 @@ export const PROBES = {
   kimi: { url: PROBE_URLS.kimi, fetch: probeKimi },
   codex: { url: PROBE_URLS.codex, fetch: probeCodex },
   deepseek: { url: PROBE_URLS.deepseek, fetch: probeDeepseek },
+  moonshot: { url: PROBE_URLS.moonshot, fetch: probeMoonshot },
 }
 
 // ---- route classification --------------------------------------------------
@@ -509,6 +547,7 @@ const HOST_RULES = [
   { probe: 'kimi', hosts: ['kimi.com'] },
   { probe: 'codex', hosts: ['chatgpt.com'] },
   { probe: 'deepseek', hosts: ['deepseek.com'] },
+  { probe: 'moonshot', hosts: ['moonshot.cn', 'moonshot.ai'] },
 ]
 
 /** Route-id keywords, for a route whose baseURL names no known host. */
@@ -516,6 +555,7 @@ const ID_RULES = [
   { probe: 'zhipu', words: ['zai', 'zhipu', 'glm', 'bigmodel'] },
   { probe: 'kimi', words: ['kimi'] },
   { probe: 'deepseek', words: ['deepseek'] },
+  { probe: 'moonshot', words: ['moonshot'] },
 ]
 
 /** Hosts whose API-key traffic must never fall through to Codex by route name. */
@@ -592,13 +632,21 @@ export function discoverTargets(sources = {}) {
       && /^[a-z][a-z0-9-]*$/.test(route)
       ? `llm-pi-ai/${route}`
       : undefined
+    // The Moonshot open platform serves two domains with two currencies:
+    // follow the route's own endpoint when it names the international one,
+    // else the catalog's bare `moonshotai` id (the CN route is `moonshotai-cn`).
+    // An explicit override.url always wins over this derived default.
+    const moonshotIntl = probe === 'moonshot'
+      && (hostOf(profile?.baseURL).endsWith('.moonshot.ai') || route === 'moonshotai')
+    const derivedUrl = moonshotIntl ? MOONSHOT_INTL_URL : undefined
+    const url = typeof override.url === 'string' && override.url !== '' ? override.url : derivedUrl
     targets.push({
       route,
       probe,
       ...(typeof credentialRef === 'string' && credentialRef !== '' ? { credentialRef } : {}),
       ...(credentialKey === undefined ? {} : { credentialKey }),
       ...(label === undefined ? {} : { label }),
-      ...(typeof override.url === 'string' && override.url !== '' ? { url: override.url } : {}),
+      ...(typeof url === 'string' && url !== '' ? { url } : {}),
     })
   }
   for (const [route, profile] of Object.entries(sources.piAi?.providers ?? {})) add(route, profile)

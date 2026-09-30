@@ -207,10 +207,13 @@ it and the card goes.
 | `kimi` | Coding Plan 5-hour / weekly windows, membership, parallel limit | `api.kimi.com/coding/v1/usages` (needs a Kimi Code `sk-kimi-` key) |
 | `codex` | ChatGPT Coding Plan 5-hour / weekly / monthly windows, plan, code review, named per-model limits, credits and reset credits | `chatgpt.com/backend-api/wham/usage` (ChatGPT OAuth; not an OpenAI API-key balance) |
 | `deepseek` | Pay-as-you-go balance: available, granted, topped up, sufficiency | `api.deepseek.com/user/balance` (official) |
+| `moonshot` | Open-platform pay-as-you-go balance: available, voucher, topped up | `api.moonshot.cn/v1/users/me/balance` (CNY, official); the international `moonshotai` route or `*.moonshot.ai` endpoints read `api.moonshot.ai/v1/users/me/balance` in USD |
 
 A route is matched to a family by its endpoint host first (`*.bigmodel.cn` /
-`*.z.ai`, `*.kimi.com`, `chatgpt.com`, `*.deepseek.com`), then by keywords in
-the route id (`zai`, `zhipu`, `glm`, `bigmodel`, `kimi`, `deepseek`). Codex is
+`*.z.ai`, `*.kimi.com`, `chatgpt.com`, `*.deepseek.com`, `*.moonshot.cn`,
+`*.moonshot.ai`), then by keywords in
+the route id (`zai`, `zhipu`, `glm`, `bigmodel`, `kimi`, `deepseek`,
+`moonshot`). Codex is
 narrower on purpose: only a `chatgpt.com` endpoint or the exact route id
 `openai-codex` auto-selects it, and OpenAI API endpoints (`api.openai.com`)
 are explicitly excluded before any id matching — a platform API key must never
