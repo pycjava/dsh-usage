@@ -100,10 +100,13 @@ export class HttpError extends Error {
  */
 async function readBody(response, maxBytes) {
   const body = response.body
-  if (body === null || body === undefined || typeof body.getReader !== 'function') {
-    const buffer = Buffer.from(await response.arrayBuffer())
-    if (buffer.byteLength > maxBytes) throw new Error(`response body exceeds ${maxBytes} bytes`)
-    return buffer
+  // A null body (a bodyless Response) reads as empty. Any real undici body is
+  // a web stream, so the bounded reader below is the only path that buffers:
+  // there is deliberately no arrayBuffer() fallback, which would load the
+  // whole body before the cap could apply (an illusory bound).
+  if (body === null || body === undefined) return Buffer.alloc(0)
+  if (typeof body.getReader !== 'function') {
+    throw new Error('response body is not a readable web stream; the download cannot be bounded')
   }
   const reader = body.getReader()
   const chunks = []
@@ -221,6 +224,30 @@ export function sanitizeDetail(text) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, MAX_DETAIL_CHARS)
+}
+
+/**
+ * Sanitize the free-text fields of a *successful* reading. Plan tiers,
+ * membership levels, and named per-model budget names are vendor input
+ * exactly like error bodies, and they reach the settings panel and the
+ * agent-facing report. The parsers produce a fresh object per probe, so
+ * mutating it here at the choke point is safe. Numbers, booleans, and our
+ * own ISO reset stamps pass through untouched.
+ * @param data - one probe family's parsed data.
+ * @returns the same object, with its free-text fields sanitized.
+ */
+function sanitizeReadingText(data) {
+  if (data === null || typeof data !== 'object') return data
+  if (typeof data.plan === 'string') data.plan = sanitizeDetail(data.plan)
+  if (typeof data.membership === 'string') data.membership = sanitizeDetail(data.membership)
+  if (Array.isArray(data.additionalLimits)) {
+    for (const limit of data.additionalLimits) {
+      if (limit !== null && typeof limit === 'object' && typeof limit.name === 'string') {
+        limit.name = sanitizeDetail(limit.name)
+      }
+    }
+  }
+  return data
 }
 
 /**
@@ -924,7 +951,12 @@ export function detectProbe(route, baseURL) {
   return undefined
 }
 
-/** Whether a hostname names this machine (loopback literals only). */
+/**
+ * Whether a hostname names this machine (loopback literals only). The host
+ * harness keeps its own predicate (a 3-literal list); this mirror is
+ * deliberate — the plugin stays harness-free — and intentionally accepts the
+ * full 127/8. The divergence is safe-direction: a miss rejects, never widens.
+ */
 function isLoopbackHostname(hostname) {
   const bare = hostname.replace(/^\[/, '').replace(/\]$/, '')
   if (bare === 'localhost' || bare === '::1') return true
@@ -1099,7 +1131,7 @@ export async function probeTarget(target, timeoutMs = DEFAULT_TIMEOUT_MS) {
   }
   try {
     const data = await probe.fetch(target.apiKey, target.url ?? probe.url, timeoutMs, target)
-    return { ...base, ok: true, fetchedAt: Date.now(), stale: false, data }
+    return { ...base, ok: true, fetchedAt: Date.now(), stale: false, data: sanitizeReadingText(data) }
   } catch (error) {
     return { ...base, ok: false, reason: 'error', error: sanitizeDetail(error instanceof Error ? error.message : String(error)) }
   }

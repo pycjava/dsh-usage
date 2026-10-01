@@ -40,7 +40,7 @@ DSH 拥有完整的会话事件基础设施,但**没有一张「账」**——�
 | 挂载 | `cordis.patch.yml` 两行:`usage-ledger`(双面:宿主服务 + 浏览器 bundle)+ `usage-ledger-tool`(入口 `dsh-usage-ledger/tool`,挂 `usage_stats` 工具;整行摘除即可对 agent 隐藏工具,账本与面板照常工作);配置走 profile 配置树(0.2.0-rc.x 起无需 connection 行覆写) |
 | 捕获 | 监听 `llm/stream` waterfall,透传 chunk 零侵入;实报优先 / 估算兜底;每次调用一条幂等记录 |
 | 存储 | 内存缓冲 → 批量落盘 `usage-ledger.sqlite`(WAL);启动时全量加载为内存镜像,查询在镜像上聚合,本地时区切日/月 |
-| 查询 | 唯一入口 `ctx.usageLedger.query({ from, to, by })`:任意时间范围(今天 / 本月 / 7d / Nd / YYYY-MM / 全部)× 任意维度(模型 / 提供方 / 天 / 会话);工具、RPC 通道共用;返回总 token(input / cache read / cache write / output 分开)、调用次数、实报 vs 估算拆分、分布视图 |
+| 查询 | 唯一入口 `ctx.usageLedger.query({ from, to, by })`:任意时间范围(今天 / 本月 / 7d / Nd / YYYY-MM / 全部)× 任意维度(模型 / 提供方 / 天 / 会话);工具与面板路由共用;返回总 token(input / cache read / cache write / output 分开)、调用次数、实报 vs 估算拆分、分布视图 |
 | 额度 | 独立入口 `ctx.usageLedger.quotas({ force })`:从 settings 树发现已配置路由 → 经 credentials 解析 key → 逐路由探测供应商额度接口(逐家隔离、TTL 缓存、失败降级);额度**不入账本**,与 token 统计完全分离 |
 | 展示 | 宿主:`usage_stats` 工具(monospace 报表,`includeQuotas` 按需追加额度段);浏览器:`/plugins/dsh-usage-ledger/client.js` 经 `settings.section` list slot 注册「数据与统计」section(零壳改动;自带折线图 nav 图标),经共享 `/api` 通道的 exact Fetch 路由(`/api/usage-ledger/dashboard`、`/api/usage-ledger/quotas`)拉取聚合与额度——宿主 Connection 的 Host/Origin fence + browser-session Cookie 鉴权兜底;额度独立端点,慢/挂不拖累用量面板 |
 
@@ -76,10 +76,10 @@ bundle 补丁:usage-ledger(双面)· usage-ledger-tool(usage_stats 工具)
 # 构建(浏览器半边源码 src/client/,产物 lib/client.js 必须预构建后进包):
 cd dsh-usage-ledger
 npm run build        # tsdown → lib/client.js(+ map)
-npm pack             # → dsh-usage-ledger-0.8.1.tgz
+npm pack             # → dsh-usage-ledger-0.8.2.tgz
 
 # 安装(装完重启 App 客户端——宿主插件与客户端模块都只在启动时加载):
-dsh plugin --profile web add /path/to/dsh-usage-ledger-0.8.1.tgz
+dsh plugin --profile web add /path/to/dsh-usage-ledger-0.8.2.tgz
 
 # 验证:
 dsh --profile web --dump-config      # 应看到 # == dsh-usage-ledger 层(两行)

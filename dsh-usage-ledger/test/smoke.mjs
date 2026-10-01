@@ -877,6 +877,34 @@ assert.equal(heatLevel(1, 1), 4)
     }
   }
 
+  // probeTarget: a SUCCESSFUL reading's free-text fields (plan tiers, named
+  // budget names) are vendor input too — sanitized at the same choke point
+  // before they reach the panel or the agent report.
+  {
+    const { createServer } = await import('node:http')
+    const server = createServer((req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({
+        plan_type: 'plus\x1b[31m',
+        rate_limit: { primary_window: { used_percent: 10, limit_window_seconds: 18_000 } },
+        additional_rate_limits: [{ limit_name: 'Son\x00ic', rate_limit: { primary_window: { used_percent: 5, limit_window_seconds: 18_000 } } }],
+      }))
+    })
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+    try {
+      const reading = await probeTarget({
+        route: 'openai-codex', probe: 'codex', apiKey: 'k',
+        url: `http://127.0.0.1:${server.address().port}/usage`,
+      }, 5000)
+      assert.equal(reading.ok, true)
+      assert.equal(reading.data.plan, 'plus [31m')
+      assert.equal(reading.data.additionalLimits[0].name, 'Son ic')
+      assert.equal(reading.data.fiveHour.remainingPercent, 90)
+    } finally {
+      server.close()
+    }
+  }
+
   // Codex probe sends the OAuth bearer and account id only from the host.
   {
     const { createServer } = await import('node:http')

@@ -43,15 +43,16 @@ export function openLedgerStore(path) {
   const remove = db.prepare('DELETE FROM entries WHERE id = ?')
   const prune = db.prepare('DELETE FROM entries WHERE time < ?')
   const selectAll = db.prepare('SELECT id, json FROM entries')
-  // SQLite creates -wal/-shm lazily with the first write; they carry ledger
-  // rows too, so tighten them after that first write lands.
-  let sidecarsRestricted = false
+  // SQLite may create -wal/-shm at open (the WAL pragma does) or lazily on
+  // first write, and can recreate them after a checkpoint or close. They
+  // carry ledger rows too, so chmod best-effort at open AND on every put —
+  // two cheap syscalls next to the insert, and no recreation window sits at
+  // umask permissions.
   const restrictSidecars = () => {
-    if (sidecarsRestricted) return
-    sidecarsRestricted = true
     restrict(`${path}-wal`, 0o600)
     restrict(`${path}-shm`, 0o600)
   }
+  restrictSidecars()
   return {
     /** Insert or replace one entry. */
     put(id, time, entry) {
