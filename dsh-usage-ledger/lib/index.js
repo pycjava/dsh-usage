@@ -33,7 +33,7 @@
 import { Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { DAY_MS, aggregate, entryFromCall, parsePeriod, requeueUnwritten } from './ledger.js'
-import { createQuotaCache, discoverTargets, resolveTargetAuth } from './quota.js'
+import { createQuotaCache, discoverTargets, overrideUrlIssue, resolveTargetAuth } from './quota.js'
 import { openLedgerStore } from './store.js'
 import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from './rpc.js'
 import { consumeInner, markDelegated } from './nesting.js'
@@ -71,6 +71,9 @@ export const Config = z.object({
     /**
      * Per-route overrides keyed by provider route id: force a probe family,
      * point at a moved endpoint, or name a different credential reference.
+     * An override `url` must be https (plain http on the loopback aside) —
+     * anything else is logged and ignored, so a credential never travels in
+     * the clear.
      */
     providers: z.dict(z.object({
       probe: z.string().default(''),
@@ -377,7 +380,16 @@ export class UsageLedgerService extends Service {
       this.ctx.logger.warn(`usage-ledger: cannot read the settings tree for quota routes: ${error instanceof Error ? error.message : String(error)}`)
       return []
     }
-    return discoverTargets({ piAi, deepseek, overrides: quota.providers ?? {} })
+    const overrides = quota.providers ?? {}
+    for (const [route, override] of Object.entries(overrides)) {
+      const issue = overrideUrlIssue(override)
+      // discoverTargets drops the url either way; the warning says why, so a
+      // moved-endpoint override that silently stops moving is visible.
+      if (issue !== undefined) {
+        this.ctx.logger.warn(`usage-ledger: ignoring quota.providers[${route}].url — ${issue}`)
+      }
+    }
+    return discoverTargets({ piAi, deepseek, overrides })
   }
 
   /**

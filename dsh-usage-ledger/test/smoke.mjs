@@ -15,7 +15,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { buildDashboard, dayKey } from '../lib/dashboard.js'
 import { aggregate, entryFromCall, parsePeriod, requeueUnwritten } from '../lib/ledger.js'
 import { heatLevel } from '../lib/heat-level.js'
-import { createQuotaCache, detectProbe, discoverTargets, fetchJson, parseAnthropic, parseBaseten, parseCodex, parseDeepseek, parseKimi, parseMiniMax, parseMoonshot, parseOpenRouter, parseZhipu, probeTarget, resolveTargetAuth } from '../lib/quota.js'
+import { createQuotaCache, detectProbe, discoverTargets, fetchJson, overrideUrlIssue, parseAnthropic, parseBaseten, parseCodex, parseDeepseek, parseKimi, parseMiniMax, parseMoonshot, parseOpenRouter, parseZhipu, probeTarget, resolveTargetAuth, sanitizeDetail } from '../lib/quota.js'
 import { formatCompactDuration, horizonSeconds, remainingPercentOf } from '../lib/quota-view.js'
 import { formatCompact, formatNumber, renderQuotaSection, renderTextReport } from '../lib/report.js'
 import { envelopeFetchHandler, runDashboardQuery, runQuotaQuery } from '../lib/rpc.js'
@@ -518,16 +518,22 @@ assert.equal(heatLevel(1, 1), 4)
 
 // ---- quota route discovery --------------------------------------------------
 {
-  // endpoint host decides first, then the route id's keywords
+  // endpoint host decides first; the id's keywords speak only when the route
+  // names no endpoint at all
   assert.equal(detectProbe('zai-coding-cn', 'https://open.bigmodel.cn/api/coding/paas/v4'), 'zhipu')
   assert.equal(detectProbe('kimi-proof', 'https://api.deepseek.com'), 'deepseek')   // host beats the id
   assert.equal(detectProbe('glm-proxy', undefined), 'zhipu')                       // id fallback: no baseURL
-  assert.equal(detectProbe('glm-proxy', 'https://gateway.example/v1'), 'zhipu')    // id fallback: unknown host
+  assert.equal(detectProbe('glm-proxy', ''), 'zhipu')                              // id fallback: empty baseURL
+  // A route whose endpoint names a host no probe knows is skipped: its
+  // credential was issued for that host, and shipping it to a vendor console
+  // endpoint would leak it cross-service. `quota.providers` is the opt-in.
+  assert.equal(detectProbe('glm-proxy', 'https://gateway.example/v1'), undefined)
+  assert.equal(detectProbe('kimi-relay', 'http://127.0.0.1:8000/v1'), undefined)
   assert.equal(detectProbe('kimi-coding', 'https://api.kimi.com/coding/v1'), 'kimi')
   assert.equal(detectProbe('openai-codex', 'https://chatgpt.com/backend-api'), 'codex')
   assert.equal(detectProbe('openai-codex', ''), 'codex') // exact pi-ai catalog route id
-  // An OpenAI API-key endpoint is denied before the id fallback: whatever the
-  // route is named, its platform key must never travel to the ChatGPT console.
+  // An OpenAI API-key endpoint is denied: whatever the route is named, its
+  // platform key must never travel to the ChatGPT console.
   assert.equal(detectProbe('openai-codex', 'https://api.openai.com/v1'), undefined)
   assert.equal(detectProbe('codex-proxy', 'https://gateway.example/v1'), undefined) // override-only
   assert.equal(detectProbe('openai', 'https://api.openai.com/v1'), undefined) // API key PAYG is not ChatGPT Coding Plan
@@ -651,6 +657,27 @@ assert.equal(heatLevel(1, 1), 4)
     overrides: { 'local-proxy': { probe: 'zhipu', url: 'https://open.bigmodel.cn/x', credentialRef: 'OTHER_KEY' } },
   })
   assert.deepEqual(overridden, [{ route: 'local-proxy', probe: 'zhipu', credentialRef: 'OTHER_KEY', url: 'https://open.bigmodel.cn/x' }])
+  // override urls carry credentials: only https (loopback http aside) is
+  // honored — anything else is reported and falls back to the family default.
+  assert.equal(overrideUrlIssue({ url: 'https://open.bigmodel.cn/x' }), undefined)
+  assert.equal(overrideUrlIssue({ url: 'http://127.0.0.1:9/x' }), undefined)
+  assert.equal(overrideUrlIssue({ url: 'http://[::1]:9/x' }), undefined)
+  assert.equal(overrideUrlIssue({ url: 'http://localhost:9/x' }), undefined)
+  assert.equal(overrideUrlIssue({ url: '' }), undefined)
+  assert.match(overrideUrlIssue({ url: 'http://gateway.example/x' }), /must be https/)
+  assert.match(overrideUrlIssue({ url: 'ftp://gateway.example/x' }), /must be https/)
+  assert.match(overrideUrlIssue({ url: 'not a url' }), /does not parse/)
+  const unsafeUrl = discoverTargets({
+    piAi: { providers: { 'local-proxy': { apiKeyEnv: 'LOCAL_KEY', baseURL: 'http://127.0.0.1:11434/v1' } } },
+    overrides: { 'local-proxy': { probe: 'zhipu', url: 'http://gateway.example/x' } },
+  })
+  assert.deepEqual(unsafeUrl, [{ route: 'local-proxy', probe: 'zhipu', credentialRef: 'LOCAL_KEY' }])
+  // vendor-supplied text is neutralized before it rides a reading anywhere
+  assert.equal(sanitizeDetail('Zhipu API error: bad\x00key\r\nline two'), 'Zhipu API error: bad key line two')
+  const noisy = sanitizeDetail(`\x1b[31mred\x1b[0m ${'x'.repeat(400)}`)
+  assert.ok(noisy.startsWith('[31mred [0m '))
+  assert.equal(noisy.length, 160)
+  assert.equal(sanitizeDetail(42), '42')
   // An API-key route named like the catalog Codex provider yields no target:
   // nothing is probed and no key is sent anywhere.
   assert.deepEqual(discoverTargets({ piAi: { providers: {
@@ -799,6 +826,52 @@ assert.equal(heatLevel(1, 1), 4)
     try {
       const parsed = await fetchJson(`http://127.0.0.1:${server.address().port}/quota`, { timeoutMs: 5000 })
       assert.deepEqual(parsed, { ok: true, via: '/quota' })
+    } finally {
+      server.close()
+    }
+  }
+
+  // fetchJson bounds the body on both axes: the download itself, and whatever
+  // a gzip body expands to — a hostile endpoint cannot exhaust host memory.
+  {
+    const { gzipSync } = await import('node:zlib')
+    const { createServer } = await import('node:http')
+    const server = createServer((req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' })
+      if (req.url === '/huge') res.end('x'.repeat(64 * 1024))
+      else res.end(gzipSync(Buffer.alloc(256 * 1024, 0x61))) // ~300 B on the wire
+    })
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+    try {
+      await assert.rejects(
+        fetchJson(`http://127.0.0.1:${server.address().port}/huge`, { timeoutMs: 5000, maxResponseBytes: 32 * 1024 }),
+        /response body exceeds/,
+      )
+      await assert.rejects(
+        fetchJson(`http://127.0.0.1:${server.address().port}/bomb`, { timeoutMs: 5000, maxResponseBytes: 64 * 1024 }),
+        /decompressed body exceeds/,
+      )
+    } finally {
+      server.close()
+    }
+  }
+
+  // probeTarget: a failing vendor response becomes a reading whose error text
+  // is sanitized (no control characters riding into reports or the model).
+  {
+    const { createServer } = await import('node:http')
+    const server = createServer((req, res) => {
+      res.writeHead(500, { 'content-type': 'text/plain' })
+      res.end('boom\x1b[31m red \x00noise')
+    })
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+    try {
+      const reading = await probeTarget({
+        route: 'x', probe: 'deepseek', apiKey: 'k',
+        url: `http://127.0.0.1:${server.address().port}/balance`,
+      }, 5000)
+      assert.equal(reading.ok, false)
+      assert.equal(reading.error, 'HTTP 500: boom [31m red noise')
     } finally {
       server.close()
     }

@@ -46,18 +46,17 @@ beside the allowance each provider reports for itself.
   model-usage share donut (per-model tokens + percentage, long tail folded
   into Other). Zero harness changes: the panel
   registers into the open `settings.section` slot and pulls aggregates over
-  the plugin's own loopback RPC channel.
+  the plugin's exact Fetch routes inside the connection channel's auth fence.
 
 ## Package layout
 
 ```
 cordis.patch.yml      bundle patch: two rows (usage-ledger, usage-ledger-tool)
-                      plus a connection-row inject override (see RPC channel)
 lib/                  host half (plain ESM, no build) + the prebuilt client bundle
-  index.js            UsageLedgerService: capture, store, quota discovery, RPC
+  index.js            UsageLedgerService: capture, store, quota discovery, routes
   ledger.js           entries, periods, aggregation (pure)
   dashboard.js        panel aggregates (pure)
-  rpc.js              pure payload handling for the /usage-ledger channel
+  rpc.js              pure payload handling for the /api/usage-ledger/* routes
   quota.js            provider quota probes: fetch + parse + route matching + TTL cache
   quota-view.js       display math shared by the panel and the report (pure)
   report.js           monospace report + the quota section (host)
@@ -87,26 +86,29 @@ test/smoke.mjs        standalone smoke test for the pure modules
   `icon` ahead of its id→glyph map, so the icon ships with the plugin instead
   of living in the shell.
 - Data path: the host half (when a `connection` service exists — web
-  profiles) registers a private RPC channel with
-  `ctx.connection.rpc.handle('/usage-ledger', …, { authority: 'loopback' })`;
-  the panel calls it with `ctx.connection.rpc.call`. Two endpoints:
-  `dashboard`, which takes `{ period }` and returns dashboard aggregates only
-  (the raw entry list never leaves the host), and `quotas`, which takes
-  `{ force }` and returns live provider allowance readings. They are separate
-  on purpose — a quota read crosses the network, and a slow or broken vendor
-  must never delay or fail the usage numbers beside it. Individual vendors
-  fail *inside* the payload (`ok: false`) so one bad route cannot blank out
-  the others. Headless/TUI profiles never register the channel and are
-  otherwise unaffected.
-- `rpc.handle` quirk (dsh build 2026-09): channel registration resolves
-  `webServer` from the connection *service fiber's* context, and that fiber
-  only injects `webRuntime` — so every plugin channel registration fails
-  silently with `cannot get property "webServer" without inject` and the
-  panel's POST falls through to the SPA fallback (HTTP 405). The bundle
-  patch therefore re-states the `connection` row with
-  `inject: [webRuntime, webServer]` (config passes through untouched;
-  profiles without the row warn-and-skip). Drop the override once a dsh
-  build resolves `webServer` from the caller's fiber.
+  profiles) registers two exact Fetch routes on the shared `/api` channel,
+  `/api/usage-ledger/dashboard` and `/api/usage-ledger/quotas`, via
+  `ctx.connection.fetch.register`; the panel calls them with
+  `ctx.connection.rpc.call`. Every `/api` request passes the host
+  connection's admission first — the Host/Origin fence (loopback or a
+  declared `trustedHosts` authority; `sec-fetch-site: cross-site` and
+  cross-origin `Origin` are refused, which blunts DNS rebinding and
+  cross-site requests) and the browser-session cookie (signed, bound to the
+  serving authority) — so only the authenticated local panel reaches these
+  routes. Two endpoints: `dashboard`, which takes `{ period }` and returns
+  dashboard aggregates only (the raw entry list never leaves the host), and
+  `quotas`, which takes `{ force }` and returns live provider allowance
+  readings. They are separate on purpose — a quota read crosses the network,
+  and a slow or broken vendor must never delay or fail the usage numbers
+  beside it. Individual vendors fail *inside* the payload (`ok: false`) so
+  one bad route cannot blank out the others. Headless/TUI profiles never
+  register the routes and are otherwise unaffected.
+- History note (dsh 0.1.5-era builds): `connection.rpc.handle` channel
+  registration used to resolve `webServer` from the connection *service
+  fiber's* context, which a third-party plugin cannot satisfy — hence a
+  `connection`-row `inject` override this patch once carried. Current dsh
+  (0.2.0-rc.x) applies its own `webServer` inject, and `fetch.register`
+  never touches `webServer`, so the override is gone.
 
 ## Build
 
@@ -213,16 +215,19 @@ it and the card goes.
 | `baseten` | Month-to-date credit spend (no remaining is published) | `api.baseten.co/v1/billing/usage_summary` (official; current UTC month range) |
 | `anthropic` | Claude Pro/Max 5-hour and weekly windows | `api.anthropic.com/api/oauth/usage` (subscription OAuth grant read host-side; console API keys never auto-select this probe — exact route id `anthropic` only) |
 
-A route is matched to a family by its endpoint host first (`*.bigmodel.cn`,
+A route is matched to a family by its endpoint host (`*.bigmodel.cn`,
 `*.z.ai`, `*.kimi.com`, `chatgpt.com`, `*.deepseek.com`, `*.moonshot.cn`,
 `*.moonshot.ai`, `openrouter.ai`, `*.minimax.io`, `*.minimaxi.com`,
-`*.baseten.co`), then by keywords in
-the route id (`zai`, `zhipu`, `glm`, `bigmodel`, `kimi`, `deepseek`,
-`moonshot`, `openrouter`, `minimax`, `baseten`). Codex is
-narrower on purpose: only a `chatgpt.com` endpoint or the exact route id
-`openai-codex` auto-selects it, and OpenAI API endpoints (`api.openai.com`)
-are explicitly excluded before any id matching — a platform API key must never
-travel to the ChatGPT console endpoint. Other routes can still force the probe
+`*.baseten.co`); the route id's keywords (`zai`, `zhipu`, `glm`, `bigmodel`,
+`kimi`, `deepseek`, `moonshot`, `openrouter`, `minimax`, `baseten`) speak
+only when the route names **no** endpoint at all. A route whose endpoint
+names a host no probe knows — a local gateway, a corporate proxy, an OpenAI
+API endpoint — is skipped outright: its credential was issued for that
+host, and shipping it to a vendor's console endpoint would leak it
+cross-service (a `glm`-named proxy's key does not belong at bigmodel.cn; a
+platform API key does not belong at the ChatGPT console). Codex is narrower
+still: only a `chatgpt.com` endpoint or the exact route id `openai-codex`
+auto-selects it. Forcing a probe for any other route is an explicit opt-in
 through `quota.providers`. Routes
 matching nothing are skipped silently — a local llama.cpp route shows no quota
 card rather than a broken one. The 智谱, Kimi, and Codex endpoints are
@@ -267,7 +272,26 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
           probe: zhipu
           url: https://open.bigmodel.cn/api/monitor/usage/quota/limit
           credentialRef: ZAI_CODING_CN_API_KEY
+                             # override urls must be https (loopback http
+                             # aside); anything else is logged and ignored
 ```
+
+## Security posture
+
+- **Credentials stay host-side.** Keys resolve through the credentials seam
+  only inside the host process; the panel's payloads carry numbers, and a
+  key only ever travels to the endpoint its own vendor family names (see
+  the matching rules above) or to an explicit https override.
+- **Bounded vendor input.** Probe responses are capped at 2 MiB on both the
+  download and the decompression axes, and vendor-supplied text (error
+  bodies, status messages) is stripped of control characters and truncated
+  before it can reach logs, the panel, or the agent-facing report.
+- **Private ledger.** The SQLite store (and its WAL/SHM sidecars) is
+  chmod 0600; a directory the store creates for itself is 0700. Raw ledger
+  entries never leave the host — the panel receives aggregates only.
+- **Panel channel.** The `/api/usage-ledger/*` routes sit inside the host
+  connection's Host/Origin fence and browser-session cookie auth; nothing
+  off-machine or cross-site reaches them.
 
 ## How it works
 
@@ -292,7 +316,7 @@ profile's `cordis.patch.yml` at `$DSH_HOME/profiles/web/cordis.patch.yml`:
    silent loss.
 3. The `usage_stats` tool aggregates the durable + pending entries for the
    requested period. The settings panel does the same over the
-   `/usage-ledger` RPC channel.
+   `/api/usage-ledger/dashboard` Fetch route.
 4. Provider allowance is read on demand — never on the ledger's path. The
    service asks the settings tree which routes exist, resolves each route's
    key through the credentials seam, and probes the vendors' quota endpoints
@@ -317,7 +341,7 @@ node scripts/dedupe-modlens.mjs             # 实际清理(建议先退出 DSH)
 - A harness whose base layer exposes the `llm/stream` waterfall and the
   `tokenMeter` service (0.1.0-rc.5-era releases).
 - The settings panel needs a web profile (the App client); other profiles
-  simply skip the browser half and the RPC channel.
+  simply skip the browser half and the panel routes.
 - Provider allowance additionally needs the `settings` and `credentials`
   services (mounted by the standard base layer). Without them the ledger and
   the usage dashboard behave exactly as before — the quota block just does

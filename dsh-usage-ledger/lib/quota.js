@@ -27,13 +27,22 @@
  */
 
 import { createHash } from 'node:crypto'
-import { gunzipSync } from 'node:zlib'
+import { createGunzip } from 'node:zlib'
 
 /** Per-request network timeout for one probe. */
 export const DEFAULT_TIMEOUT_MS = 15_000
 
 /** How long one reading is served before the next probe. */
 export const DEFAULT_TTL_MS = 300_000
+
+/**
+ * Hard cap on one probe response, applied twice — to the downloaded bytes
+ * and again to whatever a middlebox's gzip expands to. Vendor payloads are a
+ * few KB, so 2 MiB leaves orders of magnitude of slack while a hostile or
+ * compromised endpoint cannot exhaust host memory with an oversized (or
+ * gzip-bomb) body.
+ */
+export const MAX_RESPONSE_BYTES = 2 * 1024 * 1024
 
 /** Provider-specific endpoints (the community-verified console APIs). */
 export const PROBE_URLS = {
@@ -83,38 +92,96 @@ export class HttpError extends Error {
 }
 
 /**
+ * Stream one response body into a Buffer, aborting the download as soon as
+ * it passes `maxBytes` (the reader is cancelled so the rest is not fetched).
+ * @param response - the fetch response.
+ * @param maxBytes - download bound.
+ * @returns the bounded body bytes.
+ */
+async function readBody(response, maxBytes) {
+  const body = response.body
+  if (body === null || body === undefined || typeof body.getReader !== 'function') {
+    const buffer = Buffer.from(await response.arrayBuffer())
+    if (buffer.byteLength > maxBytes) throw new Error(`response body exceeds ${maxBytes} bytes`)
+    return buffer
+  }
+  const reader = body.getReader()
+  const chunks = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done === true) break
+    const chunk = Buffer.from(value)
+    total += chunk.byteLength
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => {})
+      throw new Error(`response body exceeds ${maxBytes} bytes`)
+    }
+    chunks.push(chunk)
+  }
+  return Buffer.concat(chunks)
+}
+
+/**
+ * Gunzip with an output bound: a small compressed body can still expand to
+ * gigabytes (ratios past 1000:1), so the pump is destroyed the moment the
+ * decompressed size passes `maxBytes` instead of ever buffering it whole.
+ */
+function gunzipBounded(buffer, maxBytes) {
+  return new Promise((resolve, reject) => {
+    const stream = createGunzip()
+    const chunks = []
+    let total = 0
+    stream.on('data', (chunk) => {
+      total += chunk.length
+      if (total > maxBytes) {
+        stream.destroy(new Error(`decompressed body exceeds ${maxBytes} bytes`))
+        return
+      }
+      chunks.push(chunk)
+    })
+    stream.on('error', reject)
+    stream.on('end', () => resolve(Buffer.concat(chunks)))
+    stream.end(buffer)
+  })
+}
+
+/**
  * Decode one response body to text. Gzip is recognized by its magic bytes,
  * not the Content-Encoding header: a proxy egress can deliver a gzipped
  * body with the header stripped, and undici then serves the raw bytes
  * (observed through an undici ProxyAgent tunnel to open.bigmodel.cn).
- * @param body - the raw response bytes.
+ * Both the compressed input and the decompressed output are bounded.
+ * @param body - the raw response bytes (already download-bounded).
+ * @param maxBytes - decompression bound.
  * @returns the decoded text.
  */
-function decodeBody(body) {
+async function decodeBody(body, maxBytes = MAX_RESPONSE_BYTES) {
   const buffer = Buffer.from(body)
   if (buffer.length > 2 && buffer[0] === 0x1f && buffer[1] === 0x8b) {
-    return gunzipSync(buffer).toString('utf8')
+    return (await gunzipBounded(buffer, maxBytes)).toString('utf8')
   }
   return buffer.toString('utf8')
 }
 
 /**
- * Bounded JSON fetch: aborts after `timeoutMs`, rejects non-2xx with the
- * status and a short body excerpt, and rejects non-JSON bodies. Asks for
- * identity encoding first (no compression to mis-handle in transit); a
- * middlebox that compresses anyway is caught by decodeBody's magic sniff.
+ * Bounded JSON fetch: aborts after `timeoutMs`, bounds the body (download
+ * and decompression) at `maxResponseBytes`, rejects non-2xx with the status
+ * and a short body excerpt, and rejects non-JSON bodies. Asks for identity
+ * encoding first (no compression to mis-handle in transit); a middlebox
+ * that compresses anyway is caught by decodeBody's magic sniff.
  * @param url - absolute request URL.
- * @param init - fetch init plus { timeoutMs }.
+ * @param init - fetch init plus { timeoutMs, maxResponseBytes }.
  * @returns the parsed JSON body.
  */
 export async function fetchJson(url, init = {}) {
-  const { timeoutMs = DEFAULT_TIMEOUT_MS, ...rest } = init
+  const { timeoutMs = DEFAULT_TIMEOUT_MS, maxResponseBytes = MAX_RESPONSE_BYTES, ...rest } = init
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
     const headers = { 'accept-encoding': 'identity', ...(rest.headers ?? {}) }
     const response = await fetch(url, { ...rest, headers, signal: controller.signal })
-    const text = decodeBody(await response.arrayBuffer())
+    const text = await decodeBody(await readBody(response, maxResponseBytes), maxResponseBytes)
     if (!response.ok) throw new HttpError(response.status, text.slice(0, 300))
     try {
       return JSON.parse(text)
@@ -134,6 +201,26 @@ export async function fetchJson(url, init = {}) {
 /** Clamp a percentage into 0..100. */
 export function clampPercent(value) {
   return Math.min(100, Math.max(0, value))
+}
+
+/** Longest vendor-supplied text allowed into a reading's `error` field. */
+export const MAX_DETAIL_CHARS = 160
+
+/**
+ * Neutralize text before it rides a quota reading into logs, the settings
+ * panel, or the agent-facing report: vendor responses (their error bodies
+ * and status messages) are untrusted input, so strip control characters,
+ * collapse whitespace, and truncate. A compromised endpoint must not get a
+ * free-form channel into the model context or a terminal.
+ * @param text - anything (vendor body excerpt, Error message, config value).
+ * @returns the sanitized one-line excerpt.
+ */
+export function sanitizeDetail(text) {
+  return String(text)
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, MAX_DETAIL_CHARS)
 }
 
 /**
@@ -782,7 +869,7 @@ const HOST_RULES = [
   { probe: 'baseten', hosts: ['baseten.co'] },
 ]
 
-/** Route-id keywords, for a route whose baseURL names no known host. */
+/** Route-id keywords, for a route that names no endpoint at all. */
 const ID_RULES = [
   { probe: 'zhipu', words: ['zai', 'zhipu', 'glm', 'bigmodel'] },
   { probe: 'kimi', words: ['kimi'] },
@@ -792,9 +879,6 @@ const ID_RULES = [
   { probe: 'minimax', words: ['minimax'] },
   { probe: 'baseten', words: ['baseten'] },
 ]
-
-/** Hosts whose API-key traffic must never fall through to Codex by route name. */
-const OPENAI_API_HOSTS = ['openai.com', 'openai.azure.com']
 
 function hostOf(url) {
   if (typeof url !== 'string' || url === '') return ''
@@ -807,16 +891,16 @@ function hostOf(url) {
 
 /**
  * Which probe can answer for one configured route.
- * The endpoint host decides first (a route id is free-form), then the id's
- * keywords — so `zai-coding-cn` with a `bigmodel.cn` baseURL and a gateway
- * aliased `glm-proxy` both land on the Zhipu probe.
+ * The endpoint host decides first (a route id is free-form); the id's
+ * keywords speak only when the route names no endpoint at all.
  *
- * Codex is deliberately narrower: `chatgpt.com` hosts, or the exact pi-ai
- * catalog route id `openai-codex`. An OpenAI API-key endpoint is denied
- * outright before the id fallback runs — a route named `openai-codex` pointed
- * at `api.openai.com` carries a platform API key, and shipping that to the
- * ChatGPT console endpoint would leak it cross-service. Custom routes can
- * still force the probe through `quota.providers` overrides.
+ * A route whose endpoint names a host no probe knows — a local gateway, a
+ * corporate proxy, an OpenAI API endpoint — is skipped outright: its
+ * credential was issued for that host, and shipping it to a vendor's console
+ * endpoint would leak it cross-service (a `glm`-named proxy's key does not
+ * belong at bigmodel.cn; a platform API key does not belong at the ChatGPT
+ * console). Forcing a probe for such a route is an explicit opt-in through
+ * `quota.providers` overrides.
  * @param route - provider route id from the settings tree.
  * @param baseURL - the route's configured endpoint, when it has one.
  * @returns probe id, or undefined when no probe fits (route is then skipped).
@@ -827,7 +911,7 @@ export function detectProbe(route, baseURL) {
     for (const rule of HOST_RULES) {
       if (rule.hosts.some((candidate) => host === candidate || host.endsWith(`.${candidate}`))) return rule.probe
     }
-    if (OPENAI_API_HOSTS.some((candidate) => host === candidate || host.endsWith(`.${candidate}`))) return undefined
+    return undefined
   }
   const id = String(route ?? '').toLowerCase()
   if (id === 'openai-codex') return 'codex'
@@ -840,11 +924,43 @@ export function detectProbe(route, baseURL) {
   return undefined
 }
 
+/** Whether a hostname names this machine (loopback literals only). */
+function isLoopbackHostname(hostname) {
+  const bare = hostname.replace(/^\[/, '').replace(/\]$/, '')
+  if (bare === 'localhost' || bare === '::1') return true
+  const parts = bare.split('.')
+  return parts.length === 4 && parts[0] === '127' && parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) <= 255)
+}
+
+/**
+ * Reject a `quota.providers` override URL that would ship a credential
+ * somewhere it must not go: only `https:` qualifies, plus plain `http:` on
+ * the local loopback (a dev-only mock endpoint never leaves the machine).
+ * The caller logs the reason and the override's `url` is then ignored in
+ * favor of the family default.
+ * @param override - one per-route override from the plugin config.
+ * @returns a human-readable reason when the url must be ignored, else undefined.
+ */
+export function overrideUrlIssue(override) {
+  const url = typeof override?.url === 'string' ? override.url : ''
+  if (url === '') return undefined
+  let parsed
+  try {
+    parsed = new URL(url)
+  } catch {
+    return `url ${JSON.stringify(url)} does not parse`
+  }
+  if (parsed.protocol === 'https:') return undefined
+  if (parsed.protocol === 'http:' && isLoopbackHostname(parsed.hostname)) return undefined
+  return `url ${JSON.stringify(url)} must be https (plain http is allowed only on the loopback)`
+}
+
 /**
  * Turn the deployment's configured routes into quota targets.
  * @param sources - { piAi, deepseek, overrides }: the resolved `llm-pi-ai`
  *   settings section (its `providers` dict), the resolved `llm-deepseek`
- *   section, and per-route config overrides.
+ *   section, and per-route config overrides. An override `url` that is not
+ *   https (loopback http aside) is ignored here — see `overrideUrlIssue`.
  * @returns [{ route, probe, credentialRef?, credentialKey?, label? }] — routes
  *   no probe can answer for, and routes already covered, are omitted.
  */
@@ -889,7 +1005,9 @@ export function discoverTargets(sources = {}) {
         : probe === 'minimax' && (host.endsWith('.minimaxi.com') || route === 'minimax-cn')
           ? MINIMAX_CN_URL
           : undefined
-    const url = typeof override.url === 'string' && override.url !== '' ? override.url : derivedUrl
+    const url = typeof override.url === 'string' && override.url !== '' && overrideUrlIssue(override) === undefined
+      ? override.url
+      : derivedUrl
     targets.push({
       route,
       probe,
@@ -950,7 +1068,8 @@ export async function resolveTargetAuth(target, credentials, now = Date.now()) {
 /**
  * Read one target, never throwing: a missing credential, a provider failure,
  * and a parser complaint all become an `ok: false` reading that names the
- * route, so one broken vendor cannot hide the others.
+ * route, so one broken vendor cannot hide the others. Error text is vendor
+ * input and is sanitized (`sanitizeDetail`) before it travels anywhere.
  * @param target - one discoverTargets entry plus its resolved `apiKey`.
  * @param timeoutMs - per-request network bound.
  * @returns one quota reading for the wire.
@@ -970,19 +1089,19 @@ export async function probeTarget(target, timeoutMs = DEFAULT_TIMEOUT_MS) {
       ...base,
       ok: false,
       reason: 'unconfigured',
-      error: target.authError
+      error: sanitizeDetail(target.authError
         ?? (target.credentialRef !== undefined
           ? `no value for ${target.credentialRef}`
           : target.credentialKey !== undefined
             ? `no OAuth grant for ${target.credentialKey}`
-            : 'no credential reference on this route'),
+            : 'no credential reference on this route')),
     }
   }
   try {
     const data = await probe.fetch(target.apiKey, target.url ?? probe.url, timeoutMs, target)
     return { ...base, ok: true, fetchedAt: Date.now(), stale: false, data }
   } catch (error) {
-    return { ...base, ok: false, reason: 'error', error: error instanceof Error ? error.message : String(error) }
+    return { ...base, ok: false, reason: 'error', error: sanitizeDetail(error instanceof Error ? error.message : String(error)) }
   }
 }
 
