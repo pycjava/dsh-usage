@@ -42,11 +42,7 @@ const PROBE_KEYS: Record<string, string> = {
   deepseek: 'quota.probe.deepseek',
 }
 
-/**
- * Render the provider-allowance block.
- * Renders nothing at all when the deployment configures no probeable route —
- * the block is additive, never an empty box.
- */
+/** Render the provider-allowance tab, including an explicit empty state. */
 export function QuotaBlock({ queryQuotas, localeId, refreshToken, t }: QuotaBlockProps): ReactNode {
   const [state, setState] = useState<ViewState>({ status: 'loading' })
   const [retry, setRetry] = useState(0)
@@ -72,8 +68,6 @@ export function QuotaBlock({ queryQuotas, localeId, refreshToken, t }: QuotaBloc
 
   const zh = localeId().startsWith('zh')
   const quotas = state.status === 'ready' ? state.quotas : []
-  if (state.status === 'ready' && quotas.length === 0) return null
-
   const okReadings = quotas.filter((reading) => reading.ok)
   const stamp = okReadings.reduce<number | undefined>(
     (newest, reading) => (reading.fetchedAt === undefined ? newest : Math.max(newest ?? 0, reading.fetchedAt)),
@@ -102,7 +96,10 @@ export function QuotaBlock({ queryQuotas, localeId, refreshToken, t }: QuotaBloc
         </div>
       ) : null}
 
-      {state.status === 'ready' ? (
+      {state.status === 'ready' && quotas.length === 0 ? (
+        <p className={css.status}>{t('quota.empty')}</p>
+      ) : null}
+      {state.status === 'ready' && quotas.length > 0 ? (
         <>
           <div className={css.quotaGrid}>
             {quotas.map((reading) => (

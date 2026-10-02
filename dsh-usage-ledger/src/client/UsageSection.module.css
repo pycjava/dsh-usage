@@ -16,6 +16,16 @@
   gap: 8px;
 }
 
+.tabPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tabPanel[hidden] {
+  display: none;
+}
+
 /* ---- trend header tools: the period toggle lives in the trend block's
  * header (the only charts it affects) ---- */
 
@@ -61,10 +71,16 @@
   cursor: pointer;
 }
 
-.segButton[aria-pressed='true'] {
+.segButton[aria-pressed='true'],
+.segButton[aria-selected='true'] {
   background: var(--dsw-alias-bg-layer-1);
   color: var(--dsw-alias-label-primary);
   box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.segButton:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: 2px;
 }
 
 /* ---- status surfaces ---- */

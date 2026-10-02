@@ -14,7 +14,7 @@
  * both tabs' data (the quota probe bypasses its TTL cache on refresh).
  */
 
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { heatLevel } from '../../lib/heat-level.js'
 import { QuotaBlock } from './QuotaBlock.tsx'
 import { buildTrendPoints, type TrendPoint } from './trend-points.ts'
@@ -141,6 +141,7 @@ function toGeometry(values: readonly number[], trendMax: number): TrendLine['poi
 /** Render the usage dashboard section. */
 export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionProps): ReactNode {
   const [tab, setTab] = useState<Tab>('usage')
+  const tabId = useId()
   const [period, setPeriod] = useState<Period>('30d')
   const [request, setRequest] = useState(0)
   const [state, setState] = useState<ViewState>({ status: 'loading' })
@@ -338,19 +339,32 @@ export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionPr
   const anim = (base: string): string => (playOnce ? `${base} ${css.anim}` : base)
 
   return (
-    <div className={css.section} aria-busy={state.status === 'loading'}>
-      {/* Tab bar: the shared segmented-control look, with one refresh button
-          that re-reads whichever tab is showing (quotas bypass the TTL cache). */}
+    <div className={css.section} aria-busy={tab === 'usage' && state.status === 'loading'}>
+      {/* One refresh button re-reads both panels; keep their content mounted so
+          switching tabs does not repeatedly force vendor requests. */}
       <div className={css.tabBar}>
         <div className={css.seg} role="tablist" aria-label={t('view')}>
-          {TABS.map((value) => (
+          {TABS.map((value, index) => (
             <button
               key={value}
+              id={`${tabId}-${value}-tab`}
               type="button"
               role="tab"
               className={css.segButton}
+              aria-controls={`${tabId}-${value}-panel`}
               aria-selected={tab === value}
+              tabIndex={tab === value ? 0 : -1}
               onClick={() => { setTab(value) }}
+              onKeyDown={(event) => {
+                const next = event.key === 'ArrowRight' ? (index + 1) % TABS.length
+                  : event.key === 'ArrowLeft' ? (index + TABS.length - 1) % TABS.length
+                    : event.key === 'Home' ? 0
+                      : event.key === 'End' ? TABS.length - 1 : undefined
+                if (next === undefined) return
+                event.preventDefault()
+                setTab(TABS[next])
+                event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus()
+              }}
             >
               {t(`tab.${value}`)}
             </button>
@@ -366,17 +380,13 @@ export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionPr
         </button>
       </div>
 
-      {tab === 'quotas' ? (
-        /* Live vendor allowance: independent of the ledger, so it renders even
-           before the first token is recorded, and never blocks the usage tab. */
-        <QuotaBlock
-          queryQuotas={queryQuotas}
-          localeId={localeId}
-          refreshToken={request}
-          t={t}
-        />
-      ) : (
-        <>
+      <div
+        id={`${tabId}-usage-panel`}
+        className={css.tabPanel}
+        role="tabpanel"
+        aria-labelledby={`${tabId}-usage-tab`}
+        hidden={tab !== 'usage'}
+      >
           {state.status === 'loading' ? <p className={css.status}>{t('loading')}</p> : null}
           {state.status === 'error' ? (
             <div className={css.failure}>
@@ -423,10 +433,8 @@ export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionPr
               </div>
             </>
           ) : null}
-        </>
-      )}
 
-      {tab === 'usage' && state.status === 'ready' && report!.totals.calls > 0 ? (
+      {state.status === 'ready' && report!.totals.calls > 0 ? (
         <>
           <div className={css.block}>
             <div className={css.blockHead}>
@@ -683,6 +691,24 @@ export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionPr
           ) : null}
         </>
       ) : null}
+      </div>
+
+      {/* Keep quota state mounted across tab switches: an explicit refresh
+          bypasses the cache once, while navigation itself never probes. */}
+      <div
+        id={`${tabId}-quotas-panel`}
+        className={css.tabPanel}
+        role="tabpanel"
+        aria-labelledby={`${tabId}-quotas-tab`}
+        hidden={tab !== 'quotas'}
+      >
+        <QuotaBlock
+          queryQuotas={queryQuotas}
+          localeId={localeId}
+          refreshToken={request}
+          t={t}
+        />
+      </div>
     </div>
   )
 }
