@@ -1,16 +1,17 @@
 /**
- * The 数据与统计 settings section: dashboard layout — six summary cards, the
- * provider-allowance block, a GitHub-style activity heatmap, and the token
- * trend as per-model colored lines under a neutral total line. Pure read
- * surface; data arrives over the plugin's private RPC channel (the quota
- * block over its own endpoint, so a slow vendor cannot delay the usage
- * numbers).
+ * The 数据与统计 settings section: a tabbed dashboard — the 用量 tab stacks
+ * six summary cards, a GitHub-style activity heatmap, and the token trend as
+ * per-model colored lines under a neutral total line; the 供应商额度 tab
+ * carries the provider-allowance cards. Pure read surface; data arrives over
+ * the plugin's private RPC channel (the quota block over its own endpoint,
+ * so a slow vendor cannot delay the usage numbers).
  *
  * The report is always queried for 30 days; the 7-day view is a client-side
  * slice of that series and 今日 draws the report's hourly buckets, so the
  * period toggle swaps instantly with no second round-trip. The toggle lives
  * in the trend block's header (the only charts it affects) and the cards
- * stay fixed to the 30-day window.
+ * stay fixed to the 30-day window. The tab bar's refresh button re-reads
+ * both tabs' data (the quota probe bypasses its TTL cache on refresh).
  */
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
@@ -30,6 +31,9 @@ export type UsageSectionProps =
 
 const PERIODS = ['today', '7d', '30d'] as const
 type Period = (typeof PERIODS)[number]
+
+const TABS = ['usage', 'quotas'] as const
+type Tab = (typeof TABS)[number]
 
 /** The one and only period requested from the ledger; `period.30d` labels
  * everything that comes straight from the report (cards, meta line). */
@@ -136,6 +140,7 @@ function toGeometry(values: readonly number[], trendMax: number): TrendLine['poi
 
 /** Render the usage dashboard section. */
 export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionProps): ReactNode {
+  const [tab, setTab] = useState<Tab>('usage')
   const [period, setPeriod] = useState<Period>('30d')
   const [request, setRequest] = useState(0)
   const [state, setState] = useState<ViewState>({ status: 'loading' })
@@ -334,63 +339,94 @@ export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionPr
 
   return (
     <div className={css.section} aria-busy={state.status === 'loading'}>
-      {state.status === 'loading' ? <p className={css.status}>{t('loading')}</p> : null}
-      {state.status === 'error' ? (
-        <div className={css.failure}>
-          <p role="alert">{t('error')}</p>
-          <button type="button" onClick={() => { setRequest((value) => value + 1) }}>{t('retry')}</button>
+      {/* Tab bar: the shared segmented-control look, with one refresh button
+          that re-reads whichever tab is showing (quotas bypass the TTL cache). */}
+      <div className={css.tabBar}>
+        <div className={css.seg} role="tablist" aria-label={t('view')}>
+          {TABS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              className={css.segButton}
+              aria-selected={tab === value}
+              onClick={() => { setTab(value) }}
+            >
+              {t(`tab.${value}`)}
+            </button>
+          ))}
         </div>
-      ) : null}
-      {state.status === 'ready' && report!.totals.calls === 0 ? (
-        <p className={css.status}>{t('empty')}</p>
-      ) : null}
+        <button
+          type="button"
+          className={css.refresh}
+          aria-label={t('refresh')}
+          onClick={() => { setRequest((value) => value + 1) }}
+        >
+          {t('refresh')}
+        </button>
+      </div>
 
-      {state.status === 'ready' && report!.totals.calls > 0 ? (
+      {tab === 'quotas' ? (
+        /* Live vendor allowance: independent of the ledger, so it renders even
+           before the first token is recorded, and never blocks the usage tab. */
+        <QuotaBlock
+          queryQuotas={queryQuotas}
+          localeId={localeId}
+          refreshToken={request}
+          t={t}
+        />
+      ) : (
         <>
-          <div className={css.cards}>
-            <div className={css.card}>
-              <span className={css.cardLabel}><IconFlame />{t('stat.tokens')}</span>
-              <span className={css.cardValue}>{formatTokens(report!.totals.totalTokens, zh)}</span>
+          {state.status === 'loading' ? <p className={css.status}>{t('loading')}</p> : null}
+          {state.status === 'error' ? (
+            <div className={css.failure}>
+              <p role="alert">{t('error')}</p>
+              <button type="button" onClick={() => { setRequest((value) => value + 1) }}>{t('retry')}</button>
             </div>
-            <div className={css.card}>
-              <span className={css.cardLabel}><IconChat />{t('stat.sessions')}</span>
-              <span className={css.cardValue}>{formatNumber(report!.sessions)}</span>
-            </div>
-            <div className={css.card}>
-              <span className={css.cardLabel}><IconMessage />{t('stat.calls')}</span>
-              <span className={css.cardValue}>{formatNumber(report!.totals.calls)}</span>
-            </div>
-            <div className={css.card}>
-              <span className={css.cardLabel}><IconCalendar />{t('stat.activeDays')}</span>
-              <span className={css.cardValue}>{formatNumber(report!.activeDays)}</span>
-            </div>
-            <div className={css.card}>
-              <span className={css.cardLabel}><IconBolt />{t('stat.streak')}</span>
-              <span className={css.cardValue}>{formatNumber(report!.streakDays)}</span>
-            </div>
-            <div className={css.card}>
-              <span className={css.cardLabel}><IconSparkle />{t('stat.topModel')}</span>
-              <span className={css.cardValueSmall} title={report!.topModel?.label ?? ''}>
-                {report!.topModel === null ? '—' : labelOf(report!.topModel.label)}
-              </span>
-              {report!.topModel !== null ? (
-                <span className={css.cardSub}>{t('stat.share', { p: `${Math.round(report!.topModel.share * 100)}%` })}</span>
-              ) : null}
-            </div>
-          </div>
+          ) : null}
+          {state.status === 'ready' && report!.totals.calls === 0 ? (
+            <p className={css.status}>{t('empty')}</p>
+          ) : null}
+
+          {state.status === 'ready' && report!.totals.calls > 0 ? (
+            <>
+              <div className={css.cards}>
+                <div className={css.card}>
+                  <span className={css.cardLabel}><IconFlame />{t('stat.tokens')}</span>
+                  <span className={css.cardValue}>{formatTokens(report!.totals.totalTokens, zh)}</span>
+                </div>
+                <div className={css.card}>
+                  <span className={css.cardLabel}><IconChat />{t('stat.sessions')}</span>
+                  <span className={css.cardValue}>{formatNumber(report!.sessions)}</span>
+                </div>
+                <div className={css.card}>
+                  <span className={css.cardLabel}><IconMessage />{t('stat.calls')}</span>
+                  <span className={css.cardValue}>{formatNumber(report!.totals.calls)}</span>
+                </div>
+                <div className={css.card}>
+                  <span className={css.cardLabel}><IconCalendar />{t('stat.activeDays')}</span>
+                  <span className={css.cardValue}>{formatNumber(report!.activeDays)}</span>
+                </div>
+                <div className={css.card}>
+                  <span className={css.cardLabel}><IconBolt />{t('stat.streak')}</span>
+                  <span className={css.cardValue}>{formatNumber(report!.streakDays)}</span>
+                </div>
+                <div className={css.card}>
+                  <span className={css.cardLabel}><IconSparkle />{t('stat.topModel')}</span>
+                  <span className={css.cardValueSmall} title={report!.topModel?.label ?? ''}>
+                    {report!.topModel === null ? '—' : labelOf(report!.topModel.label)}
+                  </span>
+                  {report!.topModel !== null ? (
+                    <span className={css.cardSub}>{t('stat.share', { p: `${Math.round(report!.topModel.share * 100)}%` })}</span>
+                  ) : null}
+                </div>
+              </div>
+            </>
+          ) : null}
         </>
-      ) : null}
+      )}
 
-      {/* Live vendor allowance: independent of the ledger, so it renders even
-          before the first token is recorded, and never blocks the cards. */}
-      <QuotaBlock
-        queryQuotas={queryQuotas}
-        localeId={localeId}
-        refreshToken={request}
-        t={t}
-      />
-
-      {state.status === 'ready' && report!.totals.calls > 0 ? (
+      {tab === 'usage' && state.status === 'ready' && report!.totals.calls > 0 ? (
         <>
           <div className={css.block}>
             <div className={css.blockHead}>
@@ -444,14 +480,6 @@ export function UsageSection({ query, queryQuotas, localeId, t }: UsageSectionPr
                     </button>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  className={css.refresh}
-                  aria-label={t('refresh')}
-                  onClick={() => { setRequest((value) => value + 1) }}
-                >
-                  {t('refresh')}
-                </button>
               </div>
             </div>
             <div className={css.trendFrame}>

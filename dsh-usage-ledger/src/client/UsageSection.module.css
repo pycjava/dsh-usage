@@ -7,8 +7,17 @@
   color: var(--dsw-alias-label-primary);
 }
 
-/* ---- trend header tools: period toggle + refresh live in the trend
- * block's header (the only charts they affect) ---- */
+/* ---- page-level tab bar (用量 / 供应商额度) with the shared refresh ---- */
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ---- trend header tools: the period toggle lives in the trend block's
+ * header (the only charts it affects) ---- */
 
 .trendTools {
   display: inline-flex;

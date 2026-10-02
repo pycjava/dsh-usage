@@ -79,7 +79,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:src/client/UsageSection.module.css.mjs
-		const css = ".CrMo6q_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.CrMo6q_trendTools{align-items:center;gap:8px;display:inline-flex}.CrMo6q_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.CrMo6q_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.CrMo6q_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.CrMo6q_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.CrMo6q_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.CrMo6q_status,.CrMo6q_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.CrMo6q_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.CrMo6q_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.CrMo6q_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.CrMo6q_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.CrMo6q_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.CrMo6q_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.CrMo6q_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.CrMo6q_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.CrMo6q_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.CrMo6q_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.CrMo6q_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.CrMo6q_quotaMeta{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:11px;display:inline-flex}.CrMo6q_quotaStale{border:1px solid var(--dsw-alias-border-l3);color:var(--dsw-alias-label-tertiary);border-radius:4px;padding:0 4px;font-size:10px;line-height:14px}.CrMo6q_quotaGrid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;display:grid}.CrMo6q_quotaCard{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.CrMo6q_quotaHead{align-items:center;gap:6px;min-width:0;display:flex}.CrMo6q_quotaTitle{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500;overflow:hidden}.CrMo6q_quotaBadge{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);text-overflow:ellipsis;white-space:nowrap;border-radius:4px;flex:none;max-width:96px;padding:0 5px;font-size:10px;line-height:15px;overflow:hidden}.CrMo6q_quotaRoute{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, monospace);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.CrMo6q_quotaRow{flex-direction:column;gap:4px;display:flex}.CrMo6q_quotaRowHead{justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;line-height:16px;display:flex}.CrMo6q_quotaRowLabel{color:var(--dsw-alias-label-secondary)}.CrMo6q_quotaValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-weight:600}.CrMo6q_quotaBar{background:var(--dsw-alias-border-l3);border-radius:3px;height:6px;overflow:hidden}.CrMo6q_quotaBarFill,.CrMo6q_quotaBarFillLow{background:var(--dsw-static-deepseek-450);border-radius:3px;height:100%;display:block}.CrMo6q_quotaBarFillLow{background:var(--dsw-alias-state-warn-primary,#f7ad31)}.CrMo6q_quotaRowFoot{color:var(--dsw-alias-label-tertiary);justify-content:space-between;align-items:baseline;gap:8px;font-size:11px;line-height:14px;display:flex}.CrMo6q_quotaBalance{flex-wrap:wrap;align-items:baseline;gap:8px;display:flex}.CrMo6q_quotaBalanceValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:22px;font-weight:600;line-height:28px}.CrMo6q_quotaOk,.CrMo6q_quotaWarn{font-size:11px;line-height:16px}.CrMo6q_quotaOk{color:var(--dsw-alias-state-success-primary,#22c55e)}.CrMo6q_quotaWarn{color:var(--dsw-alias-state-warn-primary,#f7ad31)}.CrMo6q_quotaSub{color:var(--dsw-alias-label-tertiary);text-overflow:ellipsis;font-size:11px;line-height:15px;overflow:hidden}.CrMo6q_quotaError{color:var(--dsw-alias-state-error-primary);margin:0;font-size:12px;line-height:16px}.CrMo6q_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.CrMo6q_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.CrMo6q_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.CrMo6q_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.CrMo6q_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.CrMo6q_heatCellL0,.CrMo6q_heatCellL1,.CrMo6q_heatCellL2,.CrMo6q_heatCellL3,.CrMo6q_heatCellL4,.CrMo6q_heatCellOff{border-radius:2px;min-width:0;min-height:0}.CrMo6q_heatCellOff{background:0 0}.CrMo6q_heatCellL0{background:var(--dsw-alias-border-l3)}.CrMo6q_heatCellL1{background:var(--dsw-static-deepseek-100)}.CrMo6q_heatCellL2{background:var(--dsw-static-deepseek-200)}.CrMo6q_heatCellL3{background:var(--dsw-static-deepseek-300)}.CrMo6q_heatCellL4{background:var(--dsw-static-deepseek-450)}.CrMo6q_trendFrame{flex-direction:column;gap:10px;display:flex}.CrMo6q_trend{height:160px;display:flex;position:relative}.CrMo6q_trendColumn{border-radius:2px;flex:1;min-width:0;height:100%}.CrMo6q_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.CrMo6q_gridLine{border-top:1px dashed var(--dsw-alias-border-l2);pointer-events:none;position:absolute;left:0;right:0}.CrMo6q_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.CrMo6q_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.CrMo6q_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.CrMo6q_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.CrMo6q_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.CrMo6q_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.CrMo6q_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.CrMo6q_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.CrMo6q_legendItem{align-items:center;gap:6px;display:inline-flex}.CrMo6q_legendDot{border-radius:50%;flex:none;width:8px;height:8px}.CrMo6q_legendLine{background:var(--dsw-alias-label-primary);border-radius:2px;flex:none;width:12px;height:3px}.CrMo6q_trendOverlay{z-index:1;pointer-events:none;position:absolute;inset:0}.CrMo6q_trendSvg{width:100%;height:100%;display:block;overflow:visible}.CrMo6q_trendLine{fill:none;stroke:var(--dsw-alias-label-primary);stroke-width:2.5px;stroke-linecap:round;stroke-linejoin:round}.CrMo6q_trendLineModel{fill:none;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round}.CrMo6q_trendDot{background:var(--dsw-alias-label-primary);border-radius:50%;width:5px;height:5px;position:absolute;transform:translate(-50%,-50%)}.CrMo6q_hoverDot,.CrMo6q_hoverDotTotal{border-radius:50%;width:5px;height:5px;position:absolute;transform:translate(-50%,-50%)}.CrMo6q_hoverDotTotal{background:var(--dsw-alias-label-primary);width:6px;height:6px}@media (prefers-reduced-motion:no-preference){.CrMo6q_trendLine.CrMo6q_anim,.CrMo6q_trendLineModel.CrMo6q_anim{stroke-dasharray:1;animation:.7s cubic-bezier(.33,0,.2,1) backwards CrMo6q_trendLineDraw}.CrMo6q_trendDot.CrMo6q_anim{animation:.24s ease-out backwards CrMo6q_trendDotPop}.CrMo6q_heat>.CrMo6q_anim{animation:.3s ease-out backwards CrMo6q_heatFade}.CrMo6q_donut .CrMo6q_anim{animation:.6s cubic-bezier(.33,0,.2,1) backwards CrMo6q_donutSweep}}@keyframes CrMo6q_trendLineDraw{0%{stroke-dashoffset:1px}to{stroke-dashoffset:0}}@keyframes CrMo6q_trendDotPop{0%{opacity:0;transform:translate(-50%,-50%)scale(.3)}to{opacity:1;transform:translate(-50%,-50%)scale(1)}}@keyframes CrMo6q_heatFade{0%{opacity:0}}@keyframes CrMo6q_donutSweep{0%{stroke-dasharray:0 var(--circ,251.2)}to{stroke-dasharray:var(--arc,0) var(--circ,251.2)}}.CrMo6q_shareLayout{align-items:center;gap:20px;display:flex}.CrMo6q_donutWrap{flex:none;width:132px;height:132px;position:relative}.CrMo6q_donut{width:100%;height:100%;display:block}.CrMo6q_donut circle{transition:opacity .12s}.CrMo6q_donutCenter{pointer-events:none;flex-direction:column;justify-content:center;align-items:center;gap:2px;display:flex;position:absolute;inset:0}.CrMo6q_donutTotal{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:18px;font-weight:600;line-height:22px}.CrMo6q_donutUnit{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px}.CrMo6q_shareLegend{flex-direction:column;flex:1;min-width:0;margin:0;padding:0;list-style:none;display:flex}.CrMo6q_shareRow{border-radius:6px;align-items:center;gap:8px;padding:7px 6px;font-size:12px;line-height:16px;display:flex}.CrMo6q_shareRow+.CrMo6q_shareRow{border-top:1px solid var(--dsw-alias-border-l3);border-top-left-radius:0;border-top-right-radius:0}.CrMo6q_shareRow:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.CrMo6q_shareBody{flex-direction:column;flex:1;gap:1px;min-width:0;display:flex}.CrMo6q_shareTop{justify-content:space-between;align-items:baseline;gap:8px;display:flex}.CrMo6q_shareName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-primary);flex:1;overflow:hidden}.CrMo6q_shareSub{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px}.CrMo6q_sharePct{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);white-space:nowrap;font-weight:600}";
+		const css = ".CrMo6q_section{width:100%;max-width:780px;color:var(--dsw-alias-label-primary);flex-direction:column;gap:16px;display:flex}.CrMo6q_tabBar{justify-content:space-between;align-items:center;gap:8px;display:flex}.CrMo6q_trendTools{align-items:center;gap:8px;display:inline-flex}.CrMo6q_refresh{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px;font-size:12px;line-height:18px}.CrMo6q_refresh:hover{background:var(--dsw-alias-bg-layer-1)}.CrMo6q_seg{border:1px solid var(--dsw-alias-border-l2);border-radius:8px;gap:2px;padding:2px;display:inline-flex}.CrMo6q_segButton{color:var(--dsw-alias-label-tertiary);font:inherit;cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px 12px;font-size:12px;line-height:18px}.CrMo6q_segButton[aria-pressed=true]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px #00000014}.CrMo6q_status,.CrMo6q_meta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.CrMo6q_failure{color:var(--dsw-alias-state-error-primary);align-items:center;gap:10px;display:flex}.CrMo6q_failure button{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;background:0 0;border-radius:6px;padding:4px 10px}.CrMo6q_cards{grid-template-columns:repeat(3,1fr);gap:10px;display:grid}.CrMo6q_card{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.CrMo6q_cardLabel{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:12px;line-height:16px;display:inline-flex}.CrMo6q_cardValue{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;line-height:30px}.CrMo6q_cardValueSmall{font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-weight:600;line-height:26px;overflow:hidden}.CrMo6q_cardSub{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:16px}.CrMo6q_block{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:10px;padding:14px;display:flex}.CrMo6q_blockHead{justify-content:space-between;align-items:center;gap:12px;display:flex}.CrMo6q_blockTitle{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.CrMo6q_quotaMeta{color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;font-size:11px;display:inline-flex}.CrMo6q_quotaStale{border:1px solid var(--dsw-alias-border-l3);color:var(--dsw-alias-label-tertiary);border-radius:4px;padding:0 4px;font-size:10px;line-height:14px}.CrMo6q_quotaGrid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;display:grid}.CrMo6q_quotaCard{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;gap:6px;min-width:0;padding:12px 14px;display:flex}.CrMo6q_quotaHead{align-items:center;gap:6px;min-width:0;display:flex}.CrMo6q_quotaTitle{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500;overflow:hidden}.CrMo6q_quotaBadge{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);text-overflow:ellipsis;white-space:nowrap;border-radius:4px;flex:none;max-width:96px;padding:0 5px;font-size:10px;line-height:15px;overflow:hidden}.CrMo6q_quotaRoute{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, monospace);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.CrMo6q_quotaRow{flex-direction:column;gap:4px;display:flex}.CrMo6q_quotaRowHead{justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;line-height:16px;display:flex}.CrMo6q_quotaRowLabel{color:var(--dsw-alias-label-secondary)}.CrMo6q_quotaValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-weight:600}.CrMo6q_quotaBar{background:var(--dsw-alias-border-l3);border-radius:3px;height:6px;overflow:hidden}.CrMo6q_quotaBarFill,.CrMo6q_quotaBarFillLow{background:var(--dsw-static-deepseek-450);border-radius:3px;height:100%;display:block}.CrMo6q_quotaBarFillLow{background:var(--dsw-alias-state-warn-primary,#f7ad31)}.CrMo6q_quotaRowFoot{color:var(--dsw-alias-label-tertiary);justify-content:space-between;align-items:baseline;gap:8px;font-size:11px;line-height:14px;display:flex}.CrMo6q_quotaBalance{flex-wrap:wrap;align-items:baseline;gap:8px;display:flex}.CrMo6q_quotaBalanceValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:22px;font-weight:600;line-height:28px}.CrMo6q_quotaOk,.CrMo6q_quotaWarn{font-size:11px;line-height:16px}.CrMo6q_quotaOk{color:var(--dsw-alias-state-success-primary,#22c55e)}.CrMo6q_quotaWarn{color:var(--dsw-alias-state-warn-primary,#f7ad31)}.CrMo6q_quotaSub{color:var(--dsw-alias-label-tertiary);text-overflow:ellipsis;font-size:11px;line-height:15px;overflow:hidden}.CrMo6q_quotaError{color:var(--dsw-alias-state-error-primary);margin:0;font-size:12px;line-height:16px}.CrMo6q_heatLegend{color:var(--dsw-alias-label-tertiary);align-items:center;gap:3px;font-size:11px;display:inline-flex}.CrMo6q_heatLegend>span{border-radius:2px;flex:none;width:10px;height:10px}.CrMo6q_heatMonths{height:14px;color:var(--dsw-alias-label-tertiary);grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;font-size:11px;display:grid}.CrMo6q_heatMonths>span{white-space:nowrap;min-width:0;overflow:visible}.CrMo6q_heat{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:3px;width:100%;display:grid}.CrMo6q_heatCellL0,.CrMo6q_heatCellL1,.CrMo6q_heatCellL2,.CrMo6q_heatCellL3,.CrMo6q_heatCellL4,.CrMo6q_heatCellOff{border-radius:2px;min-width:0;min-height:0}.CrMo6q_heatCellOff{background:0 0}.CrMo6q_heatCellL0{background:var(--dsw-alias-border-l3)}.CrMo6q_heatCellL1{background:var(--dsw-static-deepseek-100)}.CrMo6q_heatCellL2{background:var(--dsw-static-deepseek-200)}.CrMo6q_heatCellL3{background:var(--dsw-static-deepseek-300)}.CrMo6q_heatCellL4{background:var(--dsw-static-deepseek-450)}.CrMo6q_trendFrame{flex-direction:column;gap:10px;display:flex}.CrMo6q_trend{height:160px;display:flex;position:relative}.CrMo6q_trendColumn{border-radius:2px;flex:1;min-width:0;height:100%}.CrMo6q_trendColumn:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.CrMo6q_gridLine{border-top:1px dashed var(--dsw-alias-border-l2);pointer-events:none;position:absolute;left:0;right:0}.CrMo6q_tooltip{z-index:2;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);min-width:200px;box-shadow:var(--dsw-shadow-lv1,0 4px 16px #00000029);pointer-events:none;border-radius:8px;flex-direction:column;gap:3px;padding:8px 10px;display:flex;position:absolute;top:4px}.CrMo6q_tooltipDate{font-size:12px;font-weight:600;line-height:16px}.CrMo6q_tooltipRow{align-items:center;gap:6px;font-size:12px;line-height:16px;display:flex}.CrMo6q_tooltipName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);flex:1;overflow:hidden}.CrMo6q_tooltipValue{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary)}.CrMo6q_ticks{height:16px;color:var(--dsw-alias-label-tertiary);font-size:11px;position:relative}.CrMo6q_ticks>span{white-space:nowrap;position:absolute;transform:translate(-50%)}.CrMo6q_legend{color:var(--dsw-alias-label-secondary);flex-wrap:wrap;gap:6px 16px;font-size:12px;display:flex}.CrMo6q_legendItem{align-items:center;gap:6px;display:inline-flex}.CrMo6q_legendDot{border-radius:50%;flex:none;width:8px;height:8px}.CrMo6q_legendLine{background:var(--dsw-alias-label-primary);border-radius:2px;flex:none;width:12px;height:3px}.CrMo6q_trendOverlay{z-index:1;pointer-events:none;position:absolute;inset:0}.CrMo6q_trendSvg{width:100%;height:100%;display:block;overflow:visible}.CrMo6q_trendLine{fill:none;stroke:var(--dsw-alias-label-primary);stroke-width:2.5px;stroke-linecap:round;stroke-linejoin:round}.CrMo6q_trendLineModel{fill:none;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round}.CrMo6q_trendDot{background:var(--dsw-alias-label-primary);border-radius:50%;width:5px;height:5px;position:absolute;transform:translate(-50%,-50%)}.CrMo6q_hoverDot,.CrMo6q_hoverDotTotal{border-radius:50%;width:5px;height:5px;position:absolute;transform:translate(-50%,-50%)}.CrMo6q_hoverDotTotal{background:var(--dsw-alias-label-primary);width:6px;height:6px}@media (prefers-reduced-motion:no-preference){.CrMo6q_trendLine.CrMo6q_anim,.CrMo6q_trendLineModel.CrMo6q_anim{stroke-dasharray:1;animation:.7s cubic-bezier(.33,0,.2,1) backwards CrMo6q_trendLineDraw}.CrMo6q_trendDot.CrMo6q_anim{animation:.24s ease-out backwards CrMo6q_trendDotPop}.CrMo6q_heat>.CrMo6q_anim{animation:.3s ease-out backwards CrMo6q_heatFade}.CrMo6q_donut .CrMo6q_anim{animation:.6s cubic-bezier(.33,0,.2,1) backwards CrMo6q_donutSweep}}@keyframes CrMo6q_trendLineDraw{0%{stroke-dashoffset:1px}to{stroke-dashoffset:0}}@keyframes CrMo6q_trendDotPop{0%{opacity:0;transform:translate(-50%,-50%)scale(.3)}to{opacity:1;transform:translate(-50%,-50%)scale(1)}}@keyframes CrMo6q_heatFade{0%{opacity:0}}@keyframes CrMo6q_donutSweep{0%{stroke-dasharray:0 var(--circ,251.2)}to{stroke-dasharray:var(--arc,0) var(--circ,251.2)}}.CrMo6q_shareLayout{align-items:center;gap:20px;display:flex}.CrMo6q_donutWrap{flex:none;width:132px;height:132px;position:relative}.CrMo6q_donut{width:100%;height:100%;display:block}.CrMo6q_donut circle{transition:opacity .12s}.CrMo6q_donutCenter{pointer-events:none;flex-direction:column;justify-content:center;align-items:center;gap:2px;display:flex;position:absolute;inset:0}.CrMo6q_donutTotal{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);font-size:18px;font-weight:600;line-height:22px}.CrMo6q_donutUnit{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px}.CrMo6q_shareLegend{flex-direction:column;flex:1;min-width:0;margin:0;padding:0;list-style:none;display:flex}.CrMo6q_shareRow{border-radius:6px;align-items:center;gap:8px;padding:7px 6px;font-size:12px;line-height:16px;display:flex}.CrMo6q_shareRow+.CrMo6q_shareRow{border-top:1px solid var(--dsw-alias-border-l3);border-top-left-radius:0;border-top-right-radius:0}.CrMo6q_shareRow:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 5%, transparent)}.CrMo6q_shareBody{flex-direction:column;flex:1;gap:1px;min-width:0;display:flex}.CrMo6q_shareTop{justify-content:space-between;align-items:baseline;gap:8px;display:flex}.CrMo6q_shareName{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-primary);flex:1;overflow:hidden}.CrMo6q_shareSub{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:14px}.CrMo6q_sharePct{font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-primary);white-space:nowrap;font-weight:600}";
 		const tagId = "dsh-usage-ledger/UsageSection.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -159,6 +159,7 @@ window.__ModuleLoader__.load({
 			"shareSub": "CrMo6q_shareSub",
 			"shareTop": "CrMo6q_shareTop",
 			"status": "CrMo6q_status",
+			"tabBar": "CrMo6q_tabBar",
 			"ticks": "CrMo6q_ticks",
 			"tooltip": "CrMo6q_tooltip",
 			"tooltipDate": "CrMo6q_tooltipDate",
@@ -525,24 +526,26 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region src/client/UsageSection.tsx
 		/**
-		* The 数据与统计 settings section: dashboard layout — six summary cards, the
-		* provider-allowance block, a GitHub-style activity heatmap, and the token
-		* trend as per-model colored lines under a neutral total line. Pure read
-		* surface; data arrives over the plugin's private RPC channel (the quota
-		* block over its own endpoint, so a slow vendor cannot delay the usage
-		* numbers).
+		* The 数据与统计 settings section: a tabbed dashboard — the 用量 tab stacks
+		* six summary cards, a GitHub-style activity heatmap, and the token trend as
+		* per-model colored lines under a neutral total line; the 供应商额度 tab
+		* carries the provider-allowance cards. Pure read surface; data arrives over
+		* the plugin's private RPC channel (the quota block over its own endpoint,
+		* so a slow vendor cannot delay the usage numbers).
 		*
 		* The report is always queried for 30 days; the 7-day view is a client-side
 		* slice of that series and 今日 draws the report's hourly buckets, so the
 		* period toggle swaps instantly with no second round-trip. The toggle lives
 		* in the trend block's header (the only charts it affects) and the cards
-		* stay fixed to the 30-day window.
+		* stay fixed to the 30-day window. The tab bar's refresh button re-reads
+		* both tabs' data (the quota probe bypasses its TTL cache on refresh).
 		*/
 		const PERIODS = [
 			"today",
 			"7d",
 			"30d"
 		];
+		const TABS = ["usage", "quotas"];
 		/** The one and only period requested from the ledger; `period.30d` labels
 		* everything that comes straight from the report (cards, meta line). */
 		const QUERY_PERIOD = "30d";
@@ -629,6 +632,7 @@ window.__ModuleLoader__.load({
 		}
 		/** Render the usage dashboard section. */
 		function UsageSection({ query, queryQuotas, localeId, t }) {
+			const [tab, setTab] = (0, react.useState)("usage");
 			const [period, setPeriod] = (0, react.useState)("30d");
 			const [request, setRequest] = (0, react.useState)(0);
 			const [state, setState] = (0, react.useState)({ status: "loading" });
@@ -832,107 +836,134 @@ window.__ModuleLoader__.load({
 				className: UsageSection_module_css_default.section,
 				"aria-busy": state.status === "loading",
 				children: [
-					state.status === "loading" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-						className: UsageSection_module_css_default.status,
-						children: t("loading")
-					}) : null,
-					state.status === "error" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: UsageSection_module_css_default.failure,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-							role: "alert",
-							children: t("error")
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: UsageSection_module_css_default.tabBar,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: UsageSection_module_css_default.seg,
+							role: "tablist",
+							"aria-label": t("view"),
+							children: TABS.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								role: "tab",
+								className: UsageSection_module_css_default.segButton,
+								"aria-selected": tab === value,
+								onClick: () => {
+									setTab(value);
+								},
+								children: t(`tab.${value}`)
+							}, value))
 						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 							type: "button",
+							className: UsageSection_module_css_default.refresh,
+							"aria-label": t("refresh"),
 							onClick: () => {
 								setRequest((value) => value + 1);
 							},
-							children: t("retry")
+							children: t("refresh")
 						})]
-					}) : null,
-					state.status === "ready" && report.totals.calls === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-						className: UsageSection_module_css_default.status,
-						children: t("empty")
-					}) : null,
-					state.status === "ready" && report.totals.calls > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(react_jsx_runtime.Fragment, { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: UsageSection_module_css_default.cards,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: UsageSection_module_css_default.card,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-									className: UsageSection_module_css_default.cardLabel,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconFlame, {}), t("stat.tokens")]
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: UsageSection_module_css_default.cardValue,
-									children: formatTokens(report.totals.totalTokens, zh)
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: UsageSection_module_css_default.card,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-									className: UsageSection_module_css_default.cardLabel,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconChat, {}), t("stat.sessions")]
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: UsageSection_module_css_default.cardValue,
-									children: formatNumber(report.sessions)
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: UsageSection_module_css_default.card,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-									className: UsageSection_module_css_default.cardLabel,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconMessage, {}), t("stat.calls")]
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: UsageSection_module_css_default.cardValue,
-									children: formatNumber(report.totals.calls)
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: UsageSection_module_css_default.card,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-									className: UsageSection_module_css_default.cardLabel,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconCalendar, {}), t("stat.activeDays")]
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: UsageSection_module_css_default.cardValue,
-									children: formatNumber(report.activeDays)
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: UsageSection_module_css_default.card,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-									className: UsageSection_module_css_default.cardLabel,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconBolt, {}), t("stat.streak")]
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: UsageSection_module_css_default.cardValue,
-									children: formatNumber(report.streakDays)
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: UsageSection_module_css_default.card,
-								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-										className: UsageSection_module_css_default.cardLabel,
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconSparkle, {}), t("stat.topModel")]
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: UsageSection_module_css_default.cardValueSmall,
-										title: report.topModel?.label ?? "",
-										children: report.topModel === null ? "—" : labelOf(report.topModel.label)
-									}),
-									report.topModel !== null ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: UsageSection_module_css_default.cardSub,
-										children: t("stat.share", { p: `${Math.round(report.topModel.share * 100)}%` })
-									}) : null
-								]
-							})
-						]
-					}) }) : null,
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(QuotaBlock, {
+					}),
+					tab === "quotas" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(QuotaBlock, {
 						queryQuotas,
 						localeId,
 						refreshToken: request,
 						t
-					}),
-					state.status === "ready" && report.totals.calls > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						state.status === "loading" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: UsageSection_module_css_default.status,
+							children: t("loading")
+						}) : null,
+						state.status === "error" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: UsageSection_module_css_default.failure,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								role: "alert",
+								children: t("error")
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								onClick: () => {
+									setRequest((value) => value + 1);
+								},
+								children: t("retry")
+							})]
+						}) : null,
+						state.status === "ready" && report.totals.calls === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: UsageSection_module_css_default.status,
+							children: t("empty")
+						}) : null,
+						state.status === "ready" && report.totals.calls > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(react_jsx_runtime.Fragment, { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: UsageSection_module_css_default.cards,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: UsageSection_module_css_default.card,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+										className: UsageSection_module_css_default.cardLabel,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconFlame, {}), t("stat.tokens")]
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: UsageSection_module_css_default.cardValue,
+										children: formatTokens(report.totals.totalTokens, zh)
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: UsageSection_module_css_default.card,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+										className: UsageSection_module_css_default.cardLabel,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconChat, {}), t("stat.sessions")]
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: UsageSection_module_css_default.cardValue,
+										children: formatNumber(report.sessions)
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: UsageSection_module_css_default.card,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+										className: UsageSection_module_css_default.cardLabel,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconMessage, {}), t("stat.calls")]
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: UsageSection_module_css_default.cardValue,
+										children: formatNumber(report.totals.calls)
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: UsageSection_module_css_default.card,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+										className: UsageSection_module_css_default.cardLabel,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconCalendar, {}), t("stat.activeDays")]
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: UsageSection_module_css_default.cardValue,
+										children: formatNumber(report.activeDays)
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: UsageSection_module_css_default.card,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+										className: UsageSection_module_css_default.cardLabel,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconBolt, {}), t("stat.streak")]
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: UsageSection_module_css_default.cardValue,
+										children: formatNumber(report.streakDays)
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: UsageSection_module_css_default.card,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+											className: UsageSection_module_css_default.cardLabel,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconSparkle, {}), t("stat.topModel")]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: UsageSection_module_css_default.cardValueSmall,
+											title: report.topModel?.label ?? "",
+											children: report.topModel === null ? "—" : labelOf(report.topModel.label)
+										}),
+										report.topModel !== null ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: UsageSection_module_css_default.cardSub,
+											children: t("stat.share", { p: `${Math.round(report.topModel.share * 100)}%` })
+										}) : null
+									]
+								})
+							]
+						}) }) : null
+					] }),
+					tab === "usage" && state.status === "ready" && report.totals.calls > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: UsageSection_module_css_default.block,
 							children: [
@@ -981,9 +1012,9 @@ window.__ModuleLoader__.load({
 									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", {
 										className: UsageSection_module_css_default.blockTitle,
 										children: period === "today" ? t("trend.hourly") : t("trend")
-									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 										className: UsageSection_module_css_default.trendTools,
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 											className: UsageSection_module_css_default.seg,
 											role: "group",
 											"aria-label": t("range"),
@@ -996,15 +1027,7 @@ window.__ModuleLoader__.load({
 												},
 												children: t(`period.short.${value}`)
 											}, value))
-										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											type: "button",
-											className: UsageSection_module_css_default.refresh,
-											"aria-label": t("refresh"),
-											onClick: () => {
-												setRequest((value) => value + 1);
-											},
-											children: t("refresh")
-										})]
+										})
 									})]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -1363,6 +1386,9 @@ window.__ModuleLoader__.load({
 			refresh: "刷新",
 			empty: "还没有任何用量记录——开始对话后,这里会出现统计。",
 			range: "时间范围",
+			view: "视图切换",
+			"tab.usage": "用量",
+			"tab.quotas": "供应商额度",
 			"period.7d": "最近 7 天",
 			"period.30d": "最近 30 天",
 			"period.short.7d": "7 天",
@@ -1433,6 +1459,9 @@ window.__ModuleLoader__.load({
 			refresh: "Refresh",
 			empty: "No usage recorded yet — chat with a model and the stats appear here.",
 			range: "Time range",
+			view: "View switcher",
+			"tab.usage": "Usage",
+			"tab.quotas": "Provider allowance",
 			"period.7d": "Last 7 days",
 			"period.30d": "Last 30 days",
 			"period.short.7d": "7 days",
